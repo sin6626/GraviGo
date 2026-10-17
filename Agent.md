@@ -5,6 +5,14 @@
 - **定位**：Google Antigravity AI Agent 移动端与全栈端到端协同系统（Android / iOS / Web / Go 本地网关）。
 - **当前重点任务**：Android 客户端前端 UI 二改与视觉/体验升级重构。
 
+### 2026-10-17 模拟器连接恢复与账号资料核实
+
+- 本轮 ADB 的 emulator-5554 正常在线，58900 主网关仍在运行，模拟器使用的 58901 无监听；App 的 API_TRACE 明确报连接 10.0.2.2:58901 失败。本轮没有确定该网关此前退出的原因，不能直接归因于电脑重启。
+- 执行既有 `android/scripts/start-emulator-gateway.ps1` 恢复原独立网关，PID 9056，健康检查通过；第二次调用返回 Started=False，PID 不变。保留原配对身份与鉴权，没有重装、清数据或重启 58900。App 停在手动重试态，点击重试后列表恢复；进入已有会话核验 messages/diffs 为 200、stream 为 101，界面无连接提示。进入会话触发既有 focus 请求，未发送消息或停止任务。
+- 通过原管理令牌只读调用真实 `GetUserStatus` 返回 200，确认 `userStatus.name/email/profilePictureUrl/planStatus.planInfo.planName` 均有数据，头像实际为 `data:image/jpeg;base64,...`，套餐为 Pro。不要把完整账号响应、图片 Base64 或鉴权令牌写进版本库。
+- 用户希望齿轮改为账号头像与个人资料入口。本轮核实当前架构已经支持读取电脑端当前登录账号，但 Android 的 `fetchChatModels()` 仅解析模型目录，没有保存个人资料；现有设置面板仍未改动。后续可从同一真实响应提取资料并复用图片加载能力，不需要新登录系统，不应混用 Cockpit 多账号池。
+- 证据目录 `.verification/2026-10-17-reconnect-account/`；当前未配置登录自启或守护，网关退出后仍需执行既有启动脚本。这次恢复不能视为已解决自动启动问题。
+
 ### 2026-10-17 应用设置首版已实现
 
 - 用户授权「做一版看看效果」。抽屉人像已替换成 22 dp Material 设置图标，36 dp 浅灰圆底、48 dp 触控；独立 onSettings 回调，左侧配对行为保留。新 `AppSettingsBottomSheet` 为白色自然高度底部面板，显示阅读默认换行、现有 App 图标/真实安装版本、九哥来源说明及两个项目链接。
