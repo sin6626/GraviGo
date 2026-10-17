@@ -1,0 +1,66 @@
+{
+  "checked": "2026-10-17",
+  "pngs": [
+    {
+      "id": "gw-a",
+      "file": "A-swept-wing.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1180184,
+      "sha256": "c1640164421468be8d43f3049ac98536940c2c362f8c338ecfb9baa03c6bb473"
+    },
+    {
+      "id": "gw-b",
+      "file": "B-floating-wing.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1330241,
+      "sha256": "53beaa9c23ad88674207be2b4ea3bad2b3e2cf22c796d9f4586188f64c92d862"
+    },
+    {
+      "id": "gw-c",
+      "file": "C-g-wing.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1109113,
+      "sha256": "163b5d7fd92871a8a4a3a890b79a3dfe46235606a6fa2377aff0230a6d975030"
+    },
+    {
+      "id": "gw-d",
+      "file": "D-paired-wings.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1156223,
+      "sha256": "8ec8e40bcfbda6d8648acbb08a14390d080b8abd4f34ed24e35e2935a769dd44"
+    },
+    {
+      "id": "gw-e",
+      "file": "E-folded-wing.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1243741,
+      "sha256": "55c447685f0b35bc805ae31f56c13c02f041af459da6088af9b6e66c257501a0"
+    },
+    {
+      "id": "gw-f",
+      "file": "F-orbital-wing.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1281315,
+      "sha256": "9d1e468f8575a4d7b08b99d807053c72ed18404e312e9b217a103d5f76f2ede0"
+    }
+  ],
+  "gallery_image_links": "all six original assets present"
+}

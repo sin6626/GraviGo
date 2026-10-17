@@ -1,9 +1,16 @@
-# Antigravity Mobile (Multigravity) 项目开发与维护文档
+# GraviWing 项目开发与维护文档
 
 ## 1. 项目概览
-- **项目名称**：Multigravity (`antigravity-mobile`)
+- **已确定品牌名称**：GraviWing。当前安装名仍为 Multigravity，现有仓库/包名尚待统一迁移，不能视为已完成更名。
 - **定位**：Google Antigravity AI Agent 移动端与全栈端到端协同系统（Android / iOS / Web / Go 本地网关）。
 - **当前重点任务**：Android 客户端前端 UI 二改与视觉/体验升级重构。
+
+### 2026-10-17 GraviWing 名称确定与图标候选
+
+- 用户明确选定品牌名 GraviWing，要求多做图标供选择，不喜欢此前克莱因瓶/闭环丝带的感觉。当前产品专注 Google Antigravity 的移动伴侣用途。
+- 已用内置 imagegen 生成 6 张独立候选原图，1254×1254，分别为 A 翼尖、B 悬浮翼、C G 翼、D 双端翼、E 折翼、F 轨迹翼。全部保存到 `android/design/branding/graviwing/candidates/`，含原始提示词、清单、说明和插件渲染的静态对比页；Creative Production 同一看板 `b5533367-ebda-4962-b4c7-1536a5101a00` 已收录 6 项，最终 revision 9。
+- 已逐张目视检查，原图无额外文字或水印。图片带背景，主体目视约占 70%～78%，正式采用时还需透明前景、安全区、Android 蒙版/小尺寸/开屏适配，不能宣称正式图标已完成。候选阶段没有覆盖当前 App 图标，也没有用 CSS/SVG 或程序手绘替代生成。
+- 当前等待用户选择图标方向。应用安装名仍为 Multigravity，仓库/包名/深链接/签名尚未迁移，不把品牌选定等同于已完成工程更名。当前 release 仍采用 debug 签名；后续迁移须安排正式签名和既有本地资料保留，来源说明继续保留九哥项目的真实关系。
 
 ### 2026-10-17 抽屉真实账号头像与个人资料已实现
 
