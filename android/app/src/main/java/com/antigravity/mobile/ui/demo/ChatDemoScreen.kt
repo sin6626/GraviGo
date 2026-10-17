@@ -591,10 +591,9 @@ fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConver
                     Spacer(Modifier.weight(1f))
                     Column(modifier = Modifier.padding(horizontal = 28.dp)) {
                         val recent = activeConversations.filter { it.isPureChat && !it.isSubagent }.take(2)
-                        if (recent.isEmpty() && state.isLoadingConversations) {
+                        if (recent.isEmpty() && state.isLoadingConversations && connectionIssue == null) {
                             Text("正在加载会话…", color = SecondaryInk, fontSize = 16.sp)
                         }
-                        state.conversationsError?.let { LoadFailure(it, state.isLoadingConversations, viewModel::refreshConversations) }
                         recent.forEach { conversation ->
                             Text(
                                 conversation.displayTitle,
@@ -648,7 +647,8 @@ fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConver
                         enter = expandVertically(tween(180)) + fadeIn(tween(120)),
                         exit = shrinkVertically(tween(160)) + fadeOut(tween(100))) {
                         connectionIssue?.let { title ->
-                            ChatConnectionNotice(title, state.isRetryingConnection) {
+                            ChatConnectionNotice(title, state.isRetryingConnection ||
+                                (state.selectedConversationId == null && state.isLoadingConversations)) {
                                 if (state.selectedConversationId != null) viewModel.retryMessages() else viewModel.resumeConnection()
                             }
                         }

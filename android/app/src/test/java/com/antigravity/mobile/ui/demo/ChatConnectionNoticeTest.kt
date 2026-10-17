@@ -16,6 +16,8 @@ class ChatConnectionNoticeTest {
             assertEquals("聊天暂未同步，请重试", chatConnectionIssue(connected.copy(messagesError = error)))
         }
         assertEquals("连接暂时中断，正在重连", chatConnectionIssue(connected.copy(connectionStatus = ConnectionStatus.FAILED)))
+        assertEquals("暂时无法连接电脑", chatConnectionIssue(connected.copy(selectedConversationId = null,
+            conversationsError = "获取会话列表失败 (502)")))
     }
 
     @Test fun authAndFeatureOnlyFailuresDoNotClaimAConnectionFailure() {

@@ -2419,6 +2419,49 @@ class ChatUxTest {
         assertEquals(1, submitted)
     }
 
+    @Test fun homeGatewayFailureHasOneQuietRetryAndRecoversWithoutLosingDraft() {
+        val app = isolatedApplication()
+        FakeGateway().use { gateway ->
+            gateway.management = true
+            gateway.failureCode = 502
+            gateway.failurePath = "GetAllCascadeTrajectories"
+            PreferencesManager(app).apply { gatewayBaseUrl = gateway.url; deviceToken = "test-token" }
+            val vm = ChatViewModel(app)
+            val store = ViewModelStore().apply { put("home-error", vm) }
+            val release = CountDownLatch(1)
+            try {
+                compose.setContent { ChatDemoScreen(vm, {}) }
+                compose.waitUntil(10_000) { vm.state.value.conversationsError != null && !vm.state.value.isLoadingConversations }
+                compose.onNodeWithText("暂时无法连接电脑").assertIsDisplayed()
+                compose.onAllNodesWithContentDescription("重试连接").assertCountEquals(1)
+                // The drawer and adjacent pager page stay composed outside the visible viewport.
+                for (text in listOf("502", "获取会话列表失败", "重试")) {
+                    val nodes = compose.onAllNodesWithText(text, substring = true)
+                    nodes.fetchSemanticsNodes().indices.forEach { nodes[it].assertIsNotDisplayed() }
+                }
+                compose.onNodeWithContentDescription("重试连接").assertWidthIsAtLeast(androidx.compose.ui.unit.Dp(48f))
+                    .assertHeightIsAtLeast(androidx.compose.ui.unit.Dp(48f))
+                saveScreenshot("home-connection-failure.png")
+                compose.runOnIdle { vm.setDraft("不要丢掉这份草稿") }
+                gateway.failurePath = null
+                gateway.block = { path -> if (path.contains("GetAllCascadeTrajectories")) release.await(8, TimeUnit.SECONDS) }
+                compose.onNodeWithContentDescription("重试连接").performClick()
+                compose.waitUntil(10_000) { vm.state.value.isLoadingConversations }
+                compose.onNodeWithContentDescription("重试连接").assertIsNotEnabled()
+                compose.onAllNodesWithText("正在重新连接…").assertCountEquals(1)
+                val loadingNodes = compose.onAllNodesWithText("正在加载会话…")
+                loadingNodes.fetchSemanticsNodes().indices.forEach { loadingNodes[it].assertIsNotDisplayed() }
+                saveScreenshot("home-connection-retrying.png")
+                release.countDown()
+                compose.waitUntil(10_000) { vm.state.value.conversationsError == null && !vm.state.value.isLoadingConversations }
+                compose.onNodeWithContentDescription("重试连接").assertDoesNotExist()
+                assertEquals("不要丢掉这份草稿", vm.state.value.draft)
+                assertFalse(gateway.requests.any { it.first.contains("SendUserCascadeMessage") })
+                saveScreenshot("home-connection-recovered.png")
+            } finally { release.countDown(); compose.runOnIdle { store.clear() } }
+        }
+    }
+
     @Test fun gatewayFailureKeepsLoadedHistoryAndRetryDoesNotSendTheDraft() {
         val app = isolatedApplication()
         FakeGateway().use { gateway ->
