@@ -21,7 +21,9 @@ class AppSettingsLayoutTest {
         var dismissed = false
         compose.setContent {
             CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, 1.5f)) {
-                AppSettingsBottomSheet(checked.value, { checked.value = it }) { dismissed = true }
+                AppSettingsBottomSheet(checked.value, { checked.value = it },
+                    profile = com.antigravity.mobile.data.model.AccountProfile("很长的账号名称用于检查大字号排版",
+                        "long-account-name@example.com", "", "Pro")) { dismissed = true }
             }
         }
         compose.onNodeWithContentDescription("文件默认换行").performScrollTo().performClick().assertIsOff()
@@ -32,7 +34,7 @@ class AppSettingsLayoutTest {
             bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
         }
         bitmap.recycle()
-        compose.onNodeWithContentDescription("关闭应用设置").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("关闭账号与设置").performScrollTo().performClick()
         compose.waitUntil(5_000) { dismissed }
     }
 }

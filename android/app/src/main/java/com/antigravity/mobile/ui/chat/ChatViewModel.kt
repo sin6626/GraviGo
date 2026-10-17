@@ -36,6 +36,7 @@ import com.antigravity.mobile.data.model.DiffSide
 import com.antigravity.mobile.data.model.PlanReviewPreference
 import com.antigravity.mobile.data.model.ModelQuotaSummary
 import com.antigravity.mobile.data.model.DesktopStatus
+import com.antigravity.mobile.data.model.AccountProfile
 import com.antigravity.mobile.data.service.ApiClient
 import com.antigravity.mobile.data.service.AudioTranscriptionSession
 import com.antigravity.mobile.data.service.GatewayAuthorizationException
@@ -65,6 +66,9 @@ import java.security.MessageDigest
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 data class ChatUiState(
+    val accountProfile: AccountProfile? = null,
+    val isLoadingAccountProfile: Boolean = false,
+    val accountProfileError: String? = null,
     val defaultFileWrap: Boolean = true,
     val isPaired: Boolean = false,
     val isPairing: Boolean = false,
@@ -319,6 +323,24 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     fun setDefaultFileWrap(enabled: Boolean) {
         prefs.defaultFileWrap = enabled
         _state.value = _state.value.copy(defaultFileWrap = enabled)
+    }
+
+    fun refreshAccountProfile() {
+        if (!_state.value.isPaired || _state.value.isLoadingAccountProfile) return
+        val token = prefs.deviceToken
+        _state.value = _state.value.copy(isLoadingAccountProfile = true, accountProfileError = null)
+        viewModelScope.launch {
+            api.fetchAccountProfile().fold(onSuccess = { profile ->
+                if (prefs.deviceToken != token) return@fold
+                _state.value = _state.value.copy(accountProfile = profile,
+                    isLoadingAccountProfile = false, accountProfileError = null)
+            }, onFailure = { error ->
+                if (prefs.deviceToken != token) return@fold
+                if (error is GatewayAuthorizationException) { expirePairing(); return@fold }
+                _state.value = _state.value.copy(isLoadingAccountProfile = false,
+                    accountProfileError = error.message ?: "读取账号资料失败")
+            })
+        }
     }
     val mediaImageLoader: ImageLoader get() = api.mediaImageLoader
     fun mediaImageRequest(raw: String): ImageRequest = api.mediaImageRequest(raw)
@@ -1316,6 +1338,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         prefs.lastConversationId = null
         _state.value = _state.value.copy(
             isPaired = false, isLoadingConversations = false, isLoadingProjects = false,
+            accountProfile = null, isLoadingAccountProfile = false, accountProfileError = null,
             models = emptyList(), isLoadingModels = false, modelsError = null,
             activeModelId = null, modelOverrideId = null, creatingProjectKey = null,
             selectedConversationId = null, conversations = emptyList(), projects = emptyList(),
@@ -1379,6 +1402,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                     _state.value = _state.value.copy(
                         isPaired = true, isPairing = false,
                         pairSuccessCount = _state.value.pairSuccessCount + 1,
+                        accountProfile = null, isLoadingAccountProfile = false, accountProfileError = null,
                         conversations = emptyList(), projects = emptyList(), error = null,
                         isLoadingConversations = false, isLoadingProjects = false,
                         conversationsError = null, projectsError = null,

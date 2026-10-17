@@ -174,6 +174,12 @@ fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConver
     var desktopStatusOpen by remember { mutableStateOf(false) }
     var settingsOpen by rememberSaveable { mutableStateOf(false) }
     var settingsRequested by remember { mutableStateOf(false) }
+    LaunchedEffect(drawerState.isOpen, state.pairSuccessCount) {
+        if (drawerState.isOpen) viewModel.refreshAccountProfile()
+    }
+    LaunchedEffect(settingsOpen) {
+        if (settingsOpen && state.accountProfile == null && state.accountProfileError == null) viewModel.refreshAccountProfile()
+    }
     LaunchedEffect(state.isPaired) {
         if (!state.isPaired) { settingsRequested = false; settingsOpen = false }
     }
@@ -428,6 +434,7 @@ fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConver
                         settingsRequested = true
                     }
                 },
+                accountProfile = state.accountProfile,
             )
         },
     ) {
@@ -866,7 +873,9 @@ fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConver
             )
         }
         if (settingsOpen && state.isPaired) {
-            AppSettingsBottomSheet(state.defaultFileWrap, viewModel::setDefaultFileWrap) { settingsOpen = false }
+            AppSettingsBottomSheet(state.defaultFileWrap, viewModel::setDefaultFileWrap,
+                profile = state.accountProfile, loading = state.isLoadingAccountProfile,
+                error = state.accountProfileError, onRefresh = viewModel::refreshAccountProfile) { settingsOpen = false }
         }
         if (desktopStatusOpen && state.isPaired) {
             DesktopStatusBottomSheet(

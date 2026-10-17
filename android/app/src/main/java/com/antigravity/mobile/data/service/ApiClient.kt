@@ -391,14 +391,19 @@ class ApiClient(
     /**
      * Read the current desktop account's model catalog.
      */
-    suspend fun fetchChatModels(): Result<List<ChatModel>> = withContext(Dispatchers.IO) {
+    suspend fun fetchChatModels(): Result<List<ChatModel>> = fetchUserStatus().mapCatching(::parseChatModels)
+
+    suspend fun fetchAccountProfile(): Result<AccountProfile> = fetchUserStatus().mapCatching(::parseAccountProfile)
+
+    private suspend fun fetchUserStatus(): Result<JsonObject> = withContext(Dispatchers.IO) {
         val base = currentBaseUrl ?: return@withContext Result.failure(IllegalStateException("未配置网关地址"))
         try {
             val request = buildAuthorizedRequest("$base/api/exa.language_server_pb.LanguageServerService/GetUserStatus")
                 .post("{}".toRequestBody(jsonMediaType)).build()
             client.newCall(request).await().use { response ->
-                check(response.isSuccessful) { "读取模型失败 (${response.code})" }
-                Result.success(parseChatModels(json.parseToJsonElement(response.body?.string() ?: "{}").jsonObject))
+                if (response.code == 401) throw GatewayAuthorizationException()
+                check(response.isSuccessful) { "读取账号信息失败 (${response.code})" }
+                Result.success(json.parseToJsonElement(response.body?.string() ?: "{}").jsonObject)
             }
         } catch (error: Exception) { Result.failure(error) }
     }

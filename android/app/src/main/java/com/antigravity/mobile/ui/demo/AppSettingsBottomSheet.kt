@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,11 +29,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.antigravity.mobile.R
+import com.antigravity.mobile.data.model.AccountProfile
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun AppSettingsBottomSheet(defaultFileWrap: Boolean, onDefaultFileWrap: (Boolean) -> Unit, onDismiss: () -> Unit) {
+internal fun AppSettingsBottomSheet(defaultFileWrap: Boolean, onDefaultFileWrap: (Boolean) -> Unit,
+    profile: AccountProfile? = null, loading: Boolean = false, error: String? = null,
+    onRefresh: () -> Unit = {}, onDismiss: () -> Unit) {
     val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     var closing by remember { mutableStateOf(false) }
@@ -52,9 +56,9 @@ internal fun AppSettingsBottomSheet(defaultFileWrap: Boolean, onDefaultFileWrap:
             .verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = 24.dp)
             .padding(bottom = 12.dp)) {
             Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("应用设置", color = Ink, fontSize = 18.sp, fontWeight = FontWeight.SemiBold,
+                Text("账号与设置", color = Ink, fontSize = 18.sp, fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f).semantics { heading() })
-                Box(Modifier.size(48.dp).semantics { contentDescription = "关闭应用设置" }
+                Box(Modifier.size(48.dp).semantics { contentDescription = "关闭账号与设置" }
                     .quietClickable(CircleShape, enabled = !closing) {
                         closing = true
                         scope.launch {
@@ -66,6 +70,33 @@ internal fun AppSettingsBottomSheet(defaultFileWrap: Boolean, onDefaultFileWrap:
                 }
             }
             Spacer(Modifier.height(8.dp))
+            Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                AccountAvatar(profile, 64.dp)
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(profile?.name?.ifBlank { profile.email } ?: if (loading) "正在读取账号…" else "账号资料暂不可用",
+                        color = Ink, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                    profile?.email?.takeIf(String::isNotBlank)?.let { Text(it, color = SecondaryInk, fontSize = 13.sp) }
+                    profile?.planName?.takeIf(String::isNotBlank)?.let {
+                        Text(it, color = AccentBlue, fontSize = 12.sp, fontWeight = FontWeight.Medium,
+                            modifier = Modifier.background(AccentBlue.copy(alpha = .08f), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 8.dp, vertical = 3.dp))
+                    }
+                }
+                IconButton(onClick = onRefresh, enabled = !loading, modifier = Modifier.size(48.dp)) {
+                    if (loading) CircularProgressIndicator(Modifier.size(20.dp), color = AccentBlue, strokeWidth = 2.dp)
+                    else Icon(Icons.Outlined.Refresh, contentDescription = "刷新账号资料", tint = SecondaryInk, modifier = Modifier.size(20.dp))
+                }
+            }
+            Text("来自电脑端当前登录的 Antigravity 账号", color = SecondaryInk, fontSize = 12.sp, lineHeight = 18.sp)
+            error?.let {
+                Text(if (profile == null) "账号资料读取失败，可点击重试" else "刷新失败，当前显示上次读取的资料",
+                    color = SecondaryInk, fontSize = 12.sp, modifier = Modifier.padding(top = 8.dp))
+                TextButton(onClick = onRefresh, enabled = !loading) { Text("重试账号资料", color = AccentBlue) }
+            }
+            Spacer(Modifier.height(20.dp))
+            HorizontalDivider(color = Color(0xFFEBEDF0))
+            Spacer(Modifier.height(20.dp))
             Text("阅读", color = SecondaryInk, fontSize = 12.sp)
             Row(Modifier.fillMaxWidth().heightIn(min = 64.dp)
                 .toggleable(value = defaultFileWrap, role = Role.Switch, onValueChange = onDefaultFileWrap)

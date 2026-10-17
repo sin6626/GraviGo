@@ -31,6 +31,51 @@ import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.concurrent.thread
 
 class ChatUxTest {
+    @Test fun accountAvatarReadsRealFieldsRetriesAndClearsExpiredIdentity() {
+        val app = isolatedApplication()
+        FakeGateway().use { gateway ->
+            gateway.management = true
+            PreferencesManager(app).apply { gatewayBaseUrl = gateway.url; deviceToken = "account-test" }
+            val vm = ChatViewModel(app)
+            val store = ViewModelStore().apply { put("account", vm) }
+            try {
+                compose.setContent { ChatDemoScreen(vm, {}) }
+                compose.waitUntil(10_000) { !vm.state.value.isLoadingModels }
+                compose.runOnIdle { vm.setDraft("账号面板保留草稿") }
+                compose.onNodeWithContentDescription("打开菜单").performClick()
+                compose.waitUntil(10_000) { vm.state.value.accountProfile != null }
+                compose.onNodeWithTag("account-avatar", useUnmergedTree = true).assertIsDisplayed()
+                compose.onNodeWithContentDescription("账号与设置").assertHeightIsAtLeast(androidx.compose.ui.unit.Dp(48f)).performClick()
+                compose.onNodeWithText("测试账号").assertIsDisplayed()
+                compose.onNodeWithText("test@example.com").assertIsDisplayed()
+                compose.onNodeWithText("Pro").assertIsDisplayed()
+                saveScreenshot("account-profile.png")
+                gateway.failurePath = "GetUserStatus"
+                compose.onNodeWithContentDescription("刷新账号资料").performClick()
+                compose.waitUntil(10_000) { vm.state.value.accountProfileError != null }
+                compose.onNodeWithText("刷新失败，当前显示上次读取的资料").assertIsDisplayed()
+                compose.onNodeWithText("测试账号").assertIsDisplayed()
+                compose.onNodeWithContentDescription("文件默认换行").assertIsOn()
+                gateway.failurePath = null
+                gateway.accountName = "更新后的账号"
+                compose.onNodeWithText("重试账号资料").performClick()
+                compose.waitUntil(10_000) { vm.state.value.accountProfile?.name == "更新后的账号" }
+                compose.onNodeWithText("更新后的账号").assertIsDisplayed()
+                assertNull(vm.state.value.accountProfileError)
+                assertEquals("账号面板保留草稿", vm.state.value.draft)
+                assertTrue(gateway.requests.filter { it.first.contains("GetUserStatus") }.all { it.second == "{}" })
+                assertFalse(gateway.requests.any { it.first.contains("SendUserCascadeMessage") })
+                gateway.failurePath = "GetUserStatus"
+                gateway.failureCode = 401
+                compose.onNodeWithContentDescription("刷新账号资料").performClick()
+                compose.waitUntil(10_000) { !vm.state.value.isPaired }
+                assertNull(vm.state.value.accountProfile)
+                assertFalse(vm.state.value.isLoadingAccountProfile)
+                compose.onNodeWithText("更新后的账号").assertDoesNotExist()
+            } finally { compose.runOnIdle { store.clear() } }
+        }
+    }
+
     @Test fun appSettingsKeepDraftAndPersistOnlyTheReadingDefault() {
         val app = isolatedApplication()
         FakeGateway().use { gateway ->
@@ -50,23 +95,23 @@ class ChatUxTest {
                 compose.runOnIdle { vm.setDraft("设置不会打断这份草稿") }
                 compose.onNodeWithContentDescription("打开菜单").performClick()
                 saveScreenshot("settings-drawer-entry.png")
-                compose.onNodeWithContentDescription("应用设置").performClick()
+                compose.onNodeWithContentDescription("账号与设置").performClick()
                 compose.onNodeWithContentDescription("文件默认换行").assertIsOn()
-                compose.onNodeWithContentDescription("关闭应用设置").assertHeightIsAtLeast(androidx.compose.ui.unit.Dp(48f))
+                compose.onNodeWithContentDescription("关闭账号与设置").assertHeightIsAtLeast(androidx.compose.ui.unit.Dp(48f))
                 compose.onNodeWithText("本项目代码").assertIsDisplayed()
                 compose.onNodeWithText("原项目").assertIsDisplayed()
                 saveScreenshot("settings-sheet.png")
                 compose.onNodeWithContentDescription("文件默认换行").performClick().assertIsOff()
                 assertFalse(PreferencesManager(app).defaultFileWrap)
-                compose.onNodeWithContentDescription("关闭应用设置").performClick()
-                compose.waitUntil(5_000) { compose.onAllNodesWithContentDescription("关闭应用设置").fetchSemanticsNodes().isEmpty() }
+                compose.onNodeWithContentDescription("关闭账号与设置").performClick()
+                compose.waitUntil(5_000) { compose.onAllNodesWithContentDescription("关闭账号与设置").fetchSemanticsNodes().isEmpty() }
                 assertEquals("设置不会打断这份草稿", vm.state.value.draft)
                 gateway.failurePath = "/"
                 compose.onNodeWithContentDescription("打开菜单").performClick()
-                compose.onNodeWithContentDescription("应用设置").performClick()
+                compose.onNodeWithContentDescription("账号与设置").performClick()
                 compose.onNodeWithContentDescription("文件默认换行").assertIsOff()
-                compose.onNodeWithContentDescription("关闭应用设置").performClick()
-                compose.waitUntil(5_000) { compose.onAllNodesWithContentDescription("关闭应用设置").fetchSemanticsNodes().isEmpty() }
+                compose.onNodeWithContentDescription("关闭账号与设置").performClick()
+                compose.waitUntil(5_000) { compose.onAllNodesWithContentDescription("关闭账号与设置").fetchSemanticsNodes().isEmpty() }
                 gateway.failurePath = null
                 compose.runOnIdle { fileOpen.value = true }
                 compose.waitUntil(10_000) { compose.onAllNodesWithContentDescription("自动换行").fetchSemanticsNodes().isNotEmpty() }
@@ -96,14 +141,14 @@ class ChatUxTest {
                 compose.waitUntil(10_000) { !vm.state.value.isLoadingConversations }
                 compose.onNodeWithContentDescription("打开菜单").performClick()
                 compose.mainClock.autoAdvance = false
-                compose.onNodeWithContentDescription("应用设置").performClick()
+                compose.onNodeWithContentDescription("账号与设置").performClick()
                 compose.mainClock.advanceTimeBy(16)
                 InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
                 compose.mainClock.advanceTimeBy(800)
-                compose.onNodeWithContentDescription("关闭应用设置").assertDoesNotExist()
+                compose.onNodeWithContentDescription("关闭账号与设置").assertDoesNotExist()
                 compose.mainClock.autoAdvance = true
                 compose.onNodeWithContentDescription("打开菜单").performClick()
-                compose.onNodeWithContentDescription("应用设置").performClick()
+                compose.onNodeWithContentDescription("账号与设置").performClick()
                 compose.onNodeWithContentDescription("文件默认换行").assertIsDisplayed()
             } finally { compose.mainClock.autoAdvance = true; compose.runOnIdle { store.clear() } }
         }
@@ -3231,6 +3276,7 @@ class ChatUxTest {
         @Volatile var block: (String) -> Unit = {}
         @Volatile var failurePath: String? = null
         @Volatile var failureCode = 500
+        @Volatile var accountName = "测试账号"
         @Volatile var liveStream = false
         @Volatile var messageText = "original message"
         @Volatile var filePreviewName = "plan.md"
@@ -3399,7 +3445,7 @@ class ChatUxTest {
                             val id = Regex("[?&]cascadeId=([^&]+)").find(path)?.groupValues?.get(1)
                                 ?: if (path.contains("cascadeId=A")) "A" else "B"
                             val body = when {
-                                path.contains("GetUserStatus") -> """{"userStatus":{"planStatus":{"planInfo":{"teamsTier":"PRO"}},"cascadeModelConfigData":{"clientModelConfigs":[
+                                path.contains("GetUserStatus") -> """{"userStatus":{"name":"$accountName","email":"test@example.com","profilePictureUrl":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==","planStatus":{"planInfo":{"teamsTier":"PRO","planName":"Pro"}},"cascadeModelConfigData":{"clientModelConfigs":[
                                     {"modelId":"gemini-3.8-flash-high","label":"Gemini fixture${if (thinkingVariants) " (High)" else ""}","modelOrAlias":{"model":"MODEL_PLACEHOLDER_M318"},"supportsImages":true,"supportedMimeTypes":{"text/plain":true,"application/pdf":true},"allowedTiers":["PRO"]},
                                     ${if (thinkingVariants) """{"modelId":"gemini-3.8-flash-medium","label":"Gemini fixture (Medium)","modelOrAlias":{"model":"MODEL_MEDIUM"},"supportsImages":true,"supportedMimeTypes":{"text/plain":true},"allowedTiers":["PRO"]},
                                     {"modelId":"gemini-3.8-flash-low","label":"Gemini fixture (Low)","modelOrAlias":{"model":"MODEL_LOW"},"supportsImages":true,"supportedMimeTypes":{"text/plain":true},"allowedTiers":["PRO"]},""" else ""}
