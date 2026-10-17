@@ -105,8 +105,6 @@ import com.antigravity.mobile.ui.chat.InteractionPanel
 import com.antigravity.mobile.ui.chat.PlanReviewPanel
 import com.antigravity.mobile.ui.chat.QueuedMessagesPanel
 import com.antigravity.mobile.ui.chat.RunningTasksPanel
-import com.antigravity.mobile.ui.chat.SubagentsPanel
-import com.antigravity.mobile.ui.chat.SubagentReadOnlyBar
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -117,7 +115,7 @@ import kotlin.math.abs
 fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConversation: Boolean = false) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val connectionIssue = chatConnectionIssue(state)
-    val activeConversations = state.conversations.filterNot { it.isArchived }
+    val activeConversations = state.conversations.filterNot { it.isArchived || it.isSubagent }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val density = LocalDensity.current
@@ -415,7 +413,7 @@ fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConver
         Column(modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
             if (archivedOpen) {
                 state.conversationsError?.let { LoadFailure(it, state.isLoadingConversations, viewModel::refreshConversations) }
-                ArchivedConversations(state.conversations, state.isLoadingConversations, state.busyConversations,
+                ArchivedConversations(state.conversations.filterNot { it.isSubagent }, state.isLoadingConversations, state.busyConversations,
                     onBack = { archivedOpen = false }, onRefresh = viewModel::refreshConversations,
                     onOpen = { id -> archivedOpen = false; openedFromArchive = true; viewModel.openConversation(id) },
                     onRename = { item -> renameConversationId = item.id; renameTitle = item.title; showRename = true },
@@ -684,19 +682,6 @@ fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConver
                         )
                     }
                     AnimatedVisibility(
-                        visible = state.subagents.isNotEmpty(),
-                        enter = expandVertically(tween(180), expandFrom = Alignment.Bottom) + fadeIn(tween(120)),
-                        exit = shrinkVertically(tween(160), shrinkTowards = Alignment.Bottom) + fadeOut(tween(100)),
-                    ) {
-                        SubagentsPanel(
-                            subagents = state.subagents,
-                            isLoading = state.isLoadingSubagents,
-                            error = state.subagentsError.takeIf { connectionIssue == null },
-                            onOpen = viewModel::openSubagent,
-                            onRetry = viewModel::refreshSubagents,
-                        )
-                    }
-                    AnimatedVisibility(
                         visible = state.runningTasks.isNotEmpty(),
                         enter = expandVertically(tween(180), expandFrom = Alignment.Bottom) + fadeIn(tween(120)),
                         exit = shrinkVertically(tween(160), shrinkTowards = Alignment.Bottom) + fadeOut(tween(100)),
@@ -723,9 +708,7 @@ fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConver
                             viewModel = viewModel,
                         )
                     }
-                    if (state.activeSubagent != null) {
-                        SubagentReadOnlyBar()
-                    } else Box(
+                    if (state.activeSubagent == null) Box(
                         modifier = Modifier
                             // Page motion changes opacity/position; never reflow the input and its fixed-size actions.
                             .fillMaxWidth()

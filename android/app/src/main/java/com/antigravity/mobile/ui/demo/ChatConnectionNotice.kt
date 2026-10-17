@@ -25,7 +25,6 @@ internal fun chatConnectionIssue(state: ChatUiState): String? = when {
     state.messagesError != null -> "聊天暂未同步，请重试"
     state.selectedConversationId == null && state.conversationsError != null -> "暂时连接不上电脑，请重试"
     state.selectedConversationId != null && state.connectionStatus == ConnectionStatus.FAILED -> "连接暂时中断，正在重连"
-    state.subagentsError != null && state.subagents.isEmpty() -> "子代理状态暂未同步"
     else -> null
 }
 

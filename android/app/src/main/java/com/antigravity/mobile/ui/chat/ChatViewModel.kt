@@ -54,7 +54,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -304,7 +303,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     private var messagesJob: Job? = null
     private var draftRestoreJob: Job? = null
     private var recoveryJob: Job? = null
-    private var subagentsJob: Job? = null
     private var contextSuggestionsJob: Job? = null
     private var commandSuggestionsJob: Job? = null
     private var voiceJob: Job? = null
@@ -1303,7 +1301,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         if (!_state.value.isPaired) return
         advanceConversationVisit()
         messagesJob?.cancel(); messagesJob = null
-        subagentsJob?.cancel(); subagentsJob = null
         subagentTrail.clear()
         prefs.deviceToken = null
         prefs.deviceId = null
@@ -1542,16 +1539,9 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         openConversationTarget(current.parentConversationId, subagentTrail.lastOrNull(), _state.value.workspaceUri)
     }
 
-    fun refreshSubagents() {
-        val id = _state.value.selectedConversationId ?: return
-        subagentsJob?.cancel()
-        startSubagentPolling(id, conversationVisit)
-    }
-
     private fun openConversationTarget(id: String, activeSubagent: SubagentItem?, workspaceUri: String? = null) {
         advanceConversationVisit()
         messagesJob?.cancel(); messagesJob = null
-        subagentsJob?.cancel(); subagentsJob = null
         switchDraft(id)
         prefs.lastConversationId = (subagentTrail.firstOrNull()?.parentConversationId ?: id).takeUnless { it.startsWith("local:") }
         stream.disconnect()
@@ -1571,7 +1561,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             interactionError = null,
             queuedMessages = emptyList(), queueSubmission = null, busyQueuedMessageIds = emptySet(), queueError = null,
             runningTasks = emptyList(), stoppingTaskIds = emptySet(), tasksError = null,
-            subagents = emptyList(), activeSubagent = activeSubagent, isLoadingSubagents = true, subagentsError = null,
+            subagents = emptyList(), activeSubagent = activeSubagent, isLoadingSubagents = false, subagentsError = null,
             canProceed = false, proceedArtifactUri = null, isProceedingArtifact = false, proceedError = null,
             planCommentDraft = ArtifactCommentDraftState(), isSubmittingPlanComments = false, planCommentError = null,
             diffReview = null, isLoadingDiffReview = false, diffReviewError = null,
@@ -1585,38 +1575,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         stream.connect(id)
         loadMessages(id)
         api.notifySessionFocus(id)
-        startSubagentPolling(id, conversationVisit)
-    }
-
-    private fun startSubagentPolling(parentId: String, visit: Long) {
-        subagentsJob = viewModelScope.launch {
-            if (_state.value.networkAvailable) loadSubagents(parentId, visit, showLoading = true)
-            while (isActive) {
-                delay(if (_state.value.subagentsError != null || !_state.value.networkAvailable) 24_000 else 3_000)
-                if (_state.value.networkAvailable) loadSubagents(parentId, visit, showLoading = false)
-            }
-        }
-    }
-
-    private suspend fun loadSubagents(parentId: String, visit: Long, showLoading: Boolean) {
-        if (showLoading && conversationVisit == visit) {
-            _state.value = _state.value.copy(isLoadingSubagents = true, subagentsError = null)
-        }
-        api.fetchSubagents(parentId).fold(
-            onSuccess = { items ->
-                if (conversationVisit == visit && _state.value.selectedConversationId == parentId) {
-                    _state.value = _state.value.copy(subagents = items, isLoadingSubagents = false, subagentsError = null)
-                }
-            },
-            onFailure = { error ->
-                if (conversationVisit != visit) return@fold
-                if (error is GatewayAuthorizationException) { expirePairing(); return@fold }
-                _state.value = _state.value.copy(
-                    isLoadingSubagents = false,
-                    subagentsError = error.message ?: "加载子代理失败",
-                )
-            },
-        )
     }
 
     fun newConversation() {
@@ -1636,7 +1594,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     fun closeConversation() {
         advanceConversationVisit()
         messagesJob?.cancel(); messagesJob = null
-        subagentsJob?.cancel(); subagentsJob = null
         subagentTrail.clear()
         stream.disconnect()
         prefs.lastConversationId = null
@@ -2564,7 +2521,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         val visit = conversationVisit
         _state.value = _state.value.copy(isRetryingConnection = !_state.value.networkAvailable ||
             _state.value.messagesError != null || _state.value.conversationsError != null ||
-            _state.value.subagentsError != null || _state.value.connectionStatus == ConnectionStatus.FAILED)
+            _state.value.connectionStatus == ConnectionStatus.FAILED)
         recoveryJob = viewModelScope.launch {
             try {
                 connectionManager.probeEndpoints(prefs)
@@ -2573,7 +2530,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                         stream.reconnect()
                         _state.value = _state.value.copy(isLoadingMessages = true)
                         loadMessages(id).join()
-                        loadSubagents(id, visit, showLoading = false)
                     }
                 }
                 refreshConversations()
@@ -2618,7 +2574,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     override fun onCleared() {
         cancelVoiceSession(restoreDraft = false)
-        subagentsJob?.cancel()
         stream.close()
         connectionManager.stopMonitoring()
         super.onCleared()

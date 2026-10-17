@@ -20,7 +20,7 @@ class ChatConnectionNoticeTest {
 
     @Test fun authAndFeatureOnlyFailuresDoNotClaimAConnectionFailure() {
         assertNull(chatConnectionIssue(connected.copy(isPaired = false, messagesError = "HTTP 401", networkAvailable = false)))
-        assertEquals("子代理状态暂未同步", chatConnectionIssue(connected.copy(subagentsError = "HTTP 500")))
+        assertNull(chatConnectionIssue(connected.copy(subagentsError = "HTTP 500")))
         assertNull(chatConnectionIssue(connected))
         assertFalse(connected.copy(networkAvailable = false).canSendOverConnection)
         assertFalse(connected.copy(messagesError = "HTTP 530").canSendOverConnection)

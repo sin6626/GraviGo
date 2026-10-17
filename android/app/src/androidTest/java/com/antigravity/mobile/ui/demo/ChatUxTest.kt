@@ -2903,52 +2903,46 @@ class ChatUxTest {
         }
     }
 
-    @Test fun subagentsCanBeExpandedOpenedAndReturnedWithoutExposingUnverifiedMessaging() {
+    @Test fun conversationsSkipSubagentDiscoveryAndKeepRealConnectionErrors() {
         val app = isolatedApplication()
         FakeGateway().use { gateway ->
             gateway.management = true
+            gateway.liveStream = true
             gateway.subagentFixture = true
-            PreferencesManager(app).apply {
-                gatewayBaseUrl = gateway.url
-                deviceToken = "test-token"
-                lastConversationId = "A"
-            }
+            gateway.failurePath = "/gateway/subagents"
+            PreferencesManager(app).apply { gatewayBaseUrl = gateway.url; deviceToken = "test-token"; lastConversationId = "A" }
             val vm = ChatViewModel(app)
-            val store = ViewModelStore().apply { put("subagents", vm) }
+            val store = ViewModelStore().apply { put("no-subagent-ui", vm) }
             try {
                 compose.setContent { ChatDemoScreen(vm, {}) }
-                compose.waitUntil(10_000) { vm.state.value.subagents.size == 2 }
-                compose.onNodeWithText("2 个直属子代理").assertIsDisplayed()
-                compose.onNodeWithText("检查登录动效").assertIsDisplayed()
-                compose.onNodeWithText("等待用户选择").assertIsDisplayed()
-                compose.onNodeWithContentDescription("收起子代理").performClick()
-                compose.onNodeWithText("检查登录动效").assertDoesNotExist()
-                compose.onNodeWithContentDescription("展开子代理").performClick()
-                compose.onNodeWithText("检查登录动效").assertIsDisplayed()
-                saveScreenshot("subagents.png")
-
-                compose.onNodeWithContentDescription("查看子代理 检查登录动效，运行中").performClick()
-                compose.waitUntil(10_000) { vm.state.value.selectedConversationId == "sub-running" }
-                compose.onNodeWithContentDescription("返回父会话").assertIsDisplayed()
-                compose.onNodeWithContentDescription("子代理执行记录，仅供查看").assertIsDisplayed()
-                compose.onNode(hasSetTextAction()).assertDoesNotExist()
-                compose.onNodeWithContentDescription("返回父会话").performClick()
-                compose.waitUntil(10_000) { vm.state.value.selectedConversationId == "A" && vm.state.value.activeSubagent == null }
-                compose.waitUntil(10_000) { vm.state.value.subagents.size == 2 }
-
-                gateway.failurePath = "/gateway/subagents"
-                compose.runOnIdle { vm.refreshSubagents() }
-                compose.waitUntil(10_000) { vm.state.value.subagentsError != null }
-                compose.waitUntil(10_000) { vm.state.value.connectionStatus == com.antigravity.mobile.data.service.ConnectionStatus.FAILED }
-                compose.onNodeWithContentDescription("重试连接").assertIsDisplayed()
+                compose.waitUntil(10_000) { vm.state.value.selectedConversationId == "A" && !vm.state.value.isLoadingMessages &&
+                    vm.state.value.connectionStatus == com.antigravity.mobile.data.service.ConnectionStatus.CONNECTED }
+                Thread.sleep(3500) // The former poller queried every three seconds.
+                compose.onNodeWithText("子代理状态暂未同步").assertDoesNotExist()
                 compose.onNodeWithContentDescription("重试加载子代理").assertDoesNotExist()
+                compose.onNodeWithText("检查登录动效").assertDoesNotExist()
+                compose.onNodeWithText("original message").assertIsDisplayed()
+                saveScreenshot("chat-without-subagent-panel.png")
+                val previousReads = gateway.requests.count { it.first.startsWith("/gateway/cascade/messages") }
+                compose.runOnIdle { vm.setDraft("保留草稿"); vm.resumeConnection() }
+                compose.waitUntil(10_000) { !vm.state.value.isRetryingConnection && !vm.state.value.isLoadingMessages &&
+                    gateway.requests.count { it.first.startsWith("/gateway/cascade/messages") } > previousReads }
+                compose.runOnIdle { vm.openConversation("B") }
+                compose.waitUntil(10_000) { vm.state.value.selectedConversationId == "B" && !vm.state.value.isLoadingMessages }
+                compose.runOnIdle { vm.openConversation("A") }
+                compose.waitUntil(10_000) { vm.state.value.selectedConversationId == "A" && !vm.state.value.isLoadingMessages }
+                assertEquals("保留草稿", vm.state.value.draft)
+                assertFalse("普通会话/恢复连接不应查询子代理", gateway.requests.any { it.first.startsWith("/gateway/subagents") })
+                gateway.failurePath = "/gateway/cascade/messages"
+                compose.runOnIdle { vm.retryMessages() }
+                compose.waitUntil(10_000) { vm.state.value.messagesError != null }
+                compose.onNodeWithText("聊天暂未同步，请重试").assertIsDisplayed()
+                assertEquals("保留草稿", vm.state.value.draft)
                 gateway.failurePath = null
-                compose.onNodeWithContentDescription("重试连接").performClick()
-                compose.waitUntil(10_000) { vm.state.value.subagentsError == null }
-                assertTrue(gateway.requests.any { it.first == "/gateway/subagents?parentId=A" })
-            } finally {
-                compose.runOnIdle { store.clear() }
-            }
+                compose.runOnIdle { vm.retryMessages() }
+                compose.waitUntil(10_000) { vm.state.value.messagesError == null && !vm.state.value.isLoadingMessages }
+                assertFalse(gateway.requests.any { it.first.startsWith("/gateway/subagents") })
+            } finally { compose.runOnIdle { store.clear() } }
         }
     }
 
