@@ -5,6 +5,20 @@
 - **定位**：Google Antigravity AI Agent 移动端与全栈端到端协同系统（Android / iOS / Web / Go 本地网关）。
 - **当前重点任务**：Android 客户端前端 UI 二改与视觉/体验升级重构。
 
+### 2026-10-17 正式选用方案 1「悬浮伴生晶核」作为 App 图标与深色开屏系统
+
+- **用户需求**：明确选定候选方案 1「悬浮伴生晶核（Levitating Orbit Core）」作为 App 正式图标，寓意让反重力随时在身边伴生，要求同步替换桌面图标、各密度 legacy mipmap、开屏（Splash Screen）及代码关联部分。
+- **视觉与资产重构**：
+  - 从方案 1 源图提取 1254×1254 RGBA 纯净透明通道前景，替换为 `android/app/src/main/res/drawable-nodpi/multigravity_mark.png`。
+  - 生成覆盖 `mdpi`、`hdpi`、`xhdpi`、`xxhdpi`、`xxxhdpi` 全密度的方形 `ic_launcher.png`、圆形 `ic_launcher_round.png` 与前景 `ic_launcher_foreground.png`。
+  - 修改 `colors.xml`，将 `ic_launcher_background` 与新增 `brand_splash_background` 统一设为深邃黑 `#FF0F1118`，彻底解决自适应圆形裁切与深色晶核的底座融合问题。
+  - 修改 `themes.xml`，将启动主题 `Theme.Antigravity.Starting` 的 `windowSplashScreenBackground`、`android:statusBarColor`、`android:navigationBarColor` 设为 `@color/brand_splash_background`，`windowLightStatusBar` 设为 `false`。
+  - 接续既有 `BrandSplash.kt` 760ms 浮起（-8dp）、缩放（1.045x）及流光扫光开屏仪式，深邃开屏与应用内抽屉设置关于弹窗（`AppSettingsBottomSheet.kt`）的 40dp Logo 达成全套一致视觉体验。
+- **构建与模拟器真机验证**：
+  - 运行 `testDebugUnitTest` 54 个单元测试全数通过。
+  - `assembleDebug` 成功打包生成最新 Debug APK。
+  - 推送安装至 `emulator-5554` 模拟器，在 All Apps 抽屉中验证深色圆形发光晶核桌面图标，启动应用无闪退，开屏转场流畅，主界面运行平稳。
+
 ### 2026-10-17 反重力参考图与抽象渐变图标重做
 
 - 用户明确否定前两套图标，提供反重力图标截图，要求学习其产品视觉，不必强行体现 G、Go 等文字。当前设计约束是简洁有机轮廓、连续柔和渐变、蓝色主体与少量暖色、悬浮与留白；不能继续按字母拼接或四色积木方案推进。

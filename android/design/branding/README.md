@@ -1,10 +1,12 @@
-# Multigravity 品牌图标与开屏
+# GraviGo 品牌图标与开屏（方案 1：悬浮伴生晶核）
 
-2026-10-15，按用户要求通过内置 imagegen 实际生成。App 名称仍为 Multigravity，未改包名、配对信息或上游归属。
+2026-10-17，用户明确选定候选方案 1「悬浮伴生晶核（Levitating Orbit Core）」作为 GraviGo 正式 App 图标。寓意为：让反重力 AI 随时在身边伴生，深邃深空底座上的自发光悬浮晶核与倾斜流光星轨。
 
-最终源图：`android/app/src/main/res/drawable-nodpi/multigravity_mark.png`，1254 × 1254、RGBA 真透明背景。原图直接复制到项目，没有用 CSS / SVG 代替生成资产，也没有重绘图标。色彩与现有青蓝紫回复动效呼应。
+最终源图：`android/app/src/main/res/drawable-nodpi/multigravity_mark.png`，1254 × 1254、RGBA 纯净透明通道。
+背景色：`#FF0F1118`（`ic_launcher_background` 与 `brand_splash_background`）。
+全套 Legacy Mipmap：覆盖 mdpi / hdpi / xhdpi / xxhdpi / xxxhdpi 全套方图、圆图与前景图。
+开屏主题：启动主题 `Theme.Antigravity.Starting` 使用深色沉浸底座 `#FF0F1118`，深色状态栏与导航栏配合 760ms 浮起、缩放与青蓝流光扫光开屏仪式。
 
-Android 26+ 的普通与圆形自适应图标共用这张图，通过资源 inset 保留安全区；Android 13+ 提供同一轮廓的 monochrome 层。系统启动图标也使用该源图。历史密度目录的旧 PNG 未删除，但受支持系统实际使用 anydpi 自适应图标资源。
 
 ## 开屏节奏
 
