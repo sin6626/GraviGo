@@ -62,6 +62,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -246,7 +247,7 @@ internal fun LinkedFilePreview(
                             color = Ink,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 15.sp,
-                            maxLines = 1,
+                            maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                         )
                         Text(
@@ -259,24 +260,22 @@ internal fun LinkedFilePreview(
                     Spacer(Modifier.width(6.dp))
                     if (kind != FilePreviewKind.IMAGE && kind != FilePreviewKind.UNSUPPORTED) {
                         file?.let {
+                            FileWrapToggle(wrapLines) { wrapLines = it }
                             Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
                                 CopyTextButton(it.content, "复制文件原文")
                             }
                         }
                     }
                     Box(
-                        Modifier.size(48.dp).background(Color(0xFFF1F3F5), CircleShape)
+                        Modifier.size(48.dp)
                             .semantics { contentDescription = "关闭文件预览" }
                             .quietClickable(CircleShape, onClick = onDismiss),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(Icons.Filled.Close, contentDescription = null, tint = Ink, modifier = Modifier.size(18.dp))
+                        Box(Modifier.size(32.dp).background(Color(0xFFF1F3F5), CircleShape), contentAlignment = Alignment.Center) {
+                            Icon(Icons.Filled.Close, contentDescription = null, tint = Ink, modifier = Modifier.size(18.dp))
+                        }
                     }
-                }
-            }
-            if (file != null && error == null) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    FileWrapToggle(wrapLines) { wrapLines = it }
                 }
             }
             if (isPlanReview) {
@@ -362,15 +361,11 @@ internal fun LinkedFilePreview(
 @Composable
 internal fun FileWrapToggle(wrapLines: Boolean, onChange: (Boolean) -> Unit) {
     val tint by animateColorAsState(if (wrapLines) AccentBlue else SecondaryInk, tween(160), label = "file-wrap")
-    Row(Modifier.heightIn(min = 48.dp)
-        .background(if (wrapLines) AccentBlue.copy(alpha = .08f) else Color(0xFFF4F5F7), RoundedCornerShape(12.dp))
+    Box(Modifier.size(48.dp).clip(CircleShape)
         .toggleable(value = wrapLines, role = Role.Switch, onValueChange = onChange)
-        .semantics { contentDescription = "自动换行"; stateDescription = if (wrapLines) "已开启" else "已关闭，可横向滚动" }
-        .padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Icon(Icons.AutoMirrored.Outlined.WrapText, contentDescription = null, tint = tint, modifier = Modifier.size(18.dp))
-        Text("自动换行", color = tint, fontSize = 13.sp, fontWeight = FontWeight.Medium)
-        Text(if (wrapLines) "开" else "关", color = tint, fontSize = 12.sp)
+        .semantics { contentDescription = "自动换行"; stateDescription = if (wrapLines) "已开启" else "已关闭，可横向滚动" },
+        contentAlignment = Alignment.Center) {
+        Icon(Icons.AutoMirrored.Outlined.WrapText, contentDescription = null, tint = tint, modifier = Modifier.size(20.dp))
     }
 }
 

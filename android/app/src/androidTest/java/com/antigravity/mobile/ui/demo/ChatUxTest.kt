@@ -1976,6 +1976,15 @@ class ChatUxTest {
                 compose.onNodeWithContentDescription("重试读取文件").performClick()
                 compose.waitUntil(10_000) { compose.onAllNodesWithContentDescription("自动换行").fetchSemanticsNodes().isNotEmpty() }
                 compose.onNodeWithContentDescription("自动换行").assertIsOn()
+                compose.onNodeWithText("自动换行").assertDoesNotExist()
+                compose.onNodeWithText("开").assertDoesNotExist()
+                val wrapBounds = compose.onNodeWithContentDescription("自动换行").fetchSemanticsNode().boundsInRoot
+                val copyBounds = compose.onNodeWithContentDescription("复制文件原文").fetchSemanticsNode().boundsInRoot
+                val closeBounds = compose.onNodeWithContentDescription("关闭文件预览").fetchSemanticsNode().boundsInRoot
+                assertEquals(wrapBounds.center.y, copyBounds.center.y, 1f)
+                assertEquals(wrapBounds.center.y, closeBounds.center.y, 1f)
+                assertTrue(wrapBounds.right <= copyBounds.left && copyBounds.right <= closeBounds.left)
+                compose.onNodeWithContentDescription("自动换行").assertWidthIsEqualTo(androidx.compose.ui.unit.Dp(48f))
                 saveScreenshot("file-preview-wrapped.png")
                 compose.onNodeWithContentDescription("自动换行").performClick()
                 compose.onNodeWithContentDescription("自动换行").assertIsOff()
