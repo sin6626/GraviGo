@@ -49,6 +49,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Settings
 import com.antigravity.mobile.data.model.ConversationItem
 import com.antigravity.mobile.data.model.ProjectItem
 
@@ -74,6 +75,7 @@ internal fun DemoDrawer(
     creationUnavailableReason: String? = null,
     onRetryModels: (() -> Unit)? = null,
     onDesktopStatus: () -> Unit = {},
+    onSettings: () -> Unit = {},
 ) {
     var searchOpen by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
@@ -206,10 +208,12 @@ internal fun DemoDrawer(
                 Spacer(Modifier.width(10.dp))
                 Text("配对", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Medium)
             }
-            Box(Modifier.size(48.dp).semantics { contentDescription = "打开配对设置" }
-                .quietClickable(CircleShape, onClick = onPairing), contentAlignment = Alignment.Center) {
-                Box(Modifier.size(42.dp).background(Color(0xFFE8E8E8), CircleShape),
-                    contentAlignment = Alignment.Center) { Symbol("person", size = 26, color = SecondaryInk) }
+            Box(Modifier.size(48.dp).semantics { contentDescription = "应用设置" }
+                .quietClickable(CircleShape, onClick = onSettings), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(36.dp).background(Color(0xFFF2F3F5), CircleShape),
+                    contentAlignment = Alignment.Center) {
+                    Icon(Icons.Outlined.Settings, contentDescription = null, modifier = Modifier.size(22.dp), tint = SecondaryInk)
+                }
             }
         }
     }

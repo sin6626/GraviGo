@@ -172,6 +172,21 @@ fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConver
     var workModeOpen by remember { mutableStateOf(false) }
     var modelQuotaOpen by remember { mutableStateOf(false) }
     var desktopStatusOpen by remember { mutableStateOf(false) }
+    var settingsOpen by rememberSaveable { mutableStateOf(false) }
+    var settingsRequested by remember { mutableStateOf(false) }
+    LaunchedEffect(state.isPaired) {
+        if (!state.isPaired) { settingsRequested = false; settingsOpen = false }
+    }
+    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(settingsRequested) {
+        if (settingsRequested) {
+            // Bound this handoff instead of waiting for the default drawer spring's invisible tail.
+            @Suppress("DEPRECATION")
+            drawerState.animateTo(DrawerValue.Closed, tween(160, easing = FastOutSlowInEasing))
+            settingsRequested = false
+            if (state.isPaired && lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) settingsOpen = true
+        }
+    }
     val composerFocusRequester = remember { FocusRequester() }
     var focusAfterModelDone by remember { mutableIntStateOf(0) }
     LaunchedEffect(focusAfterModelDone) {
@@ -404,6 +419,13 @@ fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConver
                         drawerState.close()
                         desktopStatusOpen = true
                         viewModel.loadDesktopStatus()
+                    }
+                },
+                onSettings = {
+                    if (!settingsRequested && !settingsOpen) {
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
+                        settingsRequested = true
                     }
                 },
             )
@@ -843,6 +865,9 @@ fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConver
                 onRefresh = { viewModel.loadModelQuota(forceRefresh = true) },
             )
         }
+        if (settingsOpen && state.isPaired) {
+            AppSettingsBottomSheet(state.defaultFileWrap, viewModel::setDefaultFileWrap) { settingsOpen = false }
+        }
         if (desktopStatusOpen && state.isPaired) {
             DesktopStatusBottomSheet(
                 onDismiss = { desktopStatusOpen = false },
@@ -950,6 +975,7 @@ fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConver
     }
     BackHandler {
         when {
+            settingsRequested -> { settingsRequested = false; scope.launch { drawerState.close() } }
             keyboardVisible -> {
                 focusManager.clearFocus()
                 keyboardController?.hide()

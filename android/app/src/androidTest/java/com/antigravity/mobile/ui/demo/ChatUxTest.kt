@@ -31,6 +31,84 @@ import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.concurrent.thread
 
 class ChatUxTest {
+    @Test fun appSettingsKeepDraftAndPersistOnlyTheReadingDefault() {
+        val app = isolatedApplication()
+        FakeGateway().use { gateway ->
+            gateway.management = true
+            gateway.filePreviewName = "Example.kt"
+            gateway.filePreviewContent = "val example = \"A long line to read on a phone without changing the original file content\""
+            PreferencesManager(app).apply { gatewayBaseUrl = gateway.url; deviceToken = "settings-test" }
+            val vm = ChatViewModel(app)
+            val store = ViewModelStore().apply { put("settings", vm) }
+            val fileOpen = mutableStateOf(false)
+            try {
+                compose.setContent {
+                    if (fileOpen.value) LinkedFilePreview("file:///test/Example.kt", vm) { fileOpen.value = false }
+                    else ChatDemoScreen(vm, {})
+                }
+                compose.waitUntil(10_000) { !vm.state.value.isLoadingConversations }
+                compose.runOnIdle { vm.setDraft("设置不会打断这份草稿") }
+                compose.onNodeWithContentDescription("打开菜单").performClick()
+                saveScreenshot("settings-drawer-entry.png")
+                compose.onNodeWithContentDescription("应用设置").performClick()
+                compose.onNodeWithContentDescription("文件默认换行").assertIsOn()
+                compose.onNodeWithContentDescription("关闭应用设置").assertHeightIsAtLeast(androidx.compose.ui.unit.Dp(48f))
+                compose.onNodeWithText("本项目代码").assertIsDisplayed()
+                compose.onNodeWithText("原项目").assertIsDisplayed()
+                saveScreenshot("settings-sheet.png")
+                compose.onNodeWithContentDescription("文件默认换行").performClick().assertIsOff()
+                assertFalse(PreferencesManager(app).defaultFileWrap)
+                compose.onNodeWithContentDescription("关闭应用设置").performClick()
+                compose.waitUntil(5_000) { compose.onAllNodesWithContentDescription("关闭应用设置").fetchSemanticsNodes().isEmpty() }
+                assertEquals("设置不会打断这份草稿", vm.state.value.draft)
+                gateway.failurePath = "/"
+                compose.onNodeWithContentDescription("打开菜单").performClick()
+                compose.onNodeWithContentDescription("应用设置").performClick()
+                compose.onNodeWithContentDescription("文件默认换行").assertIsOff()
+                compose.onNodeWithContentDescription("关闭应用设置").performClick()
+                compose.waitUntil(5_000) { compose.onAllNodesWithContentDescription("关闭应用设置").fetchSemanticsNodes().isEmpty() }
+                gateway.failurePath = null
+                compose.runOnIdle { fileOpen.value = true }
+                compose.waitUntil(10_000) { compose.onAllNodesWithContentDescription("自动换行").fetchSemanticsNodes().isNotEmpty() }
+                compose.onNodeWithContentDescription("自动换行").assertIsOff().performClick().assertIsOn()
+                assertFalse("单文件切换不能改全局默认", PreferencesManager(app).defaultFileWrap)
+                compose.onNodeWithContentDescription("关闭文件预览").performClick()
+                compose.runOnIdle { fileOpen.value = true }
+                compose.waitUntil(10_000) { compose.onAllNodesWithContentDescription("自动换行").fetchSemanticsNodes().isNotEmpty() }
+                compose.onNodeWithContentDescription("自动换行").assertIsOff()
+                val restored = ChatViewModel(app)
+                store.put("settings-restored", restored)
+                assertFalse(restored.state.value.defaultFileWrap)
+                assertFalse(gateway.requests.any { it.first.contains("SendUserCascadeMessage") })
+            } finally { compose.runOnIdle { store.clear() } }
+        }
+    }
+
+    @Test fun settingsRequestCanBeCancelledDuringDrawerExit() {
+        val app = isolatedApplication()
+        FakeGateway().use { gateway ->
+            gateway.management = true
+            PreferencesManager(app).apply { gatewayBaseUrl = gateway.url; deviceToken = "settings-cancel" }
+            val vm = ChatViewModel(app)
+            val store = ViewModelStore().apply { put("settings-cancel", vm) }
+            try {
+                compose.setContent { ChatDemoScreen(vm, {}) }
+                compose.waitUntil(10_000) { !vm.state.value.isLoadingConversations }
+                compose.onNodeWithContentDescription("打开菜单").performClick()
+                compose.mainClock.autoAdvance = false
+                compose.onNodeWithContentDescription("应用设置").performClick()
+                compose.mainClock.advanceTimeBy(16)
+                InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+                compose.mainClock.advanceTimeBy(800)
+                compose.onNodeWithContentDescription("关闭应用设置").assertDoesNotExist()
+                compose.mainClock.autoAdvance = true
+                compose.onNodeWithContentDescription("打开菜单").performClick()
+                compose.onNodeWithContentDescription("应用设置").performClick()
+                compose.onNodeWithContentDescription("文件默认换行").assertIsDisplayed()
+            } finally { compose.mainClock.autoAdvance = true; compose.runOnIdle { store.clear() } }
+        }
+    }
+
     @Test fun launchDefersHistoryDrawingButKeepsSyncAndDraftIntact() {
         val app = isolatedApplication()
         FakeGateway().use { gateway ->

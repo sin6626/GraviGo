@@ -165,6 +165,10 @@ class PreferencesManager(context: Context) {
             _themeModeFlow.value = value
         }
 
+    var defaultFileWrap: Boolean
+        get() = prefs.getBoolean("default_file_wrap", true)
+        set(value) = prefs.edit().putBoolean("default_file_wrap", value).apply()
+
     var autoApprovePermissions: Boolean
         get() = prefs.getBoolean(KEY_AUTO_APPROVE, false)
         set(value) = prefs.edit().putBoolean(KEY_AUTO_APPROVE, value).apply()

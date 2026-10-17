@@ -65,6 +65,7 @@ import java.security.MessageDigest
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 data class ChatUiState(
+    val defaultFileWrap: Boolean = true,
     val isPaired: Boolean = false,
     val isPairing: Boolean = false,
     val pairSuccessCount: Int = 0,
@@ -311,8 +312,14 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     private var voiceOriginalDraft = ""
     private var voiceGeneration = 0L
     private val subagentTrail = mutableListOf<SubagentItem>()
-    private val _state = MutableStateFlow(ChatUiState(isPaired = prefs.isPaired(), draft = prefs.getDraftText(draftKey)))
+    private val _state = MutableStateFlow(ChatUiState(isPaired = prefs.isPaired(), draft = prefs.getDraftText(draftKey),
+        defaultFileWrap = prefs.defaultFileWrap))
     val state: StateFlow<ChatUiState> = _state.asStateFlow()
+
+    fun setDefaultFileWrap(enabled: Boolean) {
+        prefs.defaultFileWrap = enabled
+        _state.value = _state.value.copy(defaultFileWrap = enabled)
+    }
     val mediaImageLoader: ImageLoader get() = api.mediaImageLoader
     fun mediaImageRequest(raw: String): ImageRequest = api.mediaImageRequest(raw)
     fun linkedImageRequest(raw: String): ImageRequest = api.mediaImageRequest(raw, _state.value.selectedConversationId)

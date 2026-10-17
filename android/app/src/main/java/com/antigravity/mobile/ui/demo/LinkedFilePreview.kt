@@ -208,7 +208,7 @@ internal fun LinkedFilePreview(
     var file by remember(uri) { mutableStateOf<FileContentResponse?>(null) }
     var error by remember(uri) { mutableStateOf<String?>(null) }
     var attempt by remember(uri) { mutableStateOf(0) }
-    var wrapLines by rememberSaveable(uri) { mutableStateOf(true) }
+    var wrapLines by rememberSaveable(uri) { mutableStateOf(state.defaultFileWrap) }
     LaunchedEffect(uri, attempt) {
         if (kind != FilePreviewKind.IMAGE && kind != FilePreviewKind.UNSUPPORTED) {
             error = null
