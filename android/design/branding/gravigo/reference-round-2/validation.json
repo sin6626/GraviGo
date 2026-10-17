@@ -1,0 +1,67 @@
+{
+  "checked": "2026-10-17",
+  "pngs": [
+    {
+      "id": "gg2-a",
+      "file": "A-weightless-arc.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 990414,
+      "sha256": "8ef16499a0a604acae58c6a63d50f6968c1224f8ec41cf81ef616f2ecdd794fb"
+    },
+    {
+      "id": "gg2-b",
+      "file": "B-floating-wave.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 969485,
+      "sha256": "befa7b00979fe6a81dd5ce8cfb91a8772014640cf40aedc188f66a77ebd8b2f2"
+    },
+    {
+      "id": "gg2-c",
+      "file": "C-cloud-ridge.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 996077,
+      "sha256": "63431c96ed81a63cad8ec03922e55c21d1a17e527fe1ca9b590eb6aa4427eed3"
+    },
+    {
+      "id": "gg2-d",
+      "file": "D-airborne-gesture.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 970021,
+      "sha256": "a59167838573ea4ecd1ca94702df81ec0c385c4b30592def8dc15c712f706acc"
+    },
+    {
+      "id": "gg2-e",
+      "file": "E-rising-ripple.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 980451,
+      "sha256": "20d98a238cce93de5338dc217506527f1dd0822570cc557d07474dd131070ed9"
+    },
+    {
+      "id": "gg2-f",
+      "file": "F-converging-flow.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1007877,
+      "sha256": "42e50c207fe6184cf7607c255f0b4573222c52df305b593b7e92e6c8ddf38e38"
+    }
+  ],
+  "reference_sha256": "b4d59ff4141c64de5adcd51e63175459484f6b021fc995e5f0664f242e4f6bb6",
+  "gallery_links": "all six original assets present in both pages"
+}

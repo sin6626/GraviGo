@@ -1,5 +1,7 @@
 # GraviGo 图标候选
 
+本轮方案已被用户否定，作为历史保留。用户提供了反重力图标作为新的风格参考，当前候选见 `../reference-round-2/README.md`，后续不要沿用本轮的字母和四色拼块方向。
+
 2026-10-17，用户将品牌名从 GraviWing 改为 GraviGo，并要求按 Google 产品风格重新生成整套图标。本目录为当前候选；GraviWing 旧候选作为历史方案保留，不再代表当前命名方向。
 
 共 6 张独立生成的 1254×1254 PNG，使用内置 imagegen，未经程序绘图或图片编辑替代。方向为白底、友好圆角几何和蓝绿黄红配色，参考 [Google 视觉语言说明](https://design.google/library/evolving-google-identity)，采用新构形，没有直接复用官方产品标志。

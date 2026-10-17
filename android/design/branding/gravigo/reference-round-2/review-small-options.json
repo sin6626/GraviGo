@@ -1,0 +1,8 @@
+{
+  "preset": "image-wall",
+  "title": "GraviGo 小尺寸检查",
+  "showCaptions": false,
+  "showControls": false,
+  "minTileWidth": 32,
+  "output": "review-small.html"
+}

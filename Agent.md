@@ -5,7 +5,15 @@
 - **定位**：Google Antigravity AI Agent 移动端与全栈端到端协同系统（Android / iOS / Web / Go 本地网关）。
 - **当前重点任务**：Android 客户端前端 UI 二改与视觉/体验升级重构。
 
-### 2026-10-17 名称改为 GraviGo 与 Google 风格图标候选
+### 2026-10-17 反重力参考图与抽象渐变图标重做
+
+- 用户明确否定前两套图标，提供反重力图标截图，要求学习其产品视觉，不必强行体现 G、Go 等文字。当前设计约束是简洁有机轮廓、连续柔和渐变、蓝色主体与少量暖色、悬浮与留白；不能继续按字母拼接或四色积木方案推进。
+- 已将用户参考保存在 `android/design/branding/gravigo/reference-round-2/style-reference.png`，六次内置 imagegen 均实际使用该图作为风格参考，生成全新抽象符号。目录含 A 悬弧、B 浮波、C 云脊、D 轻跃、E 涟升、F 合流六张 1254×1254 原图、完整提示词、验证记录和插件渲染的大小对比页；原图没有程序绘制或编辑。
+- 六张原图已逐张目视检查并解码验证；A/C 同属与参考接近的拱形家族，B/D/E/F 探索不同轮廓，不夸大为六种完全独立身份。无头 Chrome 实际呈现缩小版并检查六款均可见，截图 `.verification/2026-10-17-icon-reference/small-icons-all.png`；浏览器独立进程已退出，没有保留后台检查服务。
+- 沿用 Creative Production 看板 `b5533367-ebda-4962-b4c7-1536a5101a00`，新增 `gg2-a`～`gg2-f`，最终 revision 26。上一轮 GraviGo 候选说明已标记被否定，保留原图供历史追溯，没有批量删除。
+- 当前仍待用户评审。候选带白背景，正式采用后还需透明前景、安全区、monochrome、Android 蒙版和开屏适配；本轮没有修改 App 代码、替换图标、构建安装、动账号或发送消息，仓库/包名/签名迁移仍未执行。
+
+### 2026-10-17 名称改为 GraviGo 与 Google 风格图标候选（图标方向已被否定）
 
 - 用户最新决定以 GraviGo 取代 GraviWing，并要求整套图标改为 Google 风格。本轮采用白底、友好圆角几何与蓝绿黄红配色，内置 imagegen 分别生成 A 启程 G、B 反重力门、C 双端接续、D 向前跃迁、E 浮空核心、F 随行阶梯；均为 1254×1254 PNG，保存在 `android/design/branding/gravigo/candidates/`，含完整提示词、校验记录和静态对比页。
 - 同一 Creative Production 看板保留上一套历史候选并新增 `gg-a`～`gg-f`，最终 revision 18。已逐张目视检查、解码验证六张不同 PNG 与原图链接。候选有白背景及轻微色面明度变化，仍需后续透明前景、安全区、monochrome 与实际 Android 蒙版/开屏适配；没有替换现有应用图标。

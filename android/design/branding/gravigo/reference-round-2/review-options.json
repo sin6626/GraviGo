@@ -1,0 +1,8 @@
+{
+  "preset": "selector-board",
+  "title": "GraviGo · 参考反重力的流动渐变图标",
+  "showCaptions": true,
+  "showControls": true,
+  "minTileWidth": 260,
+  "output": "review-board.html"
+}
