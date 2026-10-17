@@ -116,6 +116,7 @@ import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.text.KeyboardOptions
 import com.antigravity.mobile.R
+import androidx.compose.ui.res.stringResource
 
 @Composable
 internal fun GradientTopBar(height: Dp, content: @Composable () -> Unit) {
@@ -541,7 +542,8 @@ internal fun Composer(
                     ComposerPlusMenu(plusMenuOpen, { plusMenuOpen = false }, onTakePhoto, onPickImage, onPickFile)
                 }
                 ComposerTextField(draft, onDraftChange, onSend, canSend && !voiceActive,
-                    if (activeConversation) "回复 Multigravity" else "询问 Multigravity",
+                    stringResource(if (activeConversation) R.string.chat_reply_placeholder else R.string.chat_placeholder,
+                        stringResource(R.string.app_name)),
                     Modifier.animateBounds(this@LookaheadScope, boundsTransform = { _, _ -> tween(220) })
                         .padding(vertical = 12.dp)
                         .then(inputFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier)

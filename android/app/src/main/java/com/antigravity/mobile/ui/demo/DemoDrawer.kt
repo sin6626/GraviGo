@@ -52,6 +52,8 @@ import androidx.compose.material.icons.filled.Close
 import com.antigravity.mobile.data.model.AccountProfile
 import com.antigravity.mobile.data.model.ConversationItem
 import com.antigravity.mobile.data.model.ProjectItem
+import androidx.compose.ui.res.stringResource
+import com.antigravity.mobile.R
 
 @Composable
 internal fun DemoDrawer(
@@ -165,7 +167,7 @@ internal fun DemoDrawer(
                         modifier = Modifier.fillMaxWidth().padding(top = 33.dp, bottom = 22.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("Multigravity", modifier = Modifier.weight(1f), color = Ink, fontSize = 27.sp,
+                        Text(stringResource(R.string.app_name), modifier = Modifier.weight(1f), color = Ink, fontSize = 27.sp,
                             fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         RoundIconButton("search", "搜索", { searchOpen = !searchOpen })
                     }

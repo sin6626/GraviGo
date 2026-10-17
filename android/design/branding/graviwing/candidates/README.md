@@ -1,5 +1,7 @@
 # GraviWing 图标候选
 
+本目录已成为历史方案。用户随后确定新名称 GraviGo，当前候选见 `../../gravigo/candidates/README.md`；本轮原图保留，不再作为当前品牌方向。
+
 2026-10-17，用户确定品牌名为 GraviWing，要求生成多款贴合 Google Antigravity 移动伴侣用途的新图标，供挑选。
 
 共 6 款独立生成的 1254×1254 PNG，使用内置 imagegen，经目视检查后保留原图，没有用 SVG、CSS 或程序绘图代替图像生成。完整提示词在 `prompts.json`，对比页为 `review-board.html`。Creative Production 看板 ID：`b5533367-ebda-4962-b4c7-1536a5101a00`。

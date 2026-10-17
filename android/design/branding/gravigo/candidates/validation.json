@@ -1,0 +1,66 @@
+{
+  "checked": "2026-10-17",
+  "pngs": [
+    {
+      "id": "gg-a",
+      "file": "A-go-monogram.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1025135,
+      "sha256": "acb3bf667f087922cbcc8de182baac70e9803398a3e3550ad55eb5047b7f8743"
+    },
+    {
+      "id": "gg-b",
+      "file": "B-antigravity-gate.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1027479,
+      "sha256": "1886e4367f44ffc1422654410e731a240b0bdd94f89110fa99663331afb7b019"
+    },
+    {
+      "id": "gg-c",
+      "file": "C-device-handoff.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 984262,
+      "sha256": "daaccb972ab1bffb9210c6870e3c3c11f7a5e1599a4d64d951b97772c9bafb7d"
+    },
+    {
+      "id": "gg-d",
+      "file": "D-go-forward.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1072805,
+      "sha256": "1d1086b2309e65e8c052b03b433996e9cbf81b5a31a13652afcb841dfebfa427"
+    },
+    {
+      "id": "gg-e",
+      "file": "E-floating-core.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1052269,
+      "sha256": "3a7340d758dad5241e1d7bd7b874b109314df03c828c46469d2a660ebff4e7f7"
+    },
+    {
+      "id": "gg-f",
+      "file": "F-rising-steps.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 960844,
+      "sha256": "c839b5466fbaa23abe440df894c1442235fd2c2bf8d8160711ecc7656b95cc40"
+    }
+  ],
+  "gallery_image_links": "all six original assets present"
+}

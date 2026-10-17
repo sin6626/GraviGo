@@ -2317,14 +2317,14 @@ class ChatUxTest {
                 saveScreenshot("polish-conversation-menu.png")
                 compose.onNodeWithText("置顶").performClick()
                 compose.runOnIdle { drawerOnly.value = true }
-                val title = compose.onNodeWithText("Multigravity").fetchSemanticsNode().boundsInRoot
+                val title = compose.onNodeWithText("GraviGo").fetchSemanticsNode().boundsInRoot
                 compose.onNode(hasScrollAction()).performTouchInput { swipeUp() }
-                assertEquals(title, compose.onNodeWithText("Multigravity").fetchSemanticsNode().boundsInRoot)
+                assertEquals(title, compose.onNodeWithText("GraviGo").fetchSemanticsNode().boundsInRoot)
                 saveScreenshot("gradient-drawer.png")
                 compose.onNodeWithContentDescription("搜索").performClick()
                 compose.onNode(hasSetTextAction()).performTextInput("历史会话 2")
                 compose.onNodeWithContentDescription("清除搜索").assertIsDisplayed().performClick()
-                assertEquals(title, compose.onNodeWithText("Multigravity").fetchSemanticsNode().boundsInRoot)
+                assertEquals(title, compose.onNodeWithText("GraviGo").fetchSemanticsNode().boundsInRoot)
                 compose.runOnIdle { drawerOnly.value = false; vm.newConversation() }
                 fun shadowDarkness(): Int {
                     compose.waitForIdle()
@@ -2360,8 +2360,8 @@ class ChatUxTest {
                     val laterShadow = shadowDarkness()
                     assertTrue("Shadow must keep fading with the composer: $earlyShadow -> $laterShadow",
                         laterShadow in 1 until earlyShadow)
-                    assertTrue("Composer must shrink during the actual home drag",
-                        compose.onNode(hasSetTextAction()).fetchSemanticsNode().boundsInRoot.width < restingWidth * .9f)
+                    assertEquals("Page drag must keep the composer at full width", restingWidth,
+                        compose.onNode(hasSetTextAction()).fetchSemanticsNode().boundsInRoot.width, 1f)
                     saveScreenshot("composer-home-morphing.png")
                     compose.onRoot().performTouchInput {
                         moveTo(androidx.compose.ui.geometry.Offset(width * .7f, height * .35f), 150)

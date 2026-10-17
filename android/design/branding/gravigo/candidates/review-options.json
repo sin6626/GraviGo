@@ -1,0 +1,8 @@
+{
+  "preset": "selector-board",
+  "title": "GraviGo · Google 风格图标候选",
+  "showCaptions": true,
+  "showControls": true,
+  "minTileWidth": 260,
+  "output": "review-board.html"
+}

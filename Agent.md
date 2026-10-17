@@ -1,11 +1,20 @@
-# GraviWing 项目开发与维护文档
+# GraviGo 项目开发与维护文档
 
 ## 1. 项目概览
-- **已确定品牌名称**：GraviWing。当前安装名仍为 Multigravity，现有仓库/包名尚待统一迁移，不能视为已完成更名。
+- **已确定品牌名称**：GraviGo，取代此前 GraviWing 方案。应用显示名称已同步更新；现有仓库、包名与签名迁移仍待后续统一处理，不能视为全部完成更名。
 - **定位**：Google Antigravity AI Agent 移动端与全栈端到端协同系统（Android / iOS / Web / Go 本地网关）。
 - **当前重点任务**：Android 客户端前端 UI 二改与视觉/体验升级重构。
 
-### 2026-10-17 GraviWing 名称确定与图标候选
+### 2026-10-17 名称改为 GraviGo 与 Google 风格图标候选
+
+- 用户最新决定以 GraviGo 取代 GraviWing，并要求整套图标改为 Google 风格。本轮采用白底、友好圆角几何与蓝绿黄红配色，内置 imagegen 分别生成 A 启程 G、B 反重力门、C 双端接续、D 向前跃迁、E 浮空核心、F 随行阶梯；均为 1254×1254 PNG，保存在 `android/design/branding/gravigo/candidates/`，含完整提示词、校验记录和静态对比页。
+- 同一 Creative Production 看板保留上一套历史候选并新增 `gg-a`～`gg-f`，最终 revision 18。已逐张目视检查、解码验证六张不同 PNG 与原图链接。候选有白背景及轻微色面明度变化，仍需后续透明前景、安全区、monochrome 与实际 Android 蒙版/开屏适配；没有替换现有应用图标。
+- 应用安装标签、抽屉标题、账号设置内应用名、首页及会话输入提示已同步 GraviGo。Compose 入口统一读取已有 `app_name` 资源，避免今后再次改名时遗漏硬编码。沿用现有 applicationId、配对、偏好及签名，没有改用户数据、网关或发送真实消息。
+- Debug/AndroidTest 构建通过。首轮相关仪器回归发现历史用例仍断言分页拖动压窄输入框，与 10 月 16 日已经实施的全宽修复冲突；将断言改为拖动保持原宽后，标题/滚动/分页阴影和设置持久化共 2 项复跑通过，15.011 秒，未改动分页实现。
+- 已保数据安装模拟器，aapt 核验安装标签为 GraviGo，并用新鲜 UI 层级与实际截图确认抽屉、会话输入提示及账号面板里的新名称，真实昵称仍在。证据 `.verification/2026-10-17-gravigo/`；最终 APK SHA256 `C250F6A9A95AE6AFA7DA690F45AC92E76827FACAF11EFE36AF89AA9B39FC3F08`。
+- 当前等待用户选新图标。仓库、applicationId/namespace、深链接与正式签名的统一迁移尚未执行；未推送，真机未验。旧 GraviWing 候选已标记历史并保留，没有批量删除。
+
+### 2026-10-17 GraviWing 名称确定与图标候选（历史，已被 GraviGo 取代）
 
 - 用户明确选定品牌名 GraviWing，要求多做图标供选择，不喜欢此前克莱因瓶/闭环丝带的感觉。当前产品专注 Google Antigravity 的移动伴侣用途。
 - 已用内置 imagegen 生成 6 张独立候选原图，1254×1254，分别为 A 翼尖、B 悬浮翼、C G 翼、D 双端翼、E 折翼、F 轨迹翼。全部保存到 `android/design/branding/graviwing/candidates/`，含原始提示词、清单、说明和插件渲染的静态对比页；Creative Production 同一看板 `b5533367-ebda-4962-b4c7-1536a5101a00` 已收录 6 项，最终 revision 9。

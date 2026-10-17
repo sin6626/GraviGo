@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -118,7 +119,7 @@ internal fun AppSettingsBottomSheet(defaultFileWrap: Boolean, onDefaultFileWrap:
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Image(painterResource(R.drawable.multigravity_mark), contentDescription = null, modifier = Modifier.size(40.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                    Text("Multigravity", color = Ink, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.app_name), color = Ink, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                     Text(version?.let { "版本 $it" } ?: "版本信息暂不可用", color = SecondaryInk, fontSize = 12.sp)
                 }
             }
