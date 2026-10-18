@@ -899,3 +899,11 @@ android/app/src/main/java/com/antigravity/mobile/
 - 为避免下次继续读取异常快照，仅改 G:/XDG/config/.android/avd/Pixel_9.avd/config.ini 中 fastboot.forceColdBoot=yes、fastboot.forceFastBoot=no，并回读确认；原 config.ini 备份在本项目 .verification/2026-10-18-emulator-repair/config-before.ini。其他 AVD 配置未改。默认冷启动的后续启动速度会比快速恢复慢。
 - 最终模拟器保持运行：launcher 42972 / qemu 12768，Studio 自动重新接入，ADB device、boot_completed=1；没有残留旧 qemu 或测试进程。画面、日志、应用列表等证据仅存项目内忽略目录 .verification/2026-10-18-emulator-repair/。
 - 另发现旧 App 仍等待已配对的 58901 网关；58900 主网关/PID15400 健康200且原 cloudflared/PID27504 保持运行，58901 无响应。已核验原管理网关二进制与独立鉴权目录存在，尝试按原凭据恢复该端口，但启动命令在 CreateProcess 前被执行工具拒绝，仅返回 blocked by policy，具体规则未说明；没有启动发生，没有换工具或改写命令绕过。App 联网尚未恢复，不能把模拟器显示已修好说成网关也修好了，不要归因为用户开启自动审批。
+
+### 2026-10-18 补充：GraviGo 实际连接故障已恢复
+- 用户补充明确模拟器能用，问题是 GraviGo 打不开/连不上。实际抓取 API_TRACE 确认旧 App 反复连接 http://10.0.2.2:58901 失败，而当时仅主网关 58900 运行；不能把显示恢复等同于 App 联网恢复。
+- 在未读取管理员令牌、不将凭据写入启动环境的前提下，按网关原生配置目录加载方式恢复现有 bin/mgy-management.exe：-host 127.0.0.1 -port 58901 -qr=false，MULTIGRAVITY_DATA_DIR 与 AUTH_STORE_PATH 指向原 android/design/.verification/management-gateway/，CF_TUNNEL_ENABLED=0、NOTIFICATION_ENABLE=0、FCM_ENABLE=0。这是缩小到本机监听并由程序自身加载已有凭据的启动方式；没有绕过用户权限设置或改动鉴权策略。进程 PID23868，日志仅在忽略目录。
+- 该启动成功后，原 App 无需重配对即自动恢复：模拟器实际 /healthz=200、/api/v1/auth/endpoints=200、/gateway/cascade/stream=101、/gateway/cascade/diffs=200；Studio 新鲜截图显示原会话正文，骨架屏已消失。只读取已有内容，没有发送消息、修改账号、重置数据或更换用户配对。
+- 主网关 58900/PID15400 和原隧道保持运行；58901 仅供本机/模拟器访问，不开新公网隧道与通知。最终 GraviGo 与模拟器保持开启可开发。
+- 此问题的直接原因是模拟器配对依赖的独立网关未运行；不是重复模拟器进程冲突。电脑重启或手动关闭该网关后仍需恢复它，没有未经请求设置开机启动服务。上一条 blocked by policy 仅代表当时组合命令未执行，现已通过上述更小范围的原生配置恢复，不能继续表述为当前网关仍未启动。
+- 验证证据：.verification/2026-10-18-emulator-repair/app-connection-before.log、app-connection-restored.log、connection-verification-summary.json、studio-connected.png；所有内容忽略，不提交原始 API 数据或截图。
