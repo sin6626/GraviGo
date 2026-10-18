@@ -877,3 +877,9 @@ android/app/src/main/java/com/antigravity/mobile/
 - API37 模拟器 LanguageSwitchTest 与 AppSettingsLayoutTest 两项通过，实际点击中文入口读回完整中文配对页。旧安装和已有配对数据未动，验证只对新 .debug 包。
 - Lint 32.3.1 的 BidirectionalTextDetector 连续多次卡在 KotlinUFile.allCommentsInFile（采样栈在 .verification）；单独排除实际 issue ID BidiSpoofing 后 70 秒完成并报告两项既有错误。现仅用源码字符扫描替代此项，Gradle lintAnalyze* 强制依赖 checkBidiControls，禁止 Java/Kotlin 真实与转义的双向控制字符；其余 lint errors 保持阻断。
 - 已修录音入口 MissingPermission（在实际调用边界再次检查权限），启动主题 API27 导航栏属性移到 values-v27，Mermaid List.removeFirst 已改 removeAt(0)。最终全量 Android 和 Go 复核中，修复提交尚待推送和新 CI 验证。
+
+### 2026-10-18 最终本机验收与云端复核
+- 完整 Android `testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest` 已通过（2m18s）；22 个 suite / 74 个单测，0 failures / errors；App lint 0 errors，仍有既有 warnings。最终 API37 模拟器 LanguageSwitchTest、AppSettingsLayoutTest、BrandSplashTest 合计 4 项通过。
+- 最终本机 Go 全量通过；CI 第二轮 Linux Go 已成功，Android 仍首次冷构建。Windows 第二轮仅新增别名回归失败：测试未实际创建 allowed.txt，使 Windows 8.3 短路径无法对不存在的候选进行 EvalSymlinks；补建真实文件，并同时验证真实路径与 alias 路径，两种入口均须允许，兄弟目录仍拒绝。
+- GitHub `release` 环境已通过已说明的 gh 后备接口创建，branch policy 仅 `main`，没有上传密钥/密码，也没有触发 draft/public Release。当前仍需最终云端成功并设置 main 必需检查。
+- 已推送 `ebb7f3d` 和 `ffd361b`，源提交和全部先前本地历史保留；About / topics 已用插件读回核实。所有验证产物仅在项目内忽略目录，未提交本机缓存、配对凭据或 APK。

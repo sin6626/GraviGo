@@ -339,6 +339,10 @@ func TestAllowedWorkspaceRootResolvesSymlinks(t *testing.T) {
 	if err := os.Mkdir(workspace, 0700); err != nil {
 		t.Fatal(err)
 	}
+	allowedFile := filepath.Join(workspace, "allowed.txt")
+	if err := os.WriteFile(allowedFile, []byte("allowed"), 0600); err != nil {
+		t.Fatal(err)
+	}
 	alias := filepath.Join(parent, "alias")
 	if err := os.Symlink(workspace, alias); err != nil {
 		t.Skipf("symlinks unavailable: %v", err)
@@ -346,7 +350,7 @@ func TestAllowedWorkspaceRootResolvesSymlinks(t *testing.T) {
 	t.Setenv("MULTIGRAVITY_ALLOWED_WORKSPACE_ROOTS", alias)
 	resetWorkspaceRootsForTest()
 	t.Cleanup(resetWorkspaceRootsForTest)
-	if !IsSafeFilePath(filepath.Join(workspace, "allowed.txt")) {
+	if !IsSafeFilePath(allowedFile) || !IsSafeFilePath(filepath.Join(alias, "allowed.txt")) {
 		t.Fatal("canonical path of an explicitly allowed root was rejected")
 	}
 	if IsSafeFilePath(filepath.Join(parent, "outside.txt")) {
