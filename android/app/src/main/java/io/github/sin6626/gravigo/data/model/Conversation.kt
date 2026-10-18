@@ -1,0 +1,260 @@
+package io.github.sin6626.gravigo.data.model
+
+import io.github.sin6626.gravigo.i18n.appString
+import io.github.sin6626.gravigo.R
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.util.*
+
+@Serializable
+data class WorkspaceItem(
+    @SerialName("workspaceFolderAbsoluteUri") val workspaceFolderAbsoluteUri: String? = null
+)
+
+@Serializable
+data class Annotations(
+    val title: String? = null,
+    val lastUserViewTime: String? = null,
+    val markedAsUnread: Boolean? = null,
+    val archived: Boolean? = null,
+    val pinned: Boolean? = null
+)
+
+@Serializable
+data class TrajectoryMetadata(
+    val workspaceUris: List<String>? = null,
+    val projectId: String? = null,
+    val createdAt: String? = null,
+    val parentConversationId: String? = null,
+    val rootConversationId: String? = null,
+    val nestingDepth: Int? = null,
+    val isBattleModeFork: Boolean? = null
+)
+
+@Serializable
+data class TrajectorySummary(
+    val fullTitle: String? = null,
+    val summary: String? = null,
+    val stepCount: Int? = null,
+    val lastModifiedTime: String? = null,
+    val trajectoryId: String? = null,
+    val status: String? = null,
+    val workspaces: List<WorkspaceItem>? = null,
+    val annotations: Annotations? = null,
+    val trajectoryMetadata: TrajectoryMetadata? = null,
+    val needsInput: Boolean? = null,
+    val hasError: Boolean? = null,
+    val errorMessage: String? = null
+) {
+    val isSubagent: Boolean
+        get() {
+            val meta = trajectoryMetadata ?: return false
+            if (!meta.parentConversationId.isNullOrBlank()) return true
+            if (meta.isBattleModeFork == true) return true
+            if ((meta.nestingDepth ?: 0) > 0) return true
+            return false
+        }
+}
+
+@Serializable
+data class GetAllCascadeTrajectoriesResponse(
+    val trajectorySummaries: Map<String, TrajectorySummary>? = null
+)
+
+enum class ConversationStatus(val raw: String) {
+    RUNNING("RUNNING"),
+    ACTION("ACTION"),
+    ERROR("ERROR"),
+    IDLE("IDLE"),
+    UNKNOWN("UNKNOWN");
+
+    val isRunning: Boolean get() = this == RUNNING
+    val needsAction: Boolean get() = this == ACTION
+    val isError: Boolean get() = this == ERROR
+}
+
+@Serializable
+data class ConversationItem(
+    val id: String,
+    val title: String,
+    val status: ConversationStatus = ConversationStatus.UNKNOWN,
+    val stepCount: Int = 0,
+    val workspaceName: String = "Chat",
+    val workspaceUri: String = "",
+    val projectId: String? = null,
+    val lastModifiedTime: String? = null,
+    val isSubagent: Boolean = false,
+    val isUnread: Boolean = false,
+    val draftProject: ProjectItem? = null,
+    val isPinned: Boolean = false,
+    val isArchived: Boolean = false
+) {
+    val displayTitle: String
+        get() = if (title.isBlank() || title == "未命名会话") appString(R.string.msg_a91ae6035092) else title
+
+    val lastModifiedEpochMs: Long
+        get() = parseIsoDate(lastModifiedTime)
+
+    val relativeTimeString: String
+        get() {
+            val timeMs = lastModifiedEpochMs
+            if (timeMs <= 0L) return ""
+            val diffMs = System.currentTimeMillis() - timeMs
+            if (diffMs < 0) return appString(R.string.msg_de6785d99e02)
+            val diffSec = diffMs / 1000
+            return when {
+                diffSec < 60 -> appString(R.string.msg_de6785d99e02)
+                diffSec < 3600 -> appString(R.string.msg_2c122179c47e, diffSec / 60)
+                diffSec < 86400 -> appString(R.string.msg_4d982cd4b4f3, diffSec / 3600)
+                else -> appString(R.string.msg_6888d0662ea5, diffSec / 86400)
+            }
+        }
+
+    val isPureChat: Boolean
+        get() = draftProject?.isPureChat == true || projectId == "outside-of-project" ||
+            (workspaceUri.isBlank() && projectId.isNullOrBlank() && (workspaceName == "Chat" || workspaceName.isEmpty()))
+
+    val isDraft: Boolean
+        get() = id.startsWith("local_draft_") || id.startsWith("draft_") || draftProject != null
+
+    companion object {
+        fun sanitizeTitle(raw: String): String {
+            val stripped = raw.replace(Regex("<[^>]+>"), "").trim()
+            val firstLine = stripped.lines().firstOrNull { it.isNotBlank() }?.trim() ?: ""
+            if (firstLine.isEmpty()) return "未命名会话"
+            return if (firstLine.length > 36) firstLine.take(36) + "..." else firstLine
+        }
+
+        fun fromSummary(id: String, summary: TrajectorySummary, localViewTime: Long = 0): ConversationItem {
+            val annotationTitle = summary.fullTitle?.takeIf { it.isNotBlank() } ?: summary.annotations?.title
+            val summaryText = summary.summary
+            val resolvedTitle = when {
+                !annotationTitle.isNullOrBlank() && annotationTitle != "未命名会话" ->
+                    annotationTitle.trim()
+                !summaryText.isNullOrBlank() && summaryText != "未命名会话" ->
+                    sanitizeTitle(summaryText)
+                else -> "未命名会话"
+            }
+
+            val status = when {
+                summary.needsInput == true || summary.status?.contains("WAITING", ignoreCase = true) == true -> ConversationStatus.ACTION
+                summary.hasError == true || summary.status.equals("CASCADE_RUN_STATUS_ERROR", ignoreCase = true) || summary.status.equals("ERROR", ignoreCase = true) || summary.status.equals("CASCADE_RUN_STATUS_FAILED", ignoreCase = true) -> ConversationStatus.ERROR
+                summary.status.equals("CASCADE_RUN_STATUS_RUNNING", ignoreCase = true) || summary.status.equals("RUNNING", ignoreCase = true) -> ConversationStatus.RUNNING
+                summary.status.equals("CASCADE_RUN_STATUS_IDLE", ignoreCase = true) || summary.status.equals("IDLE", ignoreCase = true) || summary.status.equals("CASCADE_RUN_STATUS_DONE", ignoreCase = true) || summary.status.equals("CASCADE_RUN_STATUS_COMPLETED", ignoreCase = true) -> ConversationStatus.IDLE
+                else -> ConversationStatus.UNKNOWN
+            }
+
+            val stepCount = summary.stepCount ?: 0
+
+            val wsUri = summary.trajectoryMetadata?.workspaceUris?.firstOrNull()
+                ?: summary.workspaces?.firstOrNull()?.workspaceFolderAbsoluteUri
+                ?: ""
+
+            val workspaceName = if (wsUri.isNotBlank()) {
+                wsUri.trimEnd('/').substringAfterLast('/').ifBlank { "Chat" }
+            } else {
+                "Chat"
+            }
+
+            val resolvedTime = summary.lastModifiedTime?.takeIf { it.isNotBlank() }
+                ?: summary.annotations?.lastUserViewTime?.takeIf { it.isNotBlank() }
+                ?: summary.trajectoryMetadata?.createdAt?.takeIf { it.isNotBlank() }
+
+            // Unread calculation
+            var unread = false
+            if (status != ConversationStatus.RUNNING && status != ConversationStatus.ACTION && summary.annotations?.archived != true) {
+                if (summary.annotations?.markedAsUnread == true) {
+                    unread = true
+                } else if (!resolvedTime.isNullOrBlank()) {
+                    val modDate = parseIsoDate(resolvedTime)
+                    val serverViewDate = summary.annotations?.lastUserViewTime?.let { parseIsoDate(it) } ?: 0L
+                    val effectiveDate = maxOf(serverViewDate, localViewTime)
+                    unread = if (effectiveDate > 0) modDate > effectiveDate else true
+                }
+            }
+
+            return ConversationItem(
+                id = id,
+                title = resolvedTitle,
+                status = status,
+                stepCount = stepCount,
+                workspaceName = workspaceName,
+                workspaceUri = wsUri,
+                projectId = summary.trajectoryMetadata?.projectId,
+                lastModifiedTime = resolvedTime,
+                isSubagent = summary.isSubagent,
+                isUnread = unread,
+                isPinned = summary.annotations?.pinned == true,
+                isArchived = summary.annotations?.archived == true
+            )
+        }
+
+        fun parseIsoDate(isoString: String?): Long {
+            if (isoString.isNullOrBlank()) return 0L
+            val trimmed = isoString.trim()
+            val normalized = if (trimmed.contains(' ') && !trimmed.contains('T')) {
+                trimmed.replace(' ', 'T')
+            } else {
+                trimmed
+            }
+            return try {
+                Instant.parse(normalized).toEpochMilli()
+            } catch (_: Exception) {
+                try {
+                    OffsetDateTime.parse(normalized).toInstant().toEpochMilli()
+                } catch (_: Exception) {
+                    try {
+                        val clean = normalized.trimEnd('Z').substringBefore('.')
+                        val inputFmt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
+                            timeZone = TimeZone.getTimeZone("UTC")
+                        }
+                        inputFmt.parse(clean)?.time ?: 0L
+                    } catch (_: Exception) {
+                        0L
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Serializable
+data class LocalDraftSession(
+    val id: String = "local_draft_${UUID.randomUUID()}",
+    val project: ProjectItem,
+    var draftText: String = "",
+    val createdAtEpochMs: Long = System.currentTimeMillis(),
+    var updatedAtEpochMs: Long = System.currentTimeMillis()
+) {
+    fun toConversationItem(hasAttachments: Boolean = false): ConversationItem {
+        val trimmed = draftText.trim()
+        val firstLine = trimmed.lines().firstOrNull { it.isNotBlank() }?.trim() ?: ""
+        val isPure = project.isPureChat
+        val displayTitle = when {
+            firstLine.isNotEmpty() -> if (firstLine.length > 36) firstLine.take(36) + "..." else firstLine
+            hasAttachments -> if (isPure) appString(R.string.msg_355e35566aa6) else appString(R.string.msg_98eb26e27a17, project.name)
+            else -> if (isPure) appString(R.string.msg_ea4b29f58f87) else project.name
+        }
+        val nowIso = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }.format(Date(updatedAtEpochMs))
+
+        return ConversationItem(
+            id = id,
+            title = displayTitle,
+            status = ConversationStatus.IDLE,
+            stepCount = 0,
+            workspaceName = if (isPure) "Chat" else project.name,
+            workspaceUri = project.uri,
+            projectId = project.id,
+            lastModifiedTime = nowIso,
+            isSubagent = false,
+            isUnread = false,
+            draftProject = project
+        )
+    }
+}

@@ -16,6 +16,11 @@
 !/Makefile
 !/env.example
 !/.gitattributes
+!/.gitattributes
+!/README.md
+!/LICENSE
+!/THIRD_PARTY_NOTICES.md
+!/.github/
 
 # 2. Android 编译中间件与构建产物
 .gradle/
@@ -49,3 +54,11 @@ temp/
 *.tmp
 *.swp
 *.bak
+__pycache__/
+*.pyc
+*.jks
+*.keystore
+key.properties
+keystore.properties
+.ci-tmp/
+.signing/

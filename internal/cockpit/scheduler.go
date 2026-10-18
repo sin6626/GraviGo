@@ -71,7 +71,6 @@ func StartQuotaAutoRefresher(ctx context.Context, defaultInterval time.Duration,
 				return
 			}
 
-
 			activePort, portErr := ResolveActiveReportPort(cfg.ReportToken, cfg.ReportPort)
 			if portErr != nil && cfg.ReportPort > 0 {
 				activePort = cfg.ReportPort
@@ -176,4 +175,3 @@ func StartQuotaAutoRefresher(ctx context.Context, defaultInterval time.Duration,
 		}
 	}()
 }
-

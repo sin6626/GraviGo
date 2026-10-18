@@ -40,4 +40,3 @@ func TestNewLoopbackTransportRejectsNonLoopback(t *testing.T) {
 		t.Fatal("expected non-loopback dial via transport to fail")
 	}
 }
-

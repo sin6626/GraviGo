@@ -342,4 +342,3 @@ func PrintRawPairingQRCode(code string, uri string) {
 	defer consoleMu.Unlock()
 	_, _ = os.Stdout.WriteString(b.String())
 }
-

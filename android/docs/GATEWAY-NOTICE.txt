@@ -1,0 +1,17 @@
+GraviGo Gateway 1.0.0
+
+Based on GHSaiMo's antigravity-mobile:
+https://github.com/GHSaiMo/antigravity-mobile
+Copyright (c) 2026 Antigravity Mobile Contributors
+Full original MIT license: LICENSE.upstream-MIT (included in this archive).
+
+GraviGo source, dependencies and notices:
+https://github.com/sin6626/GraviGo
+See the release's recorded source commit for exact build inputs.
+GraviGo additions do not yet have a selected project-wide license.
+Review their licensing before binary distribution.
+
+Go dependencies include github.com/gorilla/websocket (BSD-2-Clause),
+github.com/skip2/go-qrcode (MIT), and github.com/pires/go-proxyproto
+(Apache-2.0). Their complete source and notices are available from the
+versions recorded in go.mod and go.sum for the release commit.

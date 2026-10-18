@@ -490,7 +490,3 @@ func TestMaxBytesMiddleware(t *testing.T) {
 		t.Errorf("expected 413 RequestEntityTooLarge for oversized payload, got %d", largeRR.Code)
 	}
 }
-
-
-
-

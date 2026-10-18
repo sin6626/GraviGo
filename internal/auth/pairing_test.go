@@ -561,4 +561,3 @@ func TestAuthHandler_HandleEndpoints_Security(t *testing.T) {
 		}
 	}
 }
-

@@ -19,7 +19,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "antigravity-mobile"
+rootProject.name = "GraviGo"
 include(":app")
 include(":mermaidkotlin")
 include(":highlight")

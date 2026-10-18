@@ -45,7 +45,7 @@ func TestProjectsEndpoint(t *testing.T) {
 func TestURIHelpers(t *testing.T) {
 	raw := "file:///Users/hal9000/Projects/test%20dir"
 	path := uriToPath(raw)
-	if path != "/Users/hal9000/Projects/test dir" {
+	if path != filepath.FromSlash("/Users/hal9000/Projects/test dir") {
 		t.Errorf("expected decoded path, got: %s", path)
 	}
 
@@ -600,7 +600,7 @@ func TestFetchProjectsFromGeminiConfig(t *testing.T) {
 			if item.Name != "DemoApp" {
 				t.Errorf("expected DemoApp, got %s", item.Name)
 			}
-			if item.Path != testProjectDir {
+			if normalizeURI(item.Path) != normalizeURI(testProjectDir) {
 				t.Errorf("expected %s, got %s", testProjectDir, item.Path)
 			}
 			break
@@ -685,7 +685,3 @@ func TestHandleCreateCascade_AutoResolveProjectID(t *testing.T) {
 		t.Errorf("expected CORTEX_TRAJECTORY_SOURCE_CASCADE_CLIENT, got: %v", lastReceivedPayload["source"])
 	}
 }
-
-
-
-

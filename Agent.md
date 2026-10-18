@@ -1,7 +1,7 @@
 # GraviGo 项目开发与维护文档
 
 ## 1. 项目概览
-- **已确定品牌名称**：GraviGo，取代此前 GraviWing 方案。应用显示名称已同步更新；现有仓库、包名与签名迁移仍待后续统一处理，不能视为全部完成更名。
+- **已确定品牌名称**：GraviGo，取代此前 GraviWing 方案。仓库为 `sin6626/GraviGo`，Android namespace / 生产包名为 `io.github.sin6626.gravigo`，Debug 包名追加 `.debug`。签名入口已独立配置，尚无正式密钥，未公开发布。
 - **定位**：Google Antigravity AI Agent 移动端与全栈端到端协同系统（Android / iOS / Web / Go 本地网关）。
 - **当前重点任务**：Android 客户端前端 UI 二改与视觉/体验升级重构。
 
@@ -859,3 +859,13 @@ android/app/src/main/java/com/antigravity/mobile/
 - Android 麦克风按钮现按需申请 `RECORD_AUDIO`，以 100 ms PCM 分块驱动真实音量波形和计时。录音区提供 48 dp 取消/停止动作、整理中状态和可恢复错误；转写文字追加到现有草稿后仍可编辑，取消、失败或切换会话会恢复录音前草稿。
 - `ApiTraceInterceptor` 对 Connect 流不再 peek 阻塞，日志仍输出接口、脱敏请求头、状态与字节数，但隐藏音频分块和上下文草稿。没有增加第三方语音 SDK，也没有把入口做成语音通话。
 - JVM 草稿合并测试、Debug/AndroidTest 构建和 API 37 仪器测试通过；隔离假网关覆盖 Connect 帧、PCM 分块、停止完成、编辑、取消保稿及网络失败。截图位于忽略目录 `android/design/.verification/feature-15/voice-input-recording.png`。真实网关协议可达，但当前桌面账号返回 `insufficient authentication scopes`，客户端已明确显示账号未开放并保留重试；本功能不改 Go 网关。
+
+### 2026-10-18 GraviGo 发布准备实施中
+- 用户已授权补齐英文 README / GitHub About、App 中英切换、CI 和签名入口并推送；没有授权公开发布 1.0.0。用户没有生产密钥，本次只配置环境变量入口。
+- GitHub 插件缺少仓库 rename / About / topics 写接口，按用户允许的后备规则使用本机 gh 完成更名 `sin6626/GraviGo`、英文简介和 topics；origin 已更新。代码推送尚未执行。
+- Android namespace 已迁到 `io.github.sin6626.gravigo`，生产 applicationId 同名，debug 为 `.debug`。旧 `com.antigravity.mobile` 的数据和配对未动，新包独立安装，需要单独配对。当前图标保持用户选定方案。
+- 662 条消息迁到 `android/localization.json`，生成英文默认 / 简体中文 Android resources；原生 API33 per-app languages 与旧系统偏好存储共用设置入口。保留协议哨兵、原始用户数据和 API_TRACE 脱敏日志，不以翻译标签驱动状态判断。
+- Wrapper 9.7.1 的脚本、JAR、官方 distributionSha256Sum 已补齐。CI / 手动 draft release 使用固定 SHA 的官方 actions，正式签名缺失时失败，不回退 debug。README / notices / release guide 已写英文。
+- AGPL 疑问已向用户解释：RikkaHub 的代码高亮模块，不是整个框架。保留模块与完整许可证，未擅自给 GraviGo 新增代码选全仓许可证；二进制公开分发仍需确认。原项目 MIT 文本已单独保留。
+- Android 新 namespace 的 Debug 与 AndroidTest Kotlin 编译通过；全模块单测 / lint 正在运行。已修 Windows 路径分隔符、规范化盘符、sqlite 换行断言。WebSocket 测试原先发 ping/echo 后立即关闭导致在途 pong 触发 TCP reset；改为持续读取至客户端结束并断言实际收到 pong，80 次聚焦循环通过。Go 全量测试和 vet 正在运行。
+- 后续：完成 lint / 仪器语言切换、签名缺失验证、独立审阅，Conventional Commits 中文说明提交并推送，核实远端 CI。不要把源代码有版本号说成已发布；不再尝试旧视频目录删除（之前工具拒绝）。

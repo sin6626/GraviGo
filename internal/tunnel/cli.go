@@ -12,7 +12,6 @@ import (
 	"antigravity-mobile/internal/config"
 )
 
-
 // RunCloudflareCmd handles the "mgy cloudflare" and "mgy cf" CLI commands and subcommands.
 func RunCloudflareCmd(args []string) {
 	if len(args) == 0 {
@@ -88,7 +87,6 @@ func runCloudflareStatusCmd() {
 
 	binPath := FindCloudflaredBinary()
 	hasBin := binPath != ""
-
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
 	fmt.Fprintln(w, "配置组件\t当前状态\t说明")

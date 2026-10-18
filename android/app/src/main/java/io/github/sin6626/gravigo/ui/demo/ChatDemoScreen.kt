@@ -1,0 +1,1005 @@
+package io.github.sin6626.gravigo.ui.demo
+
+import io.github.sin6626.gravigo.i18n.appString
+import io.github.sin6626.gravigo.R
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.Uri
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.FileProvider
+import androidx.core.content.ContextCompat
+import java.io.File
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Surface
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.window.Dialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.sin6626.gravigo.ui.chat.ChatViewModel
+import io.github.sin6626.gravigo.ui.chat.VoiceInputPhase
+import io.github.sin6626.gravigo.ui.chat.PairingScreen
+import io.github.sin6626.gravigo.ui.chat.InteractionPanel
+import io.github.sin6626.gravigo.ui.chat.PlanReviewPanel
+import io.github.sin6626.gravigo.ui.chat.QueuedMessagesPanel
+import io.github.sin6626.gravigo.ui.chat.RunningTasksPanel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlin.math.abs
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConversation: Boolean = false) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val connectionIssue = chatConnectionIssue(state)
+    val activeConversations = state.conversations.filterNot { it.isArchived || it.isSubagent }
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val density = LocalDensity.current
+    val imeInsets = WindowInsets.ime
+    val keyboardVisible by remember(density, imeInsets) {
+        derivedStateOf { imeInsets.getBottom(density) > 0 }
+    }
+    var keyboardWasVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(keyboardVisible) {
+        if (keyboardWasVisible && !keyboardVisible) focusManager.clearFocus()
+        keyboardWasVisible = keyboardVisible
+    }
+    val composerInsets = remember { MutableWindowInsets() }
+    val composerPadding = composerInsets.asPaddingValues()
+    val conversationPadding = remember(density) {
+        composerInsets.add(WindowInsets(bottom = with(density) { 23.dp.roundToPx() }))
+    }.asPaddingValues()
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    var pairingSettingsOpen by rememberSaveable { mutableStateOf(false) }
+    var pairSuccessAtOpen by rememberSaveable { mutableStateOf(0) }
+    var projectsSelected by rememberSaveable { mutableStateOf(false) }
+    val pagerState = rememberPagerState(initialPage = if (projectsSelected) 1 else 0, pageCount = { 2 })
+    val pageMotion = remember { tween<Float>(200, easing = FastOutSlowInEasing) }
+    var openedFromProject by rememberSaveable { mutableStateOf(false) }
+    var expandedProjectKeys by rememberSaveable { mutableStateOf(arrayListOf<String>()) }
+    val projectListState = rememberLazyListState()
+    var planPreviewOpen by rememberSaveable(state.selectedConversationId, state.proceedArtifactUri) { mutableStateOf(false) }
+    var diffReviewOpen by rememberSaveable(state.selectedConversationId) { mutableStateOf(false) }
+    var diffSummary by remember(state.selectedConversationId) { mutableStateOf<ConversationDiffSummary?>(null) }
+    val lastMessage = state.messages.lastOrNull()
+    LaunchedEffect(state.selectedConversationId, state.isRunning, state.isLoadingMessages, lastMessage?.id,
+        state.networkAvailable, state.messagesError, state.activeSubagent) {
+        if (!state.isRunning && !state.isLoadingMessages && state.messagesError == null && state.networkAvailable &&
+            state.activeSubagent == null && lastMessage?.isAgent == true) viewModel.loadDiffReview()
+    }
+    LaunchedEffect(state.diffReview) {
+        diffSummary = state.diffReview?.takeIf { it.cascadeId == state.selectedConversationId }?.let {
+            withContext(Dispatchers.Default) { summarizeConversationDiff(it) }
+        }
+    }
+    val planPreviewListState = rememberSaveable(
+        state.selectedConversationId,
+        state.proceedArtifactUri,
+        saver = LazyListState.Saver,
+    ) { LazyListState() }
+    var archivedOpen by rememberSaveable { mutableStateOf(false) }
+    var openedFromArchive by rememberSaveable { mutableStateOf(false) }
+    var renameConversationId by rememberSaveable { mutableStateOf<String?>(null) }
+    var deleteConversationId by rememberSaveable { mutableStateOf<String?>(null) }
+    var showDeleteConfirm by rememberSaveable { mutableStateOf(false) }
+    var showRename by rememberSaveable { mutableStateOf(false) }
+    var renameTitle by rememberSaveable { mutableStateOf("") }
+    var modelPickerOpen by remember { mutableStateOf(false) }
+    var workModeOpen by remember { mutableStateOf(false) }
+    var modelQuotaOpen by remember { mutableStateOf(false) }
+    var desktopStatusOpen by remember { mutableStateOf(false) }
+    var settingsOpen by rememberSaveable { mutableStateOf(false) }
+    var settingsRequested by remember { mutableStateOf(false) }
+    LaunchedEffect(drawerState.isOpen, state.pairSuccessCount) {
+        if (drawerState.isOpen) viewModel.refreshAccountProfile()
+    }
+    LaunchedEffect(settingsOpen) {
+        if (settingsOpen && state.accountProfile == null && state.accountProfileError == null) viewModel.refreshAccountProfile()
+    }
+    LaunchedEffect(state.isPaired) {
+        if (!state.isPaired) { settingsRequested = false; settingsOpen = false }
+    }
+    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(settingsRequested) {
+        if (settingsRequested) {
+            // Bound this handoff instead of waiting for the default drawer spring's invisible tail.
+            @Suppress("DEPRECATION")
+            drawerState.animateTo(DrawerValue.Closed, tween(160, easing = FastOutSlowInEasing))
+            settingsRequested = false
+            if (state.isPaired && lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) settingsOpen = true
+        }
+    }
+    val composerFocusRequester = remember { FocusRequester() }
+    var focusAfterModelDone by remember { mutableIntStateOf(0) }
+    LaunchedEffect(focusAfterModelDone) {
+        if (focusAfterModelDone > 0) {
+            withFrameNanos { }
+            composerFocusRequester.requestFocus()
+            keyboardController?.show()
+        }
+    }
+    val chosenModelId = state.modelOverrideId ?: if (state.selectedConversationId == null) state.selectedModelId else state.activeModelId
+    val chosenModel = state.models.firstOrNull { it.id == chosenModelId || it.model == chosenModelId }
+    val modelLabel = chosenModel?.label ?: appString(R.string.msg_1afed6a81a25)
+    val gptModelBadge = formatGptModelBadge(chosenModel)
+    val modelEnabled = !state.isSending && !state.isReverting && state.creatingProjectKey == null
+    val creationUnavailableReason = state.projectCreationUnavailableReason()
+    val retryProjectModels: (() -> Unit)? = if (modelEnabled && state.models.isEmpty() && !state.isLoadingModels)
+        viewModel::refreshModels else null
+    val snackbar = remember { SnackbarHostState() }
+    var observedProceedSuccess by remember { mutableIntStateOf(state.proceedSuccessCount) }
+    var observedPlanCommentSuccess by remember { mutableIntStateOf(state.planCommentSuccessCount) }
+    var observedDiffCommentSuccess by remember { mutableIntStateOf(state.diffCommentSuccessCount) }
+    var observedPlanReviewPolicySuccess by remember { mutableIntStateOf(state.planReviewPolicySuccessCount) }
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture(),
+    ) { success ->
+        if (success) {
+            tempPhotoUri?.let { uri -> viewModel.addImages(listOf(uri)) }
+        }
+    }
+    val imagePicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickMultipleVisualMedia(4),
+    ) { uris -> viewModel.addImages(uris) }
+    val filePicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        uri?.let(viewModel::addFile)
+    }
+    val voiceRecorder = remember { VoiceRecorder() }
+    fun startVoiceCapture() {
+        viewModel.startVoiceInput()
+        voiceRecorder.start(
+            onAudio = viewModel::offerVoiceAudio,
+            onFailure = viewModel::failVoiceInput,
+        )
+    }
+    val microphonePermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) startVoiceCapture()
+        else viewModel.failVoiceInput(appString(R.string.msg_78225580c828))
+    }
+    val startVoice: () -> Unit = {
+        focusManager.clearFocus()
+        keyboardController?.hide()
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            startVoiceCapture()
+        } else microphonePermission.launch(Manifest.permission.RECORD_AUDIO)
+    }
+    val stopVoice: () -> Unit = {
+        voiceRecorder.stop(viewModel::finishVoiceInput)
+    }
+    val cancelVoice: () -> Unit = {
+        voiceRecorder.cancel()
+        viewModel.cancelVoiceInput()
+    }
+    DisposableEffect(voiceRecorder) {
+        onDispose {
+            voiceRecorder.cancel()
+            viewModel.cancelVoiceInput()
+        }
+    }
+    LaunchedEffect(state.voiceInput.phase) {
+        if (state.voiceInput.phase == VoiceInputPhase.ERROR) voiceRecorder.cancel()
+    }
+    LaunchedEffect(state.voiceInput.phase, state.voiceInput.elapsedMillis) {
+        if (state.voiceInput.phase == VoiceInputPhase.RECORDING && state.voiceInput.elapsedMillis >= 210_000L) stopVoice()
+    }
+    val unsupported: () -> Unit = {
+        scope.launch { snackbar.showSnackbar(appString(R.string.msg_e8cfb71acbfd)) }
+    }
+    LaunchedEffect(state.selectedConversationId) {
+        modelPickerOpen = false
+        workModeOpen = false
+        modelQuotaOpen = false
+        desktopStatusOpen = false
+        showDeleteConfirm = false
+        showRename = false
+        if (state.selectedConversationId == null && openedFromArchive) {
+            archivedOpen = true
+            openedFromArchive = false
+        }
+    }
+
+    LaunchedEffect(state.pairSuccessCount) {
+        if (pairingSettingsOpen && state.pairSuccessCount > pairSuccessAtOpen) {
+            pairingSettingsOpen = false
+        }
+    }
+    LaunchedEffect(pagerState.settledPage) {
+        projectsSelected = pagerState.settledPage == 1
+        if (projectsSelected) viewModel.refreshProjects()
+    }
+    LaunchedEffect(projectsSelected, state.selectedConversationId) {
+        if (state.selectedConversationId == null && pagerState.settledPage != (if (projectsSelected) 1 else 0)) {
+            pagerState.animateScrollToPage(if (projectsSelected) 1 else 0, animationSpec = pageMotion)
+        }
+    }
+
+    if (!state.isPaired || pairingSettingsOpen) {
+        BackHandler(pairingSettingsOpen && state.isPaired) { pairingSettingsOpen = false }
+        Box(Modifier.fillMaxSize().background(Color.White).statusBarsPadding().navigationBarsPadding()) {
+            PairingScreen(
+                isPairing = state.isPairing,
+                error = state.error,
+                currentGatewayUrl = viewModel.gatewayUrl,
+                onBack = if (state.isPaired) ({ pairingSettingsOpen = false }) else null,
+                onPair = viewModel::pair,
+            )
+        }
+        return
+    }
+
+    LaunchedEffect(state.error) {
+        state.error?.let {
+            snackbar.showSnackbar(it)
+            viewModel.clearError()
+        }
+    }
+    LaunchedEffect(state.proceedSuccessCount) {
+        if (state.proceedSuccessCount > observedProceedSuccess) {
+            snackbar.showSnackbar(appString(R.string.msg_2f8642fc7bf8))
+        }
+        observedProceedSuccess = state.proceedSuccessCount
+    }
+    LaunchedEffect(state.planCommentSuccessCount) {
+        if (state.planCommentSuccessCount > observedPlanCommentSuccess) {
+            snackbar.showSnackbar(appString(R.string.msg_511dfa05e8c3))
+        }
+        observedPlanCommentSuccess = state.planCommentSuccessCount
+    }
+    LaunchedEffect(state.diffCommentSuccessCount) {
+        if (state.diffCommentSuccessCount > observedDiffCommentSuccess) {
+            diffReviewOpen = false
+            snackbar.showSnackbar(appString(R.string.msg_4c564fece964))
+        }
+        observedDiffCommentSuccess = state.diffCommentSuccessCount
+    }
+    LaunchedEffect(state.planReviewPolicySuccessCount) {
+        if (state.planReviewPolicySuccessCount > observedPlanReviewPolicySuccess) {
+            snackbar.showSnackbar(appString(R.string.msg_0e381e690696))
+        }
+        observedPlanReviewPolicySuccess = state.planReviewPolicySuccessCount
+    }
+    val returnFromConversation: () -> Unit = {
+        viewModel.closeConversation()
+        projectsSelected = openedFromProject
+        openedFromProject = false
+    }
+
+    val openDrawer: () -> Unit = {
+        viewModel.refreshConversations()
+        viewModel.refreshProjects()
+        scope.launch { drawerState.open() }
+        Unit
+    }
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        gesturesEnabled = !openedFromProject,
+        drawerContent = {
+            DemoDrawer(
+                creationUnavailableReason = creationUnavailableReason,
+                onRetryModels = retryProjectModels,
+                onNewProjectConversation = { project -> viewModel.createProjectConversation(project) {
+                    archivedOpen = false; openedFromArchive = false; openedFromProject = true; projectsSelected = true
+                    scope.launch { drawerState.close() }
+                } },
+                modifier = Modifier.fillMaxWidth(0.80f).fillMaxHeight()
+                    .statusBarsPadding().navigationBarsPadding(),
+                conversations = activeConversations,
+                projects = state.projects,
+                isLoading = state.isLoadingConversations,
+                isLoadingProjects = state.isLoadingProjects,
+                selectedConversationId = state.selectedConversationId,
+                conversationsError = state.conversationsError, projectsError = state.projectsError,
+                onRetryConversations = viewModel::refreshConversations, onRetryProjects = viewModel::refreshProjects,
+                busy = state.busyConversations,
+                onRename = { item -> renameConversationId = item.id; renameTitle = item.title; showRename = true },
+                onPin = { item -> viewModel.setPinned(item.id, !item.isPinned) },
+                onArchive = { item -> viewModel.setArchived(item.id, true) },
+                onDelete = { item -> deleteConversationId = item.id; showDeleteConfirm = true },
+                onOpenConversation = { id ->
+                    archivedOpen = false; openedFromArchive = false
+                    openedFromProject = false
+                    projectsSelected = false
+                    viewModel.openConversation(id)
+                    scope.launch { drawerState.close() }
+                },
+                onOpenProjectConversation = { id ->
+                    archivedOpen = false; openedFromArchive = false
+                    openedFromProject = true
+                    projectsSelected = true
+                    viewModel.openConversation(id)
+                    scope.launch { drawerState.close() }
+                },
+                onNewChat = {
+                    archivedOpen = false; openedFromArchive = false
+                    viewModel.newConversation()
+                    projectsSelected = false
+                    openedFromProject = false
+                    scope.launch { drawerState.close() }
+                },
+                onArchived = {
+                    viewModel.closeConversation()
+                    openedFromProject = false; openedFromArchive = false; archivedOpen = true
+                    viewModel.refreshConversations()
+                    scope.launch { drawerState.close() }
+                },
+                onPairing = {
+                    scope.launch {
+                        drawerState.close()
+                        pairSuccessAtOpen = state.pairSuccessCount
+                        pairingSettingsOpen = true
+                    }
+                },
+                onDesktopStatus = {
+                    scope.launch {
+                        drawerState.close()
+                        desktopStatusOpen = true
+                        viewModel.loadDesktopStatus()
+                    }
+                },
+                onSettings = {
+                    if (!settingsRequested && !settingsOpen) {
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
+                        settingsRequested = true
+                    }
+                },
+                accountProfile = state.accountProfile,
+            )
+        },
+    ) {
+    Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
+        Column(modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
+            if (archivedOpen) {
+                state.conversationsError?.let { LoadFailure(it, state.isLoadingConversations, viewModel::refreshConversations) }
+                ArchivedConversations(state.conversations.filterNot { it.isSubagent }, state.isLoadingConversations, state.busyConversations,
+                    onBack = { archivedOpen = false }, onRefresh = viewModel::refreshConversations,
+                    onOpen = { id -> archivedOpen = false; openedFromArchive = true; viewModel.openConversation(id) },
+                    onRename = { item -> renameConversationId = item.id; renameTitle = item.title; showRename = true },
+                    onRestore = { viewModel.setArchived(it, false) },
+                    onDelete = { deleteConversationId = it; showDeleteConfirm = true }, entranceReady = !drawerState.isOpen)
+            } else if (state.selectedConversationId != null) {
+                key(state.selectedConversationId) {
+                    var topBarHeight by remember { mutableStateOf(64.dp) }
+                    val refreshState = rememberPullToRefreshState()
+                    Box(Modifier.weight(1f)) {
+                        PullToRefreshBox(isRefreshing = state.isLoadingMessages && state.messages.isNotEmpty(),
+                            onRefresh = viewModel::retryMessages, state = refreshState,
+                            modifier = Modifier.fillMaxSize(),
+                            indicator = {
+                                PullToRefreshDefaults.Indicator(state = refreshState,
+                                    isRefreshing = state.isLoadingMessages && state.messages.isNotEmpty(),
+                                    modifier = Modifier.align(Alignment.TopCenter).padding(top = topBarHeight))
+                            }) {
+                            // Defer expensive history composition until the system splash has finished animating.
+                            if (deferConversation) Box(Modifier.fillMaxSize().clearAndSetSemantics {}) {
+                                ConversationSkeleton(Modifier.padding(top = topBarHeight),
+                                    bottomPadding = conversationPadding, animated = false)
+                            } else ConversationContent(
+                                viewModel = viewModel,
+                                messages = state.messages + state.outgoing.filter { it.conversationId == state.selectedConversationId }.map { it.message },
+                                streamingMessageId = state.streamingMessageId,
+                                isRunning = state.isRunning,
+                                isLoading = state.isLoadingMessages,
+                                hasMore = state.hasMoreMessages,
+                                isLoadingOlder = state.isLoadingOlder,
+                                onLoadOlder = viewModel::loadOlderMessages,
+                                olderError = state.olderMessagesError,
+                                entranceOffset = if (openedFromProject || openedFromArchive) 10.dp else 0.dp,
+                                entranceReady = !drawerState.isOpen,
+                                allowRevert = !state.isSending && !state.isReverting && state.selectedConversationId !in state.busyConversations,
+                                topSpace = topBarHeight,
+                                bottomPadding = conversationPadding,
+                                waitingForConnection = state.messagesError != null || !state.networkAvailable,
+                                isStopping = state.isStopping,
+                                waitingForInteraction = state.pendingInteraction != null || state.canProceed,
+                                diffSummary = diffSummary.takeIf { !state.isLoadingDiffReview && state.diffReviewError == null && state.activeSubagent == null },
+                                onReviewChanges = { diffReviewOpen = true },
+                                modifier = Modifier.fillMaxSize().imePadding().pointerInput(Unit) {
+                                    awaitEachGesture {
+                                        val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                                        var travel = 0f
+                                        var elapsed = 0L
+                                        do {
+                                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                                            event.changes.forEach { change ->
+                                                travel += abs(change.positionChange().x) + abs(change.positionChange().y)
+                                                elapsed = change.uptimeMillis - down.uptimeMillis
+                                            }
+                                        } while (event.changes.any { it.pressed })
+                                        if (travel < viewConfiguration.touchSlop && elapsed < viewConfiguration.longPressTimeoutMillis) focusManager.clearFocus()
+                                    }
+                                },
+                            )
+                        }
+                        GradientTopBar(topBarHeight) {
+                            Box(Modifier.onSizeChanged { topBarHeight = with(density) { it.height.toDp() } }) {
+                                ConversationTopBar(
+                                    returnToProjects = state.activeSubagent != null || openedFromProject || openedFromArchive,
+                                    leadingDescription = if (state.activeSubagent != null) appString(R.string.msg_17b874cb5b83) else if (openedFromArchive) appString(R.string.msg_42785526c4af) else if (openedFromProject) appString(R.string.msg_bb14d7c41431) else appString(R.string.msg_edb98581834c),
+                                    onLeading = if (state.activeSubagent != null) viewModel::returnToSubagentParent
+                                        else if (openedFromArchive) ({ viewModel.closeConversation(); archivedOpen = true; openedFromArchive = false })
+                                        else if (openedFromProject) returnFromConversation else openDrawer,
+                                    onNewChat = {
+                                        projectsSelected = false
+                                        openedFromProject = false
+                                        archivedOpen = false; openedFromArchive = false
+                                        viewModel.newConversation()
+                                    },
+                                    onRename = {
+                                        renameConversationId = state.selectedConversationId
+                                        renameTitle = state.conversations.firstOrNull { it.id == state.selectedConversationId }?.title.orEmpty()
+                                        showRename = true
+                                    },
+                                    onDelete = { deleteConversationId = state.selectedConversationId; showDeleteConfirm = true },
+                                    title = state.activeSubagent?.displayTitle
+                                        ?: state.conversations.firstOrNull { it.id == state.selectedConversationId }?.displayTitle
+                                        ?: appString(R.string.msg_a91ae6035092),
+                                    isPinned = state.conversations.firstOrNull { it.id == state.selectedConversationId }?.isPinned == true,
+                                    isArchived = state.conversations.firstOrNull { it.id == state.selectedConversationId }?.isArchived == true,
+                                    onPin = { state.selectedConversationId?.let { id -> viewModel.setPinned(id, state.conversations.firstOrNull { it.id == id }?.isPinned != true) } },
+                                    onArchive = { state.selectedConversationId?.let { id -> viewModel.setArchived(id, state.conversations.firstOrNull { it.id == id }?.isArchived != true) } },
+                                    onReviewChanges = {
+                                        diffReviewOpen = true
+                                        viewModel.loadDiffReview()
+                                    },
+                                    actionsEnabled = state.activeSubagent == null && !state.selectedConversationId.orEmpty().startsWith("local:") &&
+                                        state.selectedConversationId !in state.busyConversations && !state.isReverting,
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                EmptyTopBar(
+                    onMenu = openDrawer,
+                    tabPosition = (pagerState.currentPage + pagerState.currentPageOffsetFraction).coerceIn(0f, 1f),
+                    onChat = { scope.launch { pagerState.animateScrollToPage(0, animationSpec = pageMotion) } },
+                    onProjects = {
+                        viewModel.refreshProjects()
+                        scope.launch { pagerState.animateScrollToPage(1, animationSpec = pageMotion) }
+                    },
+                    onUnsupported = unsupported,
+                )
+                HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)
+                    .then(contentEntrance("home", if (projectsSelected) (-10).dp else 0.dp, !drawerState.isOpen)),
+                    userScrollEnabled = pagerState.settledPage == 1,
+                    beyondViewportPageCount = 1) { page ->
+                if (page == 1) {
+                    ProjectOverview(
+                        creationUnavailableReason = creationUnavailableReason,
+                        onRetryModels = retryProjectModels,
+                        onNewConversation = { project -> viewModel.createProjectConversation(project) {
+                            archivedOpen = false; openedFromArchive = false; openedFromProject = true
+                        } },
+                        projects = state.projects,
+                        conversations = activeConversations,
+                        isLoading = state.isLoadingProjects || state.isLoadingConversations,
+                        error = state.projectsError ?: state.conversationsError,
+                        onRetry = { viewModel.refreshProjects(); viewModel.refreshConversations(); viewModel.refreshModels() },
+                        onOpenConversation = { id ->
+                            archivedOpen = false; openedFromArchive = false
+                            openedFromProject = true
+                            viewModel.openConversation(id)
+                        },
+                        expandedProjects = expandedProjectKeys.toSet(),
+                        onToggleProject = { key ->
+                            expandedProjectKeys = ArrayList(expandedProjectKeys).apply {
+                                if (key in this) remove(key) else add(key)
+                            }
+                        },
+                        listState = projectListState,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    Column(Modifier.fillMaxSize().padding(composerPadding).imePadding().pointerInput(Unit) {
+                        awaitEachGesture {
+                            val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                            var horizontal = 0f
+                            var vertical = 0f
+                            var travel = 0f
+                            var elapsed = 0L
+                            var draggingPage = false
+                            do {
+                                val event = awaitPointerEvent(PointerEventPass.Initial)
+                                event.changes.forEach { change ->
+                                    val delta = change.positionChange()
+                                    horizontal += delta.x
+                                    vertical += delta.y
+                                    travel += abs(delta.x) + abs(delta.y)
+                                    elapsed = change.uptimeMillis - down.uptimeMillis
+                                    if (!draggingPage && horizontal < -viewConfiguration.touchSlop &&
+                                        abs(horizontal) > abs(vertical) * 1.2f) {
+                                        draggingPage = true
+                                        focusManager.clearFocus()
+                                    }
+                                    if (draggingPage) {
+                                        pagerState.dispatchRawDelta(-delta.x)
+                                        change.consume()
+                                    }
+                                }
+                            } while (event.changes.any { it.pressed })
+                            if (draggingPage) {
+                                val progress = pagerState.currentPage + pagerState.currentPageOffsetFraction
+                                scope.launch { pagerState.animateScrollToPage(if (progress > 0.38f) 1 else 0, animationSpec = pageMotion) }
+                            } else if (travel < viewConfiguration.touchSlop && elapsed < viewConfiguration.longPressTimeoutMillis) {
+                                focusManager.clearFocus()
+                            }
+                        }
+                    }) {
+                    Spacer(Modifier.weight(1f))
+                    Column(modifier = Modifier.padding(horizontal = 28.dp)) {
+                        val recent = activeConversations.filter { it.isPureChat && !it.isSubagent }.take(2)
+                        if (recent.isEmpty() && state.isLoadingConversations && connectionIssue == null) {
+                            Text(appString(R.string.msg_ea9e465d5905), color = SecondaryInk, fontSize = 16.sp)
+                        }
+                        recent.forEach { conversation ->
+                            Text(
+                                conversation.displayTitle,
+                                modifier = Modifier.fillMaxWidth()
+                                    .quietClickable {
+                                        openedFromProject = false
+                                        viewModel.openConversation(conversation.id)
+                                    }
+                                    .padding(vertical = 12.dp),
+                                color = SecondaryInk,
+                                fontSize = 16.sp,
+                                maxLines = 1,
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(30.dp))
+                    }
+                }
+                }
+            }
+        }
+
+        val homeSwipeProgress = if (state.selectedConversationId == null) {
+            (pagerState.currentPage + pagerState.currentPageOffsetFraction).coerceIn(0f, 1f)
+        } else {
+            0f
+        }
+        val isHome = state.selectedConversationId == null
+        val showComposer = !archivedOpen && (state.selectedConversationId != null || homeSwipeProgress < 1f || !projectsSelected)
+
+        if (showComposer) {
+            val alphaFactor = if (isHome) {
+                (1f - homeSwipeProgress).coerceIn(0f, 1f)
+            } else 1f
+            val translationYPx = if (isHome) {
+                homeSwipeProgress * with(density) { 16.dp.toPx() }
+            } else 0f
+
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .imePadding(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Column(
+                    modifier = Modifier.onSizeChanged { composerInsets.insets = WindowInsets(bottom = it.height) },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    AnimatedVisibility(connectionIssue != null,
+                        enter = expandVertically(tween(180)) + fadeIn(tween(120)),
+                        exit = shrinkVertically(tween(160)) + fadeOut(tween(100))) {
+                        connectionIssue?.let { title ->
+                            ChatConnectionNotice(title, state.isRetryingConnection ||
+                                (state.selectedConversationId == null && state.isLoadingConversations)) {
+                                if (state.selectedConversationId != null) viewModel.retryMessages() else viewModel.resumeConnection()
+                            }
+                        }
+                    }
+                    AnimatedVisibility(
+                        visible = state.canProceed && !state.proceedArtifactUri.isNullOrBlank(),
+                        enter = expandVertically(tween(180), expandFrom = Alignment.Bottom) + fadeIn(tween(120)),
+                        exit = shrinkVertically(tween(160), shrinkTowards = Alignment.Bottom) + fadeOut(tween(100)),
+                    ) {
+                        val uri = state.proceedArtifactUri.orEmpty()
+                        val commentCount = state.planCommentDraft.comments.size +
+                            if (state.planCommentDraft.activeSelection != null && state.planCommentDraft.activeComment.isNotBlank()) 1 else 0
+                        PlanReviewPanel(
+                            filename = previewFileName(uri),
+                            conversationTitle = state.conversations.firstOrNull { it.id == state.selectedConversationId }?.title
+                                ?: appString(R.string.msg_9800a458c16b),
+                            isProceeding = state.isProceedingArtifact,
+                            isSubmittingComments = state.isSubmittingPlanComments,
+                            commentCount = commentCount,
+                            error = state.proceedError,
+                            onView = { if (uri.isNotBlank()) planPreviewOpen = true },
+                            onProceed = viewModel::proceedArtifact,
+                        )
+                    }
+                    state.pendingInteraction?.let { interaction ->
+                        InteractionPanel(
+                            interaction = interaction,
+                            isSubmitting = state.isSubmittingInteraction,
+                            error = state.interactionError,
+                            onChoose = viewModel::respondToInteraction,
+                        )
+                    }
+                    AnimatedVisibility(
+                        visible = state.runningTasks.isNotEmpty(),
+                        enter = expandVertically(tween(180), expandFrom = Alignment.Bottom) + fadeIn(tween(120)),
+                        exit = shrinkVertically(tween(160), shrinkTowards = Alignment.Bottom) + fadeOut(tween(100)),
+                    ) {
+                        RunningTasksPanel(
+                            tasks = state.runningTasks,
+                            stoppingIds = state.stoppingTaskIds,
+                            error = state.tasksError,
+                            onStop = viewModel::stopRunningTask,
+                        )
+                    }
+                    AnimatedVisibility(
+                        visible = state.queuedMessages.isNotEmpty() || state.queueSubmission != null,
+                        enter = expandVertically(tween(180), expandFrom = Alignment.Bottom) + fadeIn(tween(120)),
+                        exit = shrinkVertically(tween(160), shrinkTowards = Alignment.Bottom) + fadeOut(tween(100)),
+                    ) {
+                        QueuedMessagesPanel(
+                            messages = state.queuedMessages + listOfNotNull(state.queueSubmission?.queued),
+                            busyIds = state.busyQueuedMessageIds + listOfNotNull(state.queueSubmission?.queued?.id.takeIf { state.isSending }),
+                            error = state.queueError,
+                            onSendNow = viewModel::sendQueuedMessageNow,
+                            onEdit = viewModel::editQueuedMessage,
+                            onDelete = viewModel::deleteQueuedMessage,
+                            viewModel = viewModel,
+                        )
+                    }
+                    if (state.activeSubagent == null) Box(
+                        modifier = Modifier
+                            // Page motion changes opacity/position; never reflow the input and its fixed-size actions.
+                            .fillMaxWidth()
+                            .graphicsLayer {
+                                // Keep the changing native shadow outside the rectangular bounds of this layer.
+                                compositingStrategy = CompositingStrategy.ModulateAlpha
+                                alpha = alphaFactor
+                                translationY = translationYPx
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Composer(
+                            activeConversation = state.selectedConversationId != null,
+                            draft = state.draft,
+                            attachments = state.attachments,
+                            fileAttachment = state.fileAttachment,
+                            workspaceContexts = state.workspaceContexts,
+                            slashCommand = state.slashCommand,
+                            contextSuggestions = state.contextSuggestions,
+                            commandSuggestions = state.commandSuggestions,
+                            isLoadingContextSuggestions = state.isLoadingContextSuggestions,
+                            isLoadingCommandSuggestions = state.isLoadingCommandSuggestions,
+                            contextSuggestionsError = state.contextSuggestionsError,
+                            commandSuggestionsError = state.commandSuggestionsError,
+                            onDraftChange = viewModel::setDraft,
+                            onTakePhoto = {
+                                if (state.busyQueuedMessageIds.isEmpty()) {
+                                    val tempFile = File(context.cacheDir, "camera_capture_${System.currentTimeMillis()}.jpg")
+                                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", tempFile)
+                                    tempPhotoUri = uri
+                                    cameraLauncher.launch(uri)
+                                }
+                            },
+                            onPickImage = {
+                                if (state.busyQueuedMessageIds.isEmpty()) {
+                                    imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                                }
+                            },
+                            onPickFile = {
+                                if (state.busyQueuedMessageIds.isEmpty()) {
+                                    filePicker.launch(arrayOf("*/*"))
+                                }
+                            },
+                            onRemoveImage = viewModel::removeImage,
+                            onRemoveFile = viewModel::removeFile,
+                            onSearchWorkspaceContexts = viewModel::searchWorkspaceContexts,
+                            onSearchSlashCommands = viewModel::searchSlashCommands,
+                            onAddWorkspaceContext = viewModel::addWorkspaceContext,
+                            onRemoveWorkspaceContext = viewModel::removeWorkspaceContext,
+                            onSelectSlashCommand = viewModel::selectSlashCommand,
+                            onRemoveSlashCommand = viewModel::removeSlashCommand,
+                            onDismissSuggestions = viewModel::clearComposerSuggestions,
+                            onSend = viewModel::send,
+                            isSending = state.isSending,
+                            sendBlocked = !state.canSendOverConnection || state.isRestoringDraft || state.isLoadingMessages || state.isReverting ||
+                                state.busyQueuedMessageIds.isNotEmpty() || state.selectedConversationId in state.busyConversations,
+                            isRunning = state.isRunning,
+                            isStopping = state.isStopping,
+                            onStop = viewModel::stopGeneration,
+                            voiceInput = state.voiceInput,
+                            onStartVoice = startVoice,
+                            onStopVoice = stopVoice,
+                            onCancelVoice = cancelVoice,
+                            onRetryVoice = startVoice,
+                            onDismissVoiceError = viewModel::dismissVoiceError,
+                            onUnsupported = unsupported,
+                            shadowAlpha = alphaFactor,
+                            modelBadge = gptModelBadge,
+                            onOpenModelConfig = {
+                                focusManager.clearFocus()
+                                keyboardController?.hide()
+                                modelPickerOpen = true
+                                if (state.models.isEmpty()) viewModel.refreshModels()
+                            },
+                            modelEnabled = modelEnabled,
+                            planningMode = state.slashCommand?.info?.name.equals("plan", true),
+                            workModeLabel = if (state.slashCommand?.info?.name.equals("plan", true)) appString(R.string.msg_29d38fc5d43c) else appString(R.string.msg_3f995fd2410c),
+                            workModeDescription = if (state.slashCommand?.info?.name.equals("plan", true))
+                                appString(R.string.msg_4bf828359bc8) else appString(R.string.msg_3d9b52d62b9e),
+                            onOpenWorkMode = {
+                                focusManager.clearFocus()
+                                keyboardController?.hide()
+                                workModeOpen = true
+                                viewModel.loadPlanReviewPreference()
+                            },
+                            workModeEnabled = modelEnabled,
+                            inputFocusRequester = composerFocusRequester,
+                        )
+                    }
+                    Spacer(Modifier.height(23.dp))
+                }
+            }
+        }
+
+        SnackbarHost(hostState = snackbar, modifier = Modifier.align(Alignment.BottomCenter))
+        state.proceedArtifactUri?.takeIf { planPreviewOpen }?.let { uri ->
+            LinkedFilePreview(
+                uri = uri,
+                viewModel = viewModel,
+                onDismiss = { planPreviewOpen = false },
+                listState = planPreviewListState,
+                fullScreen = true,
+            )
+        }
+        if (diffReviewOpen && state.selectedConversationId != null && state.activeSubagent == null) {
+            DiffReviewScreen(viewModel = viewModel, onDismiss = { diffReviewOpen = false })
+        }
+        if (modelPickerOpen && state.isPaired) {
+            ModelConfigBottomSheet(
+                onDismiss = { modelPickerOpen = false },
+                models = state.models,
+                currentChosenModelId = chosenModelId,
+                onSelectModel = viewModel::selectModel,
+                isLoadingModels = state.isLoadingModels,
+                modelsError = state.modelsError,
+                onRetryModels = viewModel::refreshModels,
+                modelSelectionEnabled = modelEnabled,
+                onDone = { modelPickerOpen = false; focusAfterModelDone++ },
+                onOpenQuota = {
+                    modelPickerOpen = false
+                    modelQuotaOpen = true
+                    viewModel.loadModelQuota()
+                },
+            )
+        }
+        if (modelQuotaOpen && state.isPaired) {
+            ModelQuotaBottomSheet(
+                onDismiss = { modelQuotaOpen = false },
+                summary = state.modelQuotaSummary,
+                loading = state.isLoadingModelQuota,
+                refreshing = state.isRefreshingModelQuota,
+                error = state.modelQuotaError,
+                onRefresh = { viewModel.loadModelQuota(forceRefresh = true) },
+            )
+        }
+        if (settingsOpen && state.isPaired) {
+            AppSettingsBottomSheet(state.defaultFileWrap, viewModel::setDefaultFileWrap,
+                profile = state.accountProfile, loading = state.isLoadingAccountProfile,
+                error = state.accountProfileError, onRefresh = viewModel::refreshAccountProfile) { settingsOpen = false }
+        }
+        if (desktopStatusOpen && state.isPaired) {
+            DesktopStatusBottomSheet(
+                onDismiss = { desktopStatusOpen = false },
+                status = state.desktopStatus,
+                loading = state.isLoadingDesktopStatus,
+                refreshing = state.isRefreshingDesktopStatus,
+                error = state.desktopStatusError,
+                onRefresh = viewModel::loadDesktopStatus,
+            )
+        }
+        if (workModeOpen && state.isPaired) {
+            WorkModeBottomSheet(
+                onDismiss = { workModeOpen = false },
+                planningSelected = state.slashCommand?.info?.name.equals("plan", true),
+                currentCommandName = state.slashCommand?.info?.name,
+                onSelectPlanning = viewModel::selectPlanningMode,
+                preference = state.planReviewPreference,
+                loadingPreference = state.isLoadingPlanReviewPreference,
+                updatingPreference = state.isUpdatingPlanReviewPreference,
+                selectingMode = state.isSelectingWorkMode,
+                error = state.workModeError,
+                onRetry = viewModel::loadPlanReviewPreference,
+                onSelectPolicy = viewModel::updatePlanReviewPolicy,
+            )
+        }
+        state.revertMessage?.let { message ->
+            var revertFiles by remember(message.id) { mutableStateOf(true) }
+            Dialog(onDismissRequest = viewModel::dismissRevert) {
+                Surface(modifier = Modifier.width(300.dp), shape = RoundedCornerShape(20.dp), color = Color.White) {
+                    Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(appString(R.string.msg_a74263b779a2), color = Ink, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+                        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(value = revertFiles, role = Role.Checkbox,
+                            enabled = !state.isReverting, onValueChange = { revertFiles = it }),
+                            verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(checked = revertFiles, onCheckedChange = null, enabled = !state.isReverting,
+                                modifier = Modifier.padding(end = 10.dp), colors = CheckboxDefaults.colors(checkedColor = AccentBlue))
+                            Text(appString(R.string.msg_4441c46deb2f), color = Ink, fontSize = 14.sp)
+                        }
+                        state.revertError?.let {
+                            Text(it, color = Color(0xFFB3261E), fontSize = 13.sp, lineHeight = 18.sp)
+                        }
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End,
+                            verticalAlignment = Alignment.CenterVertically) {
+                            TextButton(enabled = !state.isReverting, onClick = viewModel::dismissRevert) {
+                                Text(appString(R.string.msg_2cd0f3be8738), color = SecondaryInk, fontSize = 14.sp)
+                            }
+                            if (state.revertError != null && state.revertPreview == null) {
+                                TextButton(onClick = { viewModel.previewRevert(message) }) {
+                                    Text(appString(R.string.msg_b8784c8dd563), color = AccentBlue, fontSize = 14.sp)
+                                }
+                            } else TextButton(enabled = state.revertPreview != null && !state.isReverting && !state.isSending,
+                                onClick = { viewModel.executeRevert(!revertFiles) }) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    val waiting = state.isLoadingRevert || state.isReverting
+                                    Text(appString(R.string.msg_ed0830570a0d), color = if (state.revertPreview != null && !state.isSending) AccentBlue else SecondaryInk.copy(alpha = 0.4f),
+                                        fontSize = 14.sp, modifier = Modifier.graphicsLayer { alpha = if (waiting) 0f else 1f })
+                                    if (waiting) CircularProgressIndicator(Modifier.size(18.dp), color = AccentBlue, strokeWidth = 2.dp)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (showRename) {
+            AlertDialog(
+                onDismissRequest = { if (renameConversationId !in state.busyConversations) showRename = false },
+                title = { Text(appString(R.string.msg_5f64610f9fec)) },
+                text = {
+                    OutlinedTextField(value = renameTitle, onValueChange = { renameTitle = it },
+                        label = { Text(appString(R.string.msg_19107d868966)) }, singleLine = true, enabled = renameConversationId !in state.busyConversations)
+                },
+                confirmButton = {
+                    TextButton(enabled = renameTitle.isNotBlank() && renameConversationId !in state.busyConversations,
+                        onClick = { renameConversationId?.let { id -> viewModel.renameConversation(id, renameTitle) {
+                            if (renameConversationId == id) showRename = false
+                        } } }) {
+                        Text(if (renameConversationId in state.busyConversations) appString(R.string.msg_ff509c9ba052) else appString(R.string.msg_a3030bf8f16d))
+                    }
+                },
+                dismissButton = {
+                    TextButton(enabled = renameConversationId !in state.busyConversations, onClick = { showRename = false }) { Text(appString(R.string.msg_2cd0f3be8738)) }
+                },
+            )
+        }
+        if (showDeleteConfirm) {
+            AlertDialog(
+                onDismissRequest = { showDeleteConfirm = false },
+                title = { Text(appString(R.string.msg_66d1415893e0)) },
+                text = { Text(state.conversations.firstOrNull { it.id == deleteConversationId }?.displayTitle ?: appString(R.string.msg_a91ae6035092),
+                    maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showDeleteConfirm = false
+                        deleteConversationId?.let(viewModel::deleteConversation)
+                    }) { Text(appString(R.string.msg_2f9daa828907), color = Color(0xFFB3261E)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteConfirm = false }) { Text(appString(R.string.msg_2cd0f3be8738)) }
+                },
+            )
+        }
+    }
+    }
+    BackHandler {
+        when {
+            settingsRequested -> { settingsRequested = false; scope.launch { drawerState.close() } }
+            keyboardVisible -> {
+                focusManager.clearFocus()
+                keyboardController?.hide()
+            }
+            state.activeSubagent != null -> viewModel.returnToSubagentParent()
+            archivedOpen -> archivedOpen = false
+            state.selectedConversationId != null && openedFromArchive -> { viewModel.closeConversation(); archivedOpen = true; openedFromArchive = false }
+            drawerState.isOpen -> scope.launch { drawerState.close() }
+            state.selectedConversationId != null && openedFromProject -> returnFromConversation()
+            state.selectedConversationId == null && projectsSelected -> projectsSelected = false
+            else -> onLeaveApp()
+        }
+    }
+}

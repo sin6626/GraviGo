@@ -267,7 +267,6 @@ func RedactFCMKey(raw string) string {
 	return raw[:4] + "..." + raw[len(raw)-4:]
 }
 
-
 // AdvertisePublicIPv6 reports whether pairing QR / endpoints should include the
 // machine's global unicast IPv6. Defaults to true whenever a global IPv6 is detected,
 // unless explicitly disabled via INCLUDE_PUBLIC_IPV6=0, false, or no.
@@ -355,4 +354,3 @@ func GetCloudflareConfig() CloudflareConfig {
 		Region:        region,
 	}
 }
-

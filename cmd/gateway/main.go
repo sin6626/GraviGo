@@ -30,8 +30,8 @@ import (
 	"antigravity-mobile/web"
 )
 
-// Version represents the Multigravity Gateway release version.
-var Version = "1.0.3"
+// Version represents the GraviGo Gateway release version.
+var Version = "1.0.0"
 
 func main() {
 	// 0. Initialize console output synchronization so concurrent logs don't tear terminal output
@@ -218,8 +218,6 @@ func runGatewayServer(args []string) {
 		}
 	}
 
-
-
 	// 4. Initialize Push Notification & Background Watcher
 	notifCfg := config.GetNotificationConfig()
 	watcherCtx, cancelWatcher := context.WithCancel(context.Background())
@@ -359,7 +357,7 @@ func runGatewayServer(args []string) {
 
 	// 打印清爽紧凑的启动看板
 	fmt.Println()
-	fmt.Printf("  Multigravity (mgy) v%s\n", Version)
+	fmt.Printf("  GraviGo Gateway (mgy) v%s\n", Version)
 	fmt.Println("  --------------------------------------------------")
 	fmt.Printf("  ➜  本地访问:   http://127.0.0.1:%d\n", *port)
 	if lanURL != "-" {
@@ -408,11 +406,11 @@ func runGatewayServer(args []string) {
 }
 
 func runVersionCmd() {
-	fmt.Printf("Multigravity (mgy) %s\n", Version)
+	fmt.Printf("GraviGo Gateway (mgy) %s\n", Version)
 }
 
 func runHelpCmd() {
-	fmt.Printf(`Multigravity (mgy) %s - Unified Mobile Gateway for Antigravity
+	fmt.Printf(`GraviGo Gateway (mgy) %s - Unified Mobile Gateway for Antigravity
 
 用法:
   mgy [子命令] [参数]

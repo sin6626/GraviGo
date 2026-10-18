@@ -24,7 +24,7 @@ var (
 type PairedDevice struct {
 	DeviceID   string    `json:"device_id"`
 	DeviceName string    `json:"device_name"`
-	Platform   string    `json:"platform"` // ios / pwa / macos / other
+	Platform   string    `json:"platform"`             // ios / pwa / macos / other
 	TokenHash  string    `json:"token_hash,omitempty"` // SEC-AUDIT L-4: omitempty hides empty hash from API listings
 	CreatedAt  time.Time `json:"created_at"`
 	LastSeenAt time.Time `json:"last_seen_at"`
@@ -157,7 +157,7 @@ func NewAuthStore(filePath string) (*AuthStore, error) {
 		tokenMap:   make(map[string]string),
 		filePath:   resolved,
 		lastSeenCh: make(chan lastSeenUpdate, 64), // P5: buffered channel; drops when full (debounce handles correctness)
-		wsTickets:  NewWSTicketStore(),             // S9: one-time WS ticket store
+		wsTickets:  NewWSTicketStore(),            // S9: one-time WS ticket store
 	}
 
 	saltOnce.Do(func() {

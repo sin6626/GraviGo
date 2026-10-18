@@ -169,4 +169,3 @@ func TestWSTicketStore_DeviceQuotaEviction(t *testing.T) {
 		t.Fatalf("expected newest ticket to be valid")
 	}
 }
-

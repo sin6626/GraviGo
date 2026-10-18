@@ -190,7 +190,6 @@ func EnsureCloudflaredBinary(ctx context.Context) (string, error) {
 	}
 	targetPath := filepath.Join(binDir, binName)
 
-
 	// 3. Needs download
 	_ = os.MkdirAll(binDir, 0755)
 	log.Printf("⏬ 正在拉取 Cloudflare 穿透引擎二进制文件 (~65MB)...")

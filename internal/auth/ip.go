@@ -253,6 +253,3 @@ func RateLimitKeyIP(addr string) string {
 	masked := parsed.Mask(mask64)
 	return masked.String() + "/64"
 }
-
-
-

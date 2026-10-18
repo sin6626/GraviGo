@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -113,8 +114,8 @@ INSERT INTO ItemTable(key, value) VALUES
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := string(out)
-	if got != "history.recentlyOpenedPathsList\n" {
+	got := strings.TrimSpace(string(out))
+	if got != "history.recentlyOpenedPathsList" {
 		t.Fatalf("remaining keys = %q, want only history.recentlyOpenedPathsList", got)
 	}
 }

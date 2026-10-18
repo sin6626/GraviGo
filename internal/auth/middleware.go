@@ -293,4 +293,3 @@ func MaxBytesMiddleware(maxBytes int64, next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-

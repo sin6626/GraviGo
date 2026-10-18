@@ -214,4 +214,3 @@ func RestartCockpitApp() error {
 	time.Sleep(500 * time.Millisecond)
 	return LaunchCockpitApp()
 }
-

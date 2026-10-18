@@ -96,4 +96,3 @@ func TestRateLimitKeyIP(t *testing.T) {
 		}
 	}
 }
-

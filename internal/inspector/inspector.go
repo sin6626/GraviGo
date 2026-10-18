@@ -42,9 +42,9 @@ type Inspector struct {
 	listeners    []func(InstanceInfo)
 
 	// PERF-3: exponential backoff for the expensive ps+lsof full-scan path.
-	failedScanMu   sync.Mutex
-	failedScanAt   time.Time  // time of last failed full-scan
-	failedBackoff  time.Duration // current backoff duration
+	failedScanMu  sync.Mutex
+	failedScanAt  time.Time     // time of last failed full-scan
+	failedBackoff time.Duration // current backoff duration
 }
 
 // NewInspector creates a new instance inspector.

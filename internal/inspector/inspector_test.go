@@ -7,7 +7,7 @@ import (
 
 func TestRegexParsing(t *testing.T) {
 	samplePs := `89479 /Applications/Antigravity.app/Contents/Resources/bin/language_server --standalone --override_ide_name antigravity --csrf_token 5aacbcc0-cf40-4b94-8f17-986485a8d0d5 --app_data_dir antigravity`
-	
+
 	matches := csrfRegex.FindStringSubmatch(samplePs)
 	if len(matches) < 2 {
 		t.Fatalf("expected csrf token match, got none")

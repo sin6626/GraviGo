@@ -134,4 +134,3 @@ func BenchmarkPooledRequestPayload(b *testing.B) {
 		PutSmallBuffer(buf)
 	}
 }
-

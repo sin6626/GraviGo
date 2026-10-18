@@ -391,4 +391,3 @@ func TestNotifier_NotifyAction_Branches(t *testing.T) {
 		t.Fatalf("expected 2 notification payloads, got %d", count)
 	}
 }
-

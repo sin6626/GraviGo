@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.antigravity.mobile"
+    namespace = "io.github.sin6626.gravigo"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.antigravity.mobile"
+        applicationId = "io.github.sin6626.gravigo"
         minSdk = 26
         targetSdk = 34
         versionCode = 5
@@ -22,9 +22,18 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            System.getenv("ANDROID_KEYSTORE_PATH")?.takeIf(String::isNotBlank)?.let { storeFile = file(it) }
+            storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+            keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+        }
+    }
     buildTypes {
+        debug { applicationIdSuffix = ".debug" }
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -48,11 +57,21 @@ android {
         }
     }
     lint {
-        abortOnError = false
-        checkReleaseBuilds = false
+        abortOnError = true
+        checkReleaseBuilds = true
         disable += "InvalidFragmentVersionForActivityResult"
     }
 }
+
+val validateReleaseSigning by tasks.registering {
+    doLast {
+        listOf("ANDROID_KEYSTORE_PATH", "ANDROID_KEYSTORE_PASSWORD", "ANDROID_KEY_ALIAS", "ANDROID_KEY_PASSWORD").forEach {
+            check(!System.getenv(it).isNullOrBlank()) { "Missing release signing environment variable: $it" }
+        }
+        check(file(System.getenv("ANDROID_KEYSTORE_PATH")).isFile) { "Release keystore does not exist" }
+    }
+}
+tasks.matching { it.name == "preReleaseBuild" }.configureEach { dependsOn(validateReleaseSigning) }
 
 dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2026.09.00")

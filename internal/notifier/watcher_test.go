@@ -389,4 +389,3 @@ func TestWatcherTransientFetchFailureRetry(t *testing.T) {
 	}
 	barkMu.Unlock()
 }
-

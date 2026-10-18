@@ -11,7 +11,6 @@ import (
 	"time"
 )
 
-
 // RunCockpitCmd handles the "mgy cockpit" CLI command and subcommands.
 func RunCockpitCmd(args []string) {
 	if len(args) == 0 {

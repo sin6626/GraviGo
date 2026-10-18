@@ -122,4 +122,3 @@ func (p *pooledGzipReadCloser) Close() error {
 	PutGzipReader(p.gz)
 	return p.body.Close()
 }
-

@@ -98,7 +98,6 @@ BARK_SOUND_ACTION=alarm
 	}
 }
 
-
 func TestAdvertisePublicIPv6(t *testing.T) {
 	t.Setenv("INCLUDE_PUBLIC_IPV6", "")
 	if !AdvertisePublicIPv6(false) {
@@ -130,8 +129,6 @@ func TestRedactBarkEndpoint(t *testing.T) {
 		t.Errorf("empty should stay empty")
 	}
 }
-
-
 
 func TestGetCloudflareConfig(t *testing.T) {
 	// 1. Test defaults
@@ -169,5 +166,3 @@ func TestGetCloudflareConfig(t *testing.T) {
 		t.Errorf("expected overridden Region = us, got %s", cfgOverridden.Region)
 	}
 }
-
-

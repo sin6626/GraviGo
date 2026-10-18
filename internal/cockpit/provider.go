@@ -17,7 +17,6 @@ import (
 	"time"
 )
 
-
 // QuotaMetric represents an individual quota dimension (percentage + reset time).
 type QuotaMetric struct {
 	RemainingFraction float64 `json:"remaining_fraction"`
@@ -204,7 +203,6 @@ func CheckCockpitConfigStatus() CockpitConfigStatus {
 		IsDefault:     false,
 	}
 }
-
 
 // GetAutoRefreshInterval reads the configured auto_refresh_minutes from ~/.antigravity_cockpit/config.json.
 // If not configured or invalid, returns defaultInterval.

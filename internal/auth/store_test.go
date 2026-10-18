@@ -217,4 +217,3 @@ func TestAuthStore_ClearAll(t *testing.T) {
 		t.Errorf("expected 0 devices in reloaded store, got %d", len(store2.ListDevices()))
 	}
 }
-

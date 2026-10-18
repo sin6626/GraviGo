@@ -1,2 +1,7 @@
-# Force shell scripts to always have LF line endings so they execute properly on Unix/macOS
+*.go text eol=lf
 *.sh text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+android/gradlew text eol=lf
+android/gradlew.bat text eol=crlf
+*.jar binary

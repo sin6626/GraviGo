@@ -213,4 +213,3 @@ func TestStaticWebAssetsAccessible(t *testing.T) {
 		}
 	}
 }
-

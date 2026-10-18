@@ -52,4 +52,3 @@ func TestRateLimiterMaxEntriesCapacity(t *testing.T) {
 		t.Fatal("existing key should still proceed")
 	}
 }
-

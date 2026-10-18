@@ -1,0 +1,23 @@
+GraviGo licensing overview
+=========================
+
+This repository contains material under multiple licenses. This file does not
+grant a new project-wide license or replace any component's license.
+
+Original antigravity-mobile code:
+  Copyright (c) 2026 Antigravity Mobile Contributors
+  MIT License; full text: android/docs/LICENSE.upstream-MIT
+  https://github.com/GHSaiMo/antigravity-mobile
+
+Code-highlighting module derived from RikkaHub:
+  GNU Affero General Public License, version 3
+  Full text: android/highlight/LICENSE
+  Provenance and modifications: android/highlight/NOTICE.md
+  Also incorporates highlight.js material under BSD-3-Clause:
+  android/highlight/LICENSE.highlight-js
+
+Other bundled material retains its individual notices and licenses, listed in
+THIRD_PARTY_NOTICES.md. GraviGo-specific additions do not yet have a separately
+selected project-wide license. Review the combined distribution and corresponding
+source requirements before distributing binaries. Do not label this repository
+or its Android binary as MIT-only.

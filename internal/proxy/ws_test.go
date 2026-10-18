@@ -39,15 +39,15 @@ func TestIsAllowedOrigin_Comprehensive(t *testing.T) {
 		host   string
 		expect bool
 	}{
-		{"", "127.0.0.1:58900", true},                                 // Native app / CLI
-		{"http://localhost:58900", "127.0.0.1:58900", true},          // Localhost
-		{"http://127.0.0.1:58900", "127.0.0.1:58900", true},          // 127.0.0.1
-		{"http://192.168.1.50:58900", "192.168.1.50:58900", true},    // Private LAN
-		{"http://10.0.0.5:58900", "10.0.0.5:58900", true},            // Private 10.x
-		{"https://my-home.example.com:58900", "my-home.example.com:58900", true}, // DDNS host
+		{"", "127.0.0.1:58900", true},                                                    // Native app / CLI
+		{"http://localhost:58900", "127.0.0.1:58900", true},                              // Localhost
+		{"http://127.0.0.1:58900", "127.0.0.1:58900", true},                              // 127.0.0.1
+		{"http://192.168.1.50:58900", "192.168.1.50:58900", true},                        // Private LAN
+		{"http://10.0.0.5:58900", "10.0.0.5:58900", true},                                // Private 10.x
+		{"https://my-home.example.com:58900", "my-home.example.com:58900", true},         // DDNS host
 		{"https://sub.my-home.example.com:58900", "sub.my-home.example.com:58900", true}, // Subdomain of DDNS
-		{"http://attacker.com", "127.0.0.1:58900", false},             // Untrusted domain
-		{"http://my-home.example.com.evil.com", "127.0.0.1:58900", false}, // Trailing domain spoof
+		{"http://attacker.com", "127.0.0.1:58900", false},                                // Untrusted domain
+		{"http://my-home.example.com.evil.com", "127.0.0.1:58900", false},                // Trailing domain spoof
 	}
 
 	for _, tc := range tests {
@@ -59,6 +59,7 @@ func TestIsAllowedOrigin_Comprehensive(t *testing.T) {
 }
 
 func TestWebSocketUpgradeAndPingPong(t *testing.T) {
+	pongReceived := make(chan struct{}, 1)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sanitizeWebSocketHeaders(r)
 		conn, err := upgrader.Upgrade(w, r, nil)
@@ -67,6 +68,16 @@ func TestWebSocketUpgradeAndPingPong(t *testing.T) {
 			return
 		}
 		defer conn.Close()
+		conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+		conn.SetPongHandler(func(data string) error {
+			if data == "heartbeat" {
+				select {
+				case pongReceived <- struct{}{}:
+				default:
+				}
+			}
+			return nil
+		})
 
 		// Send Ping frame
 		err = conn.WriteControl(websocket.PingMessage, []byte("heartbeat"), time.Now().Add(time.Second))
@@ -74,10 +85,17 @@ func TestWebSocketUpgradeAndPingPong(t *testing.T) {
 			t.Errorf("ping write error: %v", err)
 		}
 
-		// Read echo message
-		msgType, data, err := conn.ReadMessage()
-		if err == nil {
-			_ = conn.WriteMessage(msgType, data)
+		// Keep reading control frames until the client finishes; an immediate close
+		// can reset the TCP connection with its automatic pong still in flight.
+		for {
+			msgType, data, err := conn.ReadMessage()
+			if err != nil {
+				return
+			}
+			if err := conn.WriteMessage(msgType, data); err != nil {
+				t.Errorf("echo write error: %v", err)
+				return
+			}
 		}
 	}))
 	defer server.Close()
@@ -86,20 +104,12 @@ func TestWebSocketUpgradeAndPingPong(t *testing.T) {
 	header := make(http.Header)
 	header.Set("Origin", "http://127.0.0.1")
 
-	pongReceived := false
 	dialer := websocket.DefaultDialer
 	client, _, err := dialer.Dial(wsURL, header)
 	if err != nil {
 		t.Fatalf("failed to dial: %v", err)
 	}
 	defer client.Close()
-
-	client.SetPongHandler(func(appData string) error {
-		if appData == "heartbeat" {
-			pongReceived = true
-		}
-		return nil
-	})
 
 	// Send message to trigger read and receive ping
 	if err := client.WriteMessage(websocket.TextMessage, []byte("hello")); err != nil {
@@ -116,8 +126,10 @@ func TestWebSocketUpgradeAndPingPong(t *testing.T) {
 		t.Errorf("unexpected echo message: %s", string(data))
 	}
 
-	if !pongReceived {
-		t.Logf("Pong was handled automatically by dialer")
+	select {
+	case <-pongReceived:
+	case <-time.After(2 * time.Second):
+		t.Fatal("server did not receive the automatic pong")
 	}
 }
 
@@ -209,4 +221,3 @@ func TestWebSocketPermessageDeflateNegotiation(t *testing.T) {
 	}
 	_ = msgType
 }
-

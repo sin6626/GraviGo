@@ -793,7 +793,7 @@ class MermaidParser {
         // Parse status flags
         val statusFlags = mutableListOf<String>()
         while (tokens.isNotEmpty() && tokens.first() in listOf("done", "active", "crit")) {
-            statusFlags.add(tokens.removeFirst())
+            statusFlags.add(tokens.removeAt(0))
         }
 
         status = when {

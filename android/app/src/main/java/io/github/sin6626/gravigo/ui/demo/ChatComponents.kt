@@ -1,0 +1,1102 @@
+package io.github.sin6626.gravigo.ui.demo
+
+import io.github.sin6626.gravigo.i18n.appString
+
+import android.content.Intent
+import android.net.Uri
+import coil.compose.AsyncImage
+import coil.imageLoader
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.ui.platform.LocalContext
+import io.github.sin6626.gravigo.ui.chat.PendingImage
+import io.github.sin6626.gravigo.ui.chat.PendingFile
+import io.github.sin6626.gravigo.ui.chat.VoiceInputPhase
+import io.github.sin6626.gravigo.ui.chat.VoiceInputUiState
+import io.github.sin6626.gravigo.data.model.WorkspaceContextItem
+import io.github.sin6626.gravigo.data.model.SlashCommandDefinition
+import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.AttachFile
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Icon
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateBounds
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.layout.LookaheadScope
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.window.PopupPositionProvider
+
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardOptions
+import io.github.sin6626.gravigo.R
+import androidx.compose.ui.res.stringResource
+
+@Composable
+internal fun GradientTopBar(height: Dp, content: @Composable () -> Unit) {
+    Box(Modifier.fillMaxWidth().height(height + 16.dp)) {
+        Box(Modifier.matchParentSize().background(Brush.verticalGradient(
+            0f to Color.White.copy(alpha = .94f), .35f to Color.White.copy(alpha = .80f),
+            .75f to Color.White.copy(alpha = .38f), 1f to Color.Transparent)))
+        content()
+    }
+}
+
+internal val Ink = Color(0xFF111111)
+internal val SecondaryInk = Color(0xFF666666)
+internal val AccentBlue = Color(0xFF0A84FF)
+private val symbolFont = FontFamily(Font(R.font.material_symbols_outlined))
+private val symbolCodepoints = mapOf(
+    "content_copy" to "\uE14D",
+    "chat_bubble" to "\uE0CA",
+    "edit_square" to "\uF88D",
+    "add" to "\uE145",
+    "computer" to "\uE30A",
+    "folder" to "\uE2C7",
+    "more_horiz" to "\uE5D3",
+    "more_vert" to "\uE5D4",
+    "push_pin" to "\uF10D",
+    "archive" to "\uE149",
+    "unarchive" to "\uE169",
+    "undo" to "\uE166",
+    "delete" to "\uE872",
+    "edit" to "\uE3C9",
+    "menu" to "\uE5D2",
+    "mic" to "\uE029",
+    "person" to "\uE7FD",
+    "search" to "\uE8B6",
+    "thumb_up" to "\uE817",
+    "arrow_upward" to "\uE5D8",
+)
+
+@Composable
+internal fun Symbol(
+    name: String,
+    modifier: Modifier = Modifier,
+    size: Int = 28,
+    color: Color = Ink,
+) {
+    val iconSize = with(LocalDensity.current) { size.dp.toSp() }
+    Text(
+        text = symbolCodepoints[name] ?: symbolCodepoints.getValue("computer"),
+        modifier = modifier,
+        color = color,
+        maxLines = 1,
+        style = TextStyle(
+            fontFamily = symbolFont,
+            fontSize = iconSize,
+            lineHeight = iconSize,
+        ),
+    )
+}
+
+@Composable
+internal fun RoundIconButton(
+    icon: String,
+    label: String,
+    onClick: () -> Unit,
+    size: Dp = 40.dp,
+    iconSize: Int = 24,
+    background: Color = Color.White,
+) {
+    Box(Modifier.size(48.dp).semantics { contentDescription = label }
+        .quietClickable(CircleShape, onClick = onClick),
+        contentAlignment = Alignment.Center) {
+        Surface(modifier = Modifier.size(size), shape = CircleShape, color = background, shadowElevation = 1.dp) {
+            Box(contentAlignment = Alignment.Center) {
+                if (icon == "arrow_back") {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(iconSize.dp))
+                } else Symbol(icon, size = iconSize)
+            }
+        }
+    }
+}
+
+@Composable
+internal fun EmptyTopBar(
+    onMenu: () -> Unit,
+    tabPosition: Float,
+    onChat: () -> Unit,
+    onProjects: () -> Unit,
+    onUnsupported: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        RoundIconButton("menu", appString(R.string.msg_edb98581834c), onMenu)
+        val density = LocalDensity.current
+        Box(Modifier.width(160.dp).height(48.dp)) {
+            Box(Modifier.fillMaxWidth().height(40.dp).align(Alignment.Center)
+                .background(Color(0xFFF4F4F4), RoundedCornerShape(24.dp)))
+            Box(Modifier.align(Alignment.CenterStart).padding(start = 4.dp).width(76.dp).height(32.dp)
+                .graphicsLayer { translationX = with(density) { (76.dp * tabPosition.coerceIn(0f, 1f)).toPx() } }
+                .background(Color.White, RoundedCornerShape(20.dp)))
+            Row(Modifier.padding(horizontal = 4.dp)) {
+                Box(Modifier.width(76.dp).height(48.dp).semantics { selected = tabPosition < 0.5f }
+                    .quietClickable(RoundedCornerShape(24.dp), onClick = onChat), contentAlignment = Alignment.Center) {
+                    Text(appString(R.string.msg_4b3510b8d86e), fontSize = 16.sp, color = Ink)
+                }
+                Box(Modifier.width(76.dp).height(48.dp).semantics { selected = tabPosition >= 0.5f }
+                    .quietClickable(RoundedCornerShape(24.dp), onClick = onProjects), contentAlignment = Alignment.Center) {
+                    Text(appString(R.string.msg_79f326be4409), fontSize = 16.sp, color = Ink)
+                }
+            }
+        }
+        RoundIconButton("chat_bubble", appString(R.string.msg_19c7365c3578), onUnsupported)
+    }
+}
+
+@Composable
+internal fun ConversationTopBar(
+    returnToProjects: Boolean,
+    onLeading: () -> Unit,
+    onNewChat: () -> Unit,
+    onRename: () -> Unit,
+    onDelete: () -> Unit,
+    actionsEnabled: Boolean = true,
+    title: String = appString(R.string.msg_a91ae6035092),
+    isPinned: Boolean = false,
+    isArchived: Boolean = false,
+    onPin: () -> Unit = {},
+    onArchive: () -> Unit = {},
+    onReviewChanges: (() -> Unit)? = null,
+    leadingDescription: String = if (returnToProjects) appString(R.string.msg_bb14d7c41431) else appString(R.string.msg_edb98581834c),
+) {
+    var menuOpen by remember { mutableStateOf(false) }
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        RoundIconButton(
+            if (returnToProjects) "arrow_back" else "menu",
+            leadingDescription,
+            onLeading,
+        )
+        Spacer(Modifier.weight(1f))
+        Row(
+            modifier = Modifier.background(Color.White, RoundedCornerShape(32.dp)),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            RoundIconButton("edit_square", appString(R.string.msg_08d90be0bab0), onNewChat)
+            Box {
+                RoundIconButton("more_vert", appString(R.string.msg_c611656faf0c), { menuOpen = true })
+                ConversationActionsMenu(menuOpen, { menuOpen = false }, title, isPinned, isArchived, actionsEnabled,
+                    { menuOpen = false; onRename() }, { menuOpen = false; onPin() },
+                    { menuOpen = false; onArchive() }, { menuOpen = false; onDelete() },
+                    onReview = onReviewChanges?.let { review -> { menuOpen = false; review() } })
+            }
+        }
+    }
+}
+
+@Composable
+internal fun ComposerPlusMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onTakePhoto: () -> Unit,
+    onPickImage: () -> Unit,
+    onPickFile: () -> Unit,
+) {
+    val visibility = remember { MutableTransitionState(false) }
+    visibility.targetState = expanded
+    if (!expanded && visibility.isIdle && !visibility.currentState) return
+
+    val density = LocalDensity.current
+    // 向上弹出定位在加号按钮上方
+    val offsetY = with(density) { (-190).dp.roundToPx() }
+
+    Popup(
+        alignment = Alignment.TopStart,
+        offset = IntOffset(x = 0, y = offsetY),
+        onDismissRequest = onDismissRequest,
+        properties = PopupProperties(focusable = expanded)
+    ) {
+        AnimatedVisibility(visibility, enter = EnterTransition.None, exit = ExitTransition.None) {
+        val progress by transition.animateFloat(
+            transitionSpec = { tween(if (targetState == EnterExitState.Visible) 160 else 100) }, label = "plus menu appearance") {
+            if (it == EnterExitState.Visible) 1f else 0f
+        }
+        val shape = RoundedCornerShape(26.dp)
+        Surface(
+            modifier = Modifier
+                .width(185.dp)
+                .graphicsLayer {
+                    alpha = progress
+                    scaleX = .96f + .04f * progress
+                    scaleY = scaleX
+                    transformOrigin = TransformOrigin(0f, 1f)
+                    compositingStrategy = CompositingStrategy.ModulateAlpha
+                    this.shape = shape
+                    shadowElevation = 16.dp.toPx() * progress
+                    ambientShadowColor = Color.Black.copy(alpha = progress)
+                    spotShadowColor = Color(0x33000000).copy(alpha = .2f * progress)
+                }
+                .border(1.dp, Color(0xFFEEEEEE), shape)
+                .then(if (!expanded) Modifier.clearAndSetSemantics {} else Modifier),
+            shape = shape,
+            color = Color.White
+        ) {
+            Column(
+                modifier = Modifier.padding(vertical = 10.dp, horizontal = 10.dp)
+            ) {
+                // 1. 拍照
+                PlusMenuItem(
+                    icon = Icons.Outlined.PhotoCamera,
+                    label = appString(R.string.msg_6e3a10ade7c7),
+                    enabled = expanded,
+                    onClick = {
+                        onDismissRequest()
+                        onTakePhoto()
+                    }
+                )
+
+                Spacer(Modifier.height(4.dp))
+
+                // 2. 图片
+                PlusMenuItem(
+                    icon = Icons.Outlined.Image,
+                    label = appString(R.string.msg_d24c10d37db0),
+                    enabled = expanded,
+                    onClick = {
+                        onDismissRequest()
+                        onPickImage()
+                    }
+                )
+
+                Spacer(Modifier.height(4.dp))
+
+                // 3. 文件
+                PlusMenuItem(
+                    icon = Icons.Outlined.AttachFile,
+                    label = appString(R.string.msg_39932f24fe11),
+                    enabled = expanded,
+                    onClick = {
+                        onDismissRequest()
+                        onPickFile()
+                    }
+                )
+            }
+        }
+        }
+    }
+}
+
+@Composable
+private fun PlusMenuItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(vertical = 8.dp, horizontal = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .background(Color(0xFFF1F1F1), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color(0xFF1E1E1E),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Spacer(Modifier.width(12.dp))
+        Text(
+            text = label,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color(0xFF1E1E1E)
+        )
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+internal fun Composer(
+    modifier: Modifier = Modifier,
+    activeConversation: Boolean,
+    draft: String,
+    attachments: List<PendingImage>,
+    fileAttachment: PendingFile? = null,
+    workspaceContexts: List<WorkspaceContextItem> = emptyList(),
+    slashCommand: SlashCommandDefinition? = null,
+    contextSuggestions: List<WorkspaceContextItem> = emptyList(),
+    commandSuggestions: List<SlashCommandDefinition> = emptyList(),
+    isLoadingContextSuggestions: Boolean = false,
+    isLoadingCommandSuggestions: Boolean = false,
+    contextSuggestionsError: String? = null,
+    commandSuggestionsError: String? = null,
+    onDraftChange: (String) -> Unit,
+    onAddImage: () -> Unit = {},
+    onTakePhoto: () -> Unit = {},
+    onPickImage: () -> Unit = onAddImage,
+    onPickFile: () -> Unit = {},
+    onRemoveImage: (Uri) -> Unit,
+    onRemoveFile: () -> Unit = {},
+    onSearchWorkspaceContexts: (String) -> Unit = {},
+    onSearchSlashCommands: (String) -> Unit = {},
+    onAddWorkspaceContext: (WorkspaceContextItem) -> Unit = {},
+    onRemoveWorkspaceContext: (String) -> Unit = {},
+    onSelectSlashCommand: (SlashCommandDefinition) -> Unit = {},
+    onRemoveSlashCommand: () -> Unit = {},
+    onDismissSuggestions: () -> Unit = {},
+    onSend: () -> Unit,
+    isSending: Boolean,
+    sendBlocked: Boolean = false,
+    onUnsupported: () -> Unit,
+    voiceInput: VoiceInputUiState = VoiceInputUiState(),
+    onStartVoice: () -> Unit = onUnsupported,
+    onStopVoice: () -> Unit = {},
+    onCancelVoice: () -> Unit = {},
+    onRetryVoice: () -> Unit = {},
+    onDismissVoiceError: () -> Unit = {},
+    isRunning: Boolean = false,
+    isStopping: Boolean = false,
+    onStop: () -> Unit = {},
+    shadowAlpha: Float = 1f,
+    modelBadge: String? = null,
+    onOpenModelConfig: () -> Unit = {},
+    modelEnabled: Boolean = true,
+    workModeLabel: String? = null,
+    planningMode: Boolean = false,
+    workModeDescription: String = "",
+    onOpenWorkMode: () -> Unit = {},
+    workModeEnabled: Boolean = true,
+    inputFocusRequester: FocusRequester? = null,
+) {
+    val trigger = remember(draft) { composerTrigger(draft) }
+    LaunchedEffect(trigger) {
+        when (trigger?.kind) {
+            '@' -> onSearchWorkspaceContexts(trigger.query)
+            '/' -> onSearchSlashCommands(trigger.query)
+            else -> onDismissSuggestions()
+        }
+    }
+    val voiceActive = voiceInput.phase in setOf(VoiceInputPhase.RECORDING, VoiceInputPhase.FINALIZING)
+    val canSend = (draft.isNotBlank() || attachments.isNotEmpty() || fileAttachment != null ||
+        workspaceContexts.isNotEmpty() || slashCommand != null) && !isSending && !sendBlocked && !isStopping && !voiceActive
+    var focused by remember { mutableStateOf(false) }
+    var plusMenuOpen by remember { mutableStateOf(false) }
+    val expanded = focused || attachments.isNotEmpty() || fileAttachment != null ||
+        workspaceContexts.isNotEmpty() || slashCommand != null || trigger != null ||
+        voiceInput.phase != VoiceInputPhase.IDLE
+    val targetHorizontalPadding = if (activeConversation || expanded) 14.dp else 34.dp
+    val targetCorner = if (expanded) 30.dp else 36.dp
+    val corner by animateDpAsState(targetCorner,
+        animationSpec = tween(220, easing = FastOutSlowInEasing), label = "composer corner")
+    val settingsAlpha by animateFloatAsState(if (expanded) 1f else 0f, tween(160), label = "composer settings")
+    val stopVisibility = remember { MutableTransitionState(false) }
+    stopVisibility.targetState = isRunning && canSend && !isSending && !isStopping
+    LookaheadScope {
+    Surface(
+        modifier = modifier.animateBounds(this,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = targetHorizontalPadding),
+            boundsTransform = { _, _ -> tween(220, easing = FastOutSlowInEasing) })
+            .shadow(8.dp * shadowAlpha, RoundedCornerShape(corner), clip = false,
+                ambientColor = Color.Black.copy(alpha = shadowAlpha), spotColor = Color.Black.copy(alpha = shadowAlpha)),
+        shape = RoundedCornerShape(corner),
+        color = Color.White,
+    ) {
+        Column(Modifier.fillMaxWidth()) {
+            AnimatedVisibility(trigger != null, enter = expandVertically(tween(180), expandFrom = Alignment.Bottom) + fadeIn(tween(120)),
+                exit = shrinkVertically(tween(160), shrinkTowards = Alignment.Bottom) + fadeOut(tween(100))) {
+                trigger?.let {
+                    ComposerSuggestionPanel(
+                        trigger = it,
+                        contexts = contextSuggestions,
+                        commands = commandSuggestions,
+                        loading = if (it.kind == '@') isLoadingContextSuggestions else isLoadingCommandSuggestions,
+                        error = if (it.kind == '@') contextSuggestionsError else commandSuggestionsError,
+                        onRetry = { if (it.kind == '@') onSearchWorkspaceContexts(it.query) else onSearchSlashCommands(it.query) },
+                        onContext = { item ->
+                            onDraftChange(removeComposerTrigger(draft))
+                            onAddWorkspaceContext(item)
+                            inputFocusRequester?.requestFocus()
+                        },
+                        onCommand = { command ->
+                            onDraftChange(removeComposerTrigger(draft))
+                            onSelectSlashCommand(command)
+                            inputFocusRequester?.requestFocus()
+                        },
+                    )
+                }
+            }
+            AnimatedVisibility(workspaceContexts.isNotEmpty() || slashCommand != null,
+                enter = expandVertically(tween(180), expandFrom = Alignment.Top) + fadeIn(tween(120)),
+                exit = shrinkVertically(tween(180), shrinkTowards = Alignment.Top) + fadeOut(tween(100))) {
+                ComposerContextTray(workspaceContexts, slashCommand, onRemoveWorkspaceContext, onRemoveSlashCommand)
+            }
+            AnimatedVisibility(attachments.isNotEmpty() || fileAttachment != null, enter = expandVertically(tween(180), expandFrom = Alignment.Top) + fadeIn(tween(120)),
+                exit = shrinkVertically(tween(180), shrinkTowards = Alignment.Top) + fadeOut(tween(100))) {
+                Column(Modifier.padding(start = 20.dp, end = 12.dp, top = 12.dp, bottom = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (attachments.isNotEmpty()) AttachmentTray(attachments, onRemoveImage)
+                    fileAttachment?.let { FileAttachmentChip(it, onRemoveFile) }
+                }
+            }
+            AnimatedVisibility(voiceInput.phase != VoiceInputPhase.IDLE,
+                enter = expandVertically(tween(180), expandFrom = Alignment.Top) + fadeIn(tween(120)),
+                exit = shrinkVertically(tween(160), shrinkTowards = Alignment.Top) + fadeOut(tween(100))) {
+                VoiceInputBar(voiceInput, onStopVoice, onCancelVoice, onRetryVoice, onDismissVoiceError)
+            }
+            Layout(content = {
+                Box(Modifier.animateBounds(this@LookaheadScope, boundsTransform = { _, _ -> tween(220) })) {
+                    ComposerIcon("add", appString(R.string.msg_8abdb4768552), 32, { plusMenuOpen = true })
+                    ComposerPlusMenu(plusMenuOpen, { plusMenuOpen = false }, onTakePhoto, onPickImage, onPickFile)
+                }
+                ComposerTextField(draft, onDraftChange, onSend, canSend && !voiceActive,
+                    stringResource(if (activeConversation) R.string.chat_reply_placeholder else R.string.chat_placeholder,
+                        stringResource(R.string.app_name)),
+                    Modifier.animateBounds(this@LookaheadScope, boundsTransform = { _, _ -> tween(220) })
+                        .padding(vertical = 12.dp)
+                        .then(inputFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier)
+                        .onFocusChanged { focused = it.isFocused }, expanded, enabled = !voiceActive)
+                Box(Modifier.animateBounds(this@LookaheadScope, boundsTransform = { _, _ -> tween(220) })
+                    .graphicsLayer { alpha = settingsAlpha }
+                    .then(if (!expanded) Modifier.clearAndSetSemantics {} else Modifier)) {
+                    if (expanded || settingsAlpha > 0f) ComposerSettings(expanded, modelBadge, onOpenModelConfig, modelEnabled,
+                        workModeLabel, workModeDescription, onOpenWorkMode, workModeEnabled, planningMode)
+                }
+                Box(Modifier.animateBounds(this@LookaheadScope, boundsTransform = { _, _ -> tween(220) })) {
+                    if (voiceInput.phase == VoiceInputPhase.IDLE) ComposerIcon("mic", appString(R.string.msg_2fdc91e671fd), 27, onStartVoice)
+                }
+                Box(Modifier.animateBounds(this@LookaheadScope, boundsTransform = { _, _ -> tween(220) })) {
+                    SendAction(canSend, onSend, isRunning, isSending, isStopping, onStop, stopVisibility)
+                }
+            }, modifier = Modifier.fillMaxWidth()) { children, constraints ->
+                val width = constraints.maxWidth
+                val action = 48.dp.roundToPx()
+                val add = children[0].measure(Constraints.fixed(action, action))
+                val sendWidth = if (stopVisibility.currentState || stopVisibility.targetState || !stopVisibility.isIdle) action * 2 else action
+                val send = children[4].measure(Constraints.fixed(sendWidth, action))
+                val micWidth = if (voiceInput.phase == VoiceInputPhase.IDLE) action else 0
+                val mic = children[3].measure(Constraints.fixed(micWidth, action))
+                val textWidth = (if (expanded) width - 40.dp.roundToPx()
+                    else width - 24.dp.roundToPx() - action - micWidth - sendWidth).coerceAtLeast(0)
+                val field = children[1].measure(Constraints(minWidth = textWidth, maxWidth = textWidth))
+                val settingsWidth = (width - 32.dp.roundToPx() - action - micWidth - sendWidth).coerceAtLeast(0)
+                val settings = children[2].measure(Constraints.fixed(settingsWidth, action))
+                val height = if (expanded) field.height + 60.dp.roundToPx() else maxOf(58.dp.roundToPx(), field.height)
+                layout(width, height) {
+                    val actionY = if (expanded) field.height + 3.dp.roundToPx() else (height - action) / 2
+                    add.placeRelative(if (expanded) 20.dp.roundToPx() else 12.dp.roundToPx(), actionY)
+                    field.placeRelative(if (expanded) 20.dp.roundToPx() else 12.dp.roundToPx() + action,
+                        if (expanded) 0 else (height - field.height) / 2)
+                    settings.placeRelative(20.dp.roundToPx() + action, actionY)
+                    mic.placeRelative(width - 12.dp.roundToPx() - sendWidth - micWidth, actionY)
+                    send.placeRelative(width - 12.dp.roundToPx() - sendWidth, actionY)
+                }
+            }
+        }
+    }
+    }
+}
+
+internal data class ComposerTrigger(val kind: Char, val query: String, val start: Int)
+
+internal fun composerTrigger(value: String): ComposerTrigger? {
+    val match = Regex("(?:^|\\s)([@/])([^\\s@/]*)$").find(value) ?: return null
+    val markerIndex = match.range.first + if (match.value.first().isWhitespace()) 1 else 0
+    return ComposerTrigger(value[markerIndex], value.substring(markerIndex + 1), markerIndex)
+}
+
+internal fun removeComposerTrigger(value: String): String {
+    val trigger = composerTrigger(value) ?: return value
+    return value.removeRange(trigger.start, value.length)
+}
+
+@Composable
+private fun ComposerSuggestionPanel(
+    trigger: ComposerTrigger,
+    contexts: List<WorkspaceContextItem>,
+    commands: List<SlashCommandDefinition>,
+    loading: Boolean,
+    error: String?,
+    onRetry: () -> Unit,
+    onContext: (WorkspaceContextItem) -> Unit,
+    onCommand: (SlashCommandDefinition) -> Unit,
+) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp)
+        .semantics { contentDescription = if (trigger.kind == '@') appString(R.string.msg_bc0cde82898e) else appString(R.string.msg_924d8140c1c6) }) {
+        Text(if (trigger.kind == '@') appString(R.string.msg_14e4d3d5ee95) else appString(R.string.msg_e53f35dc006b), color = SecondaryInk,
+            fontSize = 12.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp))
+        when {
+            loading -> Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center) {
+                CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = AccentBlue)
+                Spacer(Modifier.width(10.dp)); Text(appString(R.string.msg_1986994f3057), color = SecondaryInk, fontSize = 14.sp)
+            }
+            error != null -> Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(start = 10.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                Text(error, color = SecondaryInk, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                TextButton(onClick = onRetry, modifier = Modifier.heightIn(min = 48.dp)) { Text(appString(R.string.msg_b8784c8dd563), color = AccentBlue) }
+            }
+            trigger.kind == '@' && contexts.isEmpty() || trigger.kind == '/' && commands.isEmpty() ->
+                Text(if (trigger.query.isBlank()) appString(R.string.msg_27017421c8cd) else appString(R.string.msg_f5a42d5a6cd1, trigger.query),
+                    color = SecondaryInk, fontSize = 14.sp, modifier = Modifier.padding(horizontal = 10.dp, vertical = 16.dp))
+            trigger.kind == '@' -> contexts.take(6).forEach { item ->
+                SuggestionRow(
+                    icon = if (item.type == "directory") "folder" else "attach_file",
+                    title = item.name,
+                    subtitle = listOf(item.rootName, item.relativePath).filter(String::isNotBlank).joinToString(" · "),
+                    description = appString(R.string.msg_1d583119842e, if (item.type == "directory") appString(R.string.msg_52daa71ebc31) else appString(R.string.msg_39932f24fe11), item.relativePath),
+                    onClick = { onContext(item) },
+                )
+            }
+            else -> commands.take(6).forEach { command ->
+                SuggestionRow(
+                    icon = "computer",
+                    title = "/${command.info.name}",
+                    subtitle = command.description.ifBlank { command.title },
+                    description = appString(R.string.msg_1502d5c4505a, command.info.name),
+                    onClick = { onCommand(command) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SuggestionRow(icon: String, title: String, subtitle: String, description: String, onClick: () -> Unit) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).clip(RoundedCornerShape(14.dp))
+        .quietClickable(RoundedCornerShape(14.dp), onClick = onClick)
+        .semantics { contentDescription = description }.padding(horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(38.dp).background(AccentBlue.copy(alpha = .09f), RoundedCornerShape(11.dp)),
+            contentAlignment = Alignment.Center) {
+            if (icon == "attach_file") Icon(Icons.Outlined.AttachFile, null, tint = AccentBlue, modifier = Modifier.size(20.dp))
+            else Symbol(icon, size = 20, color = AccentBlue)
+        }
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, color = Ink, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (subtitle.isNotBlank()) Text(subtitle, color = SecondaryInk, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
+
+@Composable
+private fun ComposerContextTray(
+    contexts: List<WorkspaceContextItem>,
+    command: SlashCommandDefinition?,
+    onRemoveContext: (String) -> Unit,
+    onRemoveCommand: () -> Unit,
+) {
+    LazyRow(Modifier.fillMaxWidth().padding(start = 18.dp, end = 12.dp, top = 10.dp, bottom = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        command?.let { selected ->
+            item("command:${selected.info.name}") {
+                ComposerContextChip("computer", "/${selected.info.name}", appString(R.string.msg_30aa74acd8c6, selected.info.name), onRemoveCommand)
+            }
+        }
+        items(contexts, key = { it.uri }) { context ->
+            ComposerContextChip(if (context.type == "directory") "folder" else "attach_file", context.relativePath,
+                appString(R.string.msg_94268f283730, if (context.type == "directory") appString(R.string.msg_52daa71ebc31) else appString(R.string.msg_39932f24fe11), context.relativePath)) {
+                onRemoveContext(context.uri)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ComposerContextChip(icon: String, label: String, description: String, onRemove: () -> Unit) {
+    Surface(color = AccentBlue.copy(alpha = .08f), shape = RoundedCornerShape(14.dp),
+        modifier = Modifier.heightIn(min = 48.dp).widthIn(max = 260.dp).semantics { contentDescription = description }) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Spacer(Modifier.width(12.dp))
+            if (icon == "attach_file") Icon(Icons.Outlined.AttachFile, null, tint = AccentBlue, modifier = Modifier.size(18.dp))
+            else Symbol(icon, size = 18, color = AccentBlue)
+            Spacer(Modifier.width(7.dp))
+            Text(label, color = Ink, fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 1,
+                overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+            Box(Modifier.size(48.dp).semantics { contentDescription = appString(R.string.msg_fc8c501995b8, label) }
+                .quietClickable(CircleShape, onClick = onRemove), contentAlignment = Alignment.Center) {
+                Icon(Icons.Filled.Close, null, tint = SecondaryInk, modifier = Modifier.size(18.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun VoiceInputBar(
+    state: VoiceInputUiState,
+    onStop: () -> Unit,
+    onCancel: () -> Unit,
+    onRetry: () -> Unit,
+    onDismissError: () -> Unit,
+) {
+    Surface(
+        color = if (state.phase == VoiceInputPhase.ERROR) Color(0xFFFFF4F2) else Color(0xFFF4F7FA),
+        shape = RoundedCornerShape(18.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 10.dp),
+    ) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 58.dp).padding(horizontal = 6.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+            when (state.phase) {
+                VoiceInputPhase.RECORDING -> {
+                    Box(Modifier.size(48.dp).semantics { contentDescription = appString(R.string.msg_6da08c856c79) }
+                        .quietClickable(CircleShape, onClick = onCancel), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Filled.Close, null, tint = SecondaryInk, modifier = Modifier.size(21.dp))
+                    }
+                    Row(Modifier.weight(1f).height(30.dp), horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically) {
+                        listOf(.45f, .72f, 1f, .68f, .42f).forEachIndexed { index, weight ->
+                            val height by animateDpAsState(
+                                (6f + 24f * (state.level * 5f * weight).coerceIn(0f, 1f)).dp,
+                                animationSpec = tween(90),
+                                label = "voice level $index",
+                            )
+                            Box(Modifier.width(4.dp).height(height).background(AccentBlue, RoundedCornerShape(2.dp)))
+                        }
+                        Spacer(Modifier.width(6.dp))
+                        Text(formatVoiceDuration(state.elapsedMillis), color = Ink, fontSize = 14.sp,
+                            fontFamily = FontFamily.Monospace)
+                    }
+                    Box(Modifier.size(48.dp).semantics { contentDescription = appString(R.string.msg_c8d06582ecb1) }
+                        .quietClickable(CircleShape, onClick = onStop), contentAlignment = Alignment.Center) {
+                        Box(Modifier.size(32.dp).background(Color(0xFFFF453A), CircleShape), contentAlignment = Alignment.Center) {
+                            Box(Modifier.size(11.dp).background(Color.White, RoundedCornerShape(2.dp)))
+                        }
+                    }
+                }
+                VoiceInputPhase.FINALIZING -> {
+                    Spacer(Modifier.width(12.dp))
+                    CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = AccentBlue)
+                    Spacer(Modifier.width(12.dp))
+                    Text(appString(R.string.msg_c9dc21c280c8), color = Ink, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                    TextButton(onClick = onCancel, modifier = Modifier.heightIn(min = 48.dp)) {
+                        Text(appString(R.string.msg_2cd0f3be8738), color = AccentBlue)
+                    }
+                }
+                VoiceInputPhase.ERROR -> {
+                    Spacer(Modifier.width(12.dp))
+                    Text(state.error ?: appString(R.string.msg_b55c72a9621d), color = Color(0xFFC7362F), fontSize = 13.sp,
+                        maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                    TextButton(onClick = onRetry, modifier = Modifier.heightIn(min = 48.dp)) {
+                        Text(appString(R.string.msg_b8784c8dd563), color = AccentBlue)
+                    }
+                    Box(Modifier.size(48.dp).semantics { contentDescription = appString(R.string.msg_9e0798f40754) }
+                        .quietClickable(CircleShape, onClick = onDismissError), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Filled.Close, null, tint = SecondaryInk, modifier = Modifier.size(20.dp))
+                    }
+                }
+                VoiceInputPhase.IDLE -> Unit
+            }
+        }
+    }
+}
+
+private fun formatVoiceDuration(elapsedMillis: Long): String {
+    val seconds = (elapsedMillis / 1_000).coerceAtLeast(0)
+    return "%02d:%02d".format(seconds / 60, seconds % 60)
+}
+
+@Composable
+private fun ComposerSettings(
+    active: Boolean,
+    modelBadge: String?,
+    onOpenModelConfig: () -> Unit,
+    modelEnabled: Boolean,
+    workModeLabel: String?,
+    workModeDescription: String,
+    onOpenWorkMode: () -> Unit,
+    workModeEnabled: Boolean,
+    planningMode: Boolean,
+) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+        if (!workModeLabel.isNullOrBlank()) {
+            val modeColor by animateColorAsState(
+                if (planningMode) AccentBlue else SecondaryInk,
+                tween(180), label = "work mode color",
+            )
+            Box(
+                Modifier.heightIn(min = 48.dp).clip(RoundedCornerShape(10.dp))
+                    .then(if (active) Modifier.clickable(enabled = workModeEnabled, onClick = onOpenWorkMode) else Modifier)
+                    .semantics { contentDescription = workModeDescription }
+                    .padding(horizontal = 8.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(workModeLabel, color = modeColor, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+            }
+            Spacer(Modifier.width(2.dp))
+        }
+        if (!modelBadge.isNullOrBlank()) {
+            Text(
+                text = modelBadge,
+                color = Ink,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .clip(RoundedCornerShape(8.dp))
+                    .then(if (active) Modifier.clickable(enabled = modelEnabled, onClick = onOpenModelConfig) else Modifier)
+                    .padding(horizontal = 8.dp, vertical = 6.dp)
+                    .semantics { contentDescription = appString(R.string.msg_1afed6a81a25) }
+            )
+            Spacer(Modifier.width(4.dp))
+        }
+    }
+}
+
+@Composable
+private fun AttachmentTray(images: List<PendingImage>, onRemove: (Uri) -> Unit) {
+    var previewIndex by remember { mutableStateOf<Int?>(null) }
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        itemsIndexed(images, key = { _, img -> img.uri.toString() }) { index, image ->
+            Box(Modifier.animateItem(fadeInSpec = tween(120), placementSpec = tween(180), fadeOutSpec = null)) {
+                AsyncImage(
+                    model = image.bytes,
+                    contentDescription = appString(R.string.msg_8db65f00b525),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(58.dp).background(Color(0xFFF3F3F3), RoundedCornerShape(10.dp))
+                        .quietClickable(RoundedCornerShape(10.dp)) { previewIndex = index },
+                )
+                Box(Modifier.size(48.dp).align(Alignment.TopEnd)
+                    .semantics { contentDescription = appString(R.string.msg_6ffee1279beb) }
+                    .quietClickable(CircleShape) { onRemove(image.uri) }, contentAlignment = Alignment.TopEnd) {
+                    Icon(Icons.Filled.Close, null, tint = Ink, modifier = Modifier.size(22.dp).background(Color.White, CircleShape))
+                }
+            }
+        }
+    }
+    previewIndex?.let { idx ->
+        ImageViewer(
+            model = images.getOrNull(idx)?.bytes,
+            loader = LocalContext.current.imageLoader,
+            title = appString(R.string.msg_149e47d7db61),
+            onClose = { previewIndex = null },
+            index = idx,
+            count = images.size,
+            onSelect = { previewIndex = it },
+            modelAt = { images.getOrNull(it)?.bytes },
+            thumbnailAt = { images.getOrNull(it)?.bytes },
+        )
+    }
+}
+
+@Composable
+private fun SendAction(canSend: Boolean, onSend: () -> Unit, isRunning: Boolean, isSending: Boolean,
+    isStopping: Boolean, onStop: () -> Unit, stopVisibility: MutableTransitionState<Boolean>) {
+    val queueing = isRunning && canSend
+    Layout(content = {
+        Box(Modifier.then(if (!stopVisibility.targetState) Modifier.clearAndSetSemantics {} else Modifier)) {
+            AnimatedVisibility(
+                visibleState = stopVisibility,
+                enter = fadeIn(tween(120)),
+                exit = fadeOut(tween(100)),
+            ) {
+                Box(
+                    Modifier.size(48.dp).semantics { contentDescription = appString(R.string.msg_9ad0aac32ea3) }
+                        .quietClickable(CircleShape, enabled = stopVisibility.targetState, onClick = onStop),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Box(Modifier.size(40.dp).background(AccentBlue, CircleShape), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Filled.Close, contentDescription = null, tint = Color.White, modifier = Modifier.size(21.dp))
+                    }
+                }
+            }
+        }
+        val stopsGeneration = isRunning && !queueing && !isSending
+        val enabled = !isStopping && if (stopsGeneration) true else canSend
+        Box(
+            modifier = Modifier.size(48.dp)
+                .quietClickable(CircleShape, enabled = enabled, onClick = if (stopsGeneration) onStop else onSend)
+                .semantics {
+                    contentDescription = when {
+                        stopsGeneration -> appString(R.string.msg_9ad0aac32ea3)
+                        queueing || isSending && isRunning -> appString(R.string.msg_fae2482fd4b7)
+                        else -> appString(R.string.msg_008814832cf7)
+                    }
+                    stateDescription = if (isStopping) appString(R.string.msg_af48159f380f) else if (isSending) appString(R.string.msg_2d88d503d0ff) else ""
+                },
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(Modifier.size(44.dp).background(if (enabled || isStopping || isSending) AccentBlue else Color(0xFFD2D3D5), CircleShape), contentAlignment = Alignment.Center) {
+                Crossfade(targetState = if (isStopping || isSending) "busy" else if (stopsGeneration) "stop" else "send",
+                    animationSpec = androidx.compose.animation.core.tween(120), label = "send action") { action ->
+                    when (action) {
+                        "busy" -> CircularProgressIndicator(Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+                        "stop" -> Icon(Icons.Filled.Close, contentDescription = null, tint = Color.White, modifier = Modifier.size(23.dp))
+                        else -> Symbol("arrow_upward", size = 26, color = Color.White)
+                    }
+                }
+            }
+        }
+    }, modifier = Modifier.fillMaxWidth()) { children, constraints ->
+        val action = 48.dp.roundToPx()
+        val stop = children[0].measure(Constraints.fixed(action, action))
+        val send = children[1].measure(Constraints.fixed(action, action))
+        layout(constraints.maxWidth, action) {
+            stop.placeRelative(constraints.maxWidth - action * 2, 0)
+            send.placeRelative(constraints.maxWidth - action, 0)
+        }
+    }
+}
+
+@Composable
+private fun FileAttachmentChip(file: PendingFile, onRemove: () -> Unit) {
+    val context = LocalContext.current
+    fun openFile() {
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(file.uri, file.mimeType)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        runCatching {
+            context.startActivity(Intent.createChooser(intent, appString(R.string.msg_c524b527c211)))
+        }
+    }
+    Surface(
+        color = Color(0xFFF4F5F7),
+        shape = RoundedCornerShape(14.dp),
+        modifier = Modifier.fillMaxWidth().semantics {
+            contentDescription = appString(R.string.msg_60d85c776d5a, file.displayName, formatFileSize(file.size), file.mimeType)
+        },
+    ) {
+        Row(Modifier.heightIn(min = 58.dp).padding(start = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                Modifier.weight(1f).quietClickable(RoundedCornerShape(10.dp), onClick = ::openFile),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(Modifier.size(40.dp).background(AccentBlue.copy(alpha = .10f), RoundedCornerShape(11.dp)),
+                    contentAlignment = Alignment.Center) {
+                    Icon(Icons.Outlined.AttachFile, contentDescription = null, tint = AccentBlue, modifier = Modifier.size(21.dp))
+                }
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(file.displayName, color = Ink, fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(appString(R.string.msg_bded7fe554f9, formatFileSize(file.size), file.mimeType), color = SecondaryInk, fontSize = 12.sp,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+            Box(Modifier.size(48.dp).semantics { contentDescription = appString(R.string.msg_1ad0f884b0e6, file.displayName) }
+                .quietClickable(CircleShape, onClick = onRemove), contentAlignment = Alignment.Center) {
+                Icon(Icons.Filled.Close, contentDescription = null, tint = SecondaryInk, modifier = Modifier.size(20.dp))
+            }
+        }
+    }
+}
+
+private fun formatFileSize(bytes: Long): String = when {
+    bytes >= 1024 * 1024 -> "%.1f MB".format(bytes / (1024.0 * 1024.0))
+    bytes >= 1024 -> "%.1f KB".format(bytes / 1024.0)
+    else -> "$bytes B"
+}
+
+@Composable
+private fun ComposerIcon(icon: String, label: String, size: Int, action: () -> Unit, enabled: Boolean = true) {
+    Box(Modifier.size(48.dp).semantics { contentDescription = label }.quietClickable(CircleShape, enabled = enabled, onClick = action),
+        contentAlignment = Alignment.Center) { Symbol(icon, size = size) }
+}
+
+@Composable
+internal fun LoadFailure(error: String, loading: Boolean, onRetry: () -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier.fillMaxWidth().padding(horizontal = 18.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(error, color = SecondaryInk, fontSize = 14.sp, modifier = Modifier.weight(1f))
+        TextButton(enabled = !loading, onClick = onRetry) { Text(if (loading) appString(R.string.msg_ed1410cd5b1f) else appString(R.string.msg_b8784c8dd563), color = AccentBlue) }
+    }
+}
+
+@Composable
+private fun ComposerTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    onSend: () -> Unit,
+    canSend: Boolean,
+    placeholder: String,
+    modifier: Modifier,
+    expanded: Boolean,
+    enabled: Boolean = true,
+) {
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        enabled = enabled,
+        modifier = modifier,
+        textStyle = TextStyle(color = Ink, fontSize = 17.sp, lineHeight = 23.sp),
+        maxLines = if (expanded) 4 else 1,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+        keyboardActions = KeyboardActions(onSend = { if (canSend) onSend() }),
+        decorationBox = { inner ->
+            Box {
+                if (value.isEmpty()) Text(placeholder, color = Color(0xFF929292), fontSize = 17.sp,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis)
+                inner()
+            }
+        },
+    )
+}
+
+@Composable
+internal fun ConversationActionsMenu(expanded: Boolean, onDismiss: () -> Unit, title: String,
+    pinned: Boolean, archived: Boolean, enabled: Boolean, onRename: () -> Unit,
+    onPin: () -> Unit, onArchive: () -> Unit, onDelete: () -> Unit, showTitle: Boolean = true,
+    onReview: (() -> Unit)? = null) {
+    val visibility = remember { MutableTransitionState(false) }
+    visibility.targetState = expanded
+    if (!expanded && visibility.isIdle && !visibility.currentState) return
+    var origin by remember { mutableStateOf(TransformOrigin(1f, 0f)) }
+    val margin = with(LocalDensity.current) { 8.dp.roundToPx() }
+    val position = remember(margin) { object : PopupPositionProvider {
+        override fun calculatePosition(anchorBounds: IntRect, windowSize: IntSize,
+            layoutDirection: LayoutDirection, popupContentSize: IntSize): IntOffset {
+            val below = anchorBounds.bottom + margin
+            val opensBelow = below + popupContentSize.height <= windowSize.height - margin
+            origin = TransformOrigin(if (layoutDirection == LayoutDirection.Ltr) 1f else 0f, if (opensBelow) 0f else 1f)
+            val x = if (layoutDirection == LayoutDirection.Ltr) anchorBounds.right - popupContentSize.width else anchorBounds.left
+            val y = if (opensBelow) below else anchorBounds.top - popupContentSize.height - margin
+            return IntOffset(x.coerceIn(margin, (windowSize.width - popupContentSize.width - margin).coerceAtLeast(margin)),
+                y.coerceIn(margin, (windowSize.height - popupContentSize.height - margin).coerceAtLeast(margin)))
+        }
+    } }
+    androidx.compose.ui.window.Popup(popupPositionProvider = position, onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.PopupProperties(focusable = expanded)) {
+        AnimatedVisibility(visibility, enter = EnterTransition.None, exit = ExitTransition.None) {
+        val progress by transition.animateFloat(
+            transitionSpec = { tween(if (targetState == EnterExitState.Visible) 160 else 100) }, label = "menu appearance") {
+            if (it == EnterExitState.Visible) 1f else 0f
+        }
+        val shape = RoundedCornerShape(20.dp)
+        androidx.compose.material3.Surface(shape = shape, color = Color.White,
+            modifier = Modifier.width(220.dp).graphicsLayer {
+                alpha = progress
+                scaleX = .96f + .04f * progress
+                scaleY = scaleX
+                transformOrigin = origin
+                // Keep the fading shadow outside the card's rectangular bounds.
+                compositingStrategy = CompositingStrategy.ModulateAlpha
+                this.shape = shape
+                shadowElevation = 6.dp.toPx() * progress
+                ambientShadowColor = Color.Black.copy(alpha = progress)
+                spotShadowColor = ambientShadowColor
+            }.then(if (!expanded) Modifier.clearAndSetSemantics {} else Modifier)) {
+            Column(Modifier.padding(vertical = 6.dp)) {
+                if (showTitle) Row(Modifier.fillMaxWidth().quietClickable(enabled = enabled && expanded,
+                    pressedColor = Color(0xFFF1F1F1), onClick = onRename)
+                    .semantics { contentDescription = appString(R.string.msg_0d0cbac2eee5) }.padding(horizontal = 18.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Text(title, color = Color(0xFF8A8A8A), fontSize = 14.sp, maxLines = 2,
+                        overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                    Spacer(Modifier.width(12.dp)); Symbol("edit", size = 18, color = SecondaryInk)
+                }
+                if (!archived) ConversationMenuRow("push_pin", if (pinned) appString(R.string.msg_c92179b74af6) else appString(R.string.msg_173f88d28ebf), enabled && expanded, onPin)
+                if (!showTitle) ConversationMenuRow("edit", appString(R.string.msg_0d0cbac2eee5), enabled && expanded, onRename)
+                onReview?.let { ConversationMenuRow("edit_square", appString(R.string.msg_48a195ca7ea8), enabled && expanded, it) }
+                ConversationMenuRow(if (archived) "unarchive" else "archive", if (archived) appString(R.string.msg_cbe48cfa3a55) else appString(R.string.msg_5292ab1a36c5), enabled && expanded, onArchive)
+                ConversationMenuRow("delete", appString(R.string.msg_d51250d14a51), enabled && expanded, onDelete, Color(0xFFCC2332))
+            }
+        }
+        }
+    }
+}
+
+@Composable
+private fun ConversationMenuRow(icon: String, text: String, enabled: Boolean, onClick: () -> Unit, color: Color = Ink) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).quietClickable(enabled = enabled,
+        pressedColor = Color(0xFFF1F1F1), onClick = onClick)
+        .alpha(if (enabled) 1f else 0.45f).padding(horizontal = 18.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Symbol(icon, size = 22, color = color); Spacer(Modifier.width(14.dp))
+        Text(text, color = color, fontSize = 16.sp)
+    }
+}
