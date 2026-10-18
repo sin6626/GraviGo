@@ -907,3 +907,11 @@ android/app/src/main/java/com/antigravity/mobile/
 - 主网关 58900/PID15400 和原隧道保持运行；58901 仅供本机/模拟器访问，不开新公网隧道与通知。最终 GraviGo 与模拟器保持开启可开发。
 - 此问题的直接原因是模拟器配对依赖的独立网关未运行；不是重复模拟器进程冲突。电脑重启或手动关闭该网关后仍需恢复它，没有未经请求设置开机启动服务。上一条 blocked by policy 仅代表当时组合命令未执行，现已通过上述更小范围的原生配置恢复，不能继续表述为当前网关仍未启动。
 - 验证证据：.verification/2026-10-18-emulator-repair/app-connection-before.log、app-connection-restored.log、connection-verification-summary.json、studio-connected.png；所有内容忽略，不提交原始 API 数据或截图。
+
+### 2026-10-18 用户暂缓发布，先检查网关 CLI
+- 用户最初提到 Release，随后明确“你先别发布”“先去看看网关那个cli怎么样了”。当前授权为检查网关，不得创建 draft/public Release、打 tag、配置发布 Secrets 或替用户选择 AGPL 方案。AGPL 含义已用普通语言说明，未取得许可证选择同意。
+- 检查报告为 android/docs/gateway-cli-readiness-2026-10-18.md（英文）。发现源代码版本1.0.0，但现有 bin/mgy.exe 仍报 Multigravity (mgy) 1.0.3，不可直接当首发附件。
+- 从 90917b2 源码实际构建 Windows amd64 候选，Go1.26.9 / CGO_ENABLED=0 / trimpath / Version=1.0.0；候选在 .verification/2026-10-18-gateway-readiness/candidate/gravigo-gateway.exe，SHA256 6f545985d2590d9941f884505c4a30eb9ac7b7646889939105e4cccdaf28b9cb。未替换运行中的58900/58901二进制。
+- Go vet与全量测试通过。独立新端口/新鉴权数据实际验证 version/help、health200、真实桌面ready200、拒绝未鉴权请求、pair配对码、一次性码拒绝重放、list、鉴权读取工作区、clear实际撤销后失去访问，全部通过。临时进程与端口均已退出。
+- CLI检查发现待修项：clear不解析-port（仅环境变量选端口，与pair/list不一致）；撤销不存在的测试设备时打印失败但exit0；二维码打印的LAN URI写死58900，影响自定义本地端口（静态发现）；部分提示仍叫Multigravity/mgy；现工作流ZIP缺网关quick-start与完整依赖许可文本。此轮只检查与记录，没有修改业务代码。
+- 本机实测不代表macOS/Linux桌面端、Windows ARM、外网隧道、通知或所有账号语音能力可用。临时证据仅项目内忽略目录；主网关PID15400与管理网关PID23868保持运行，未发送真实消息或改原配对。
