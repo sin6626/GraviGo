@@ -11,7 +11,7 @@ The original inspection below records the initial findings. The owner subsequent
 - The project now uses AGPL-3.0-only, retaining the original MIT and component notices. Android includes license texts and a bilingual license entry; the gateway Web/PWA settings offer the public source link.
 - Local Go tests and vet, Android module tests/lint/builds, and the API 37 language and large-font settings tests passed. An isolated real gateway passed health/readiness, pairing, replay rejection, device listing, authenticated workspace reads, selected-port revocation, and missing-device failure checks. Existing gateways and app pairing data were preserved.
 
-Clean-commit packaging and remote CI are final verification steps; the sections below remain historical evidence from the initial inspection.
+Clean-commit packaging passed for implementation commit `924c693`: the 11-file gateway ZIP matches its binary/source metadata and includes complete licenses. The matching source ZIP passed CRC and tracked-file checks, excludes signing credentials and local caches, and includes the build scripts and Gradle wrapper. Remote CI is checked after pushing. The sections below remain historical evidence from the initial inspection.
 
 ## Candidate verified
 
