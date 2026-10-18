@@ -891,3 +891,11 @@ android/app/src/main/java/com/antigravity/mobile/
 - 已用保存的密码读取私钥并生成 CSR，随后从私有仓库重新 clone；9 个文件逐字节和 SHA256 校验一致，恢复副本能再次解锁私钥，证书指纹与元信息一致。验证副本也在项目内忽略目录，访问权限同样受限。
 - 不得因为公共仓库找不到 JKS 就重新生成身份。需要签名时先按本地私有备份 README 恢复或加载；不要将 `.signing/` 强制添加到公共仓库。此次没有配置其他仓库的 Actions Secrets，没有触发发布工作流。
 - 上一代码提交 `06fc9d9` 的最终 CI run `39113936361` 三项全部成功，debug APK 和报告产物已核实。main 已要求 GitHub Actions 的 android、go (ubuntu-24.04)、go (windows-latest) 三项检查；release 环境仅允许 main。
+
+### 2026-10-18 Pixel 9 模拟器壁纸空屏修复
+- 用户反馈模拟器坏了，怀疑进程未退出。只读核验当时只有一组 Pixel_9（launcher 8780 / qemu 40536），ADB emulator-5554 为 device、boot_completed=1；Studio 和设备实际截图均只有壁纸/状态栏，UI 层级却包含 Launcher 图标。按 HOME 仍空屏，复现显示异常，不能把 ADB online 当作模拟器可正常使用。
+- Studio 日志显示载入 default_boot 快照及画面连接断开记录。通过 adb emu kill 正常退出原实例，确认 qemu 退出后再启动一次；没有强杀、删除锁文件、Wipe Data、重装 App 或改配对。短暂的 emulator -kill <旧PID> -sleep 20 是退出辅助进程，随后自然退出，不是额外虚拟机。
+- 用 -no-snapshot-load -no-snapshot-save 对原 Pixel_9 冷启动；25.252 秒完成，设备截图与 Studio Running Devices 画面均恢复图标/导航栏。背景 UI 点击无效后仅对该操作前台投递，真实点击原 GraviGo 图标，前台 Activity 确认为 com.antigravity.mobile/MainActivity，能正常绘制和响应。与修复前的安装包列表逐项一致，用户数据保留。
+- 为避免下次继续读取异常快照，仅改 G:/XDG/config/.android/avd/Pixel_9.avd/config.ini 中 fastboot.forceColdBoot=yes、fastboot.forceFastBoot=no，并回读确认；原 config.ini 备份在本项目 .verification/2026-10-18-emulator-repair/config-before.ini。其他 AVD 配置未改。默认冷启动的后续启动速度会比快速恢复慢。
+- 最终模拟器保持运行：launcher 42972 / qemu 12768，Studio 自动重新接入，ADB device、boot_completed=1；没有残留旧 qemu 或测试进程。画面、日志、应用列表等证据仅存项目内忽略目录 .verification/2026-10-18-emulator-repair/。
+- 另发现旧 App 仍等待已配对的 58901 网关；58900 主网关/PID15400 健康200且原 cloudflared/PID27504 保持运行，58901 无响应。已核验原管理网关二进制与独立鉴权目录存在，尝试按原凭据恢复该端口，但启动命令在 CreateProcess 前被执行工具拒绝，仅返回 blocked by policy，具体规则未说明；没有启动发生，没有换工具或改写命令绕过。App 联网尚未恢复，不能把模拟器显示已修好说成网关也修好了，不要归因为用户开启自动审批。
