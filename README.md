@@ -31,6 +31,7 @@ Requirements:
 
 - Android SDK platform 37 (SDK package `platforms;android-37.0`), Build Tools 36.0.0, and JDK 25 to run the checked-in Gradle 9.7.1 wrapper. App bytecode targets Java 17; Android 8.0/API 26 or newer is required.
 - Go 1.26.9 for the gateway. Its web assets are embedded; no Node.js build is required.
+- Python 3 for the translation and source checks.
 
 Clone this repository and open `android/` in Android Studio. Set your SDK location through Android Studio or an untracked `android/local.properties` file. From the repository root:
 
@@ -71,6 +72,8 @@ Translations live in [`android/localization.json`](android/localization.json). A
 python android/scripts/localize_strings.py
 python android/scripts/localize_strings.py --check
 ```
+
+Lint remains blocking on errors. A direct source check rejects bidirectional control characters because lint 32.3.1's `BidiSpoofing` detector hangs while walking this app's Kotlin comments. Gradle runs `android/scripts/check_bidi.py` before lint analysis; the remaining lint checks run normally.
 
 ## Credits and licensing
 

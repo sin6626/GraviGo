@@ -869,3 +869,11 @@ android/app/src/main/java/com/antigravity/mobile/
 - AGPL 疑问已向用户解释：RikkaHub 的代码高亮模块，不是整个框架。保留模块与完整许可证，未擅自给 GraviGo 新增代码选全仓许可证；二进制公开分发仍需确认。原项目 MIT 文本已单独保留。
 - Android 新 namespace 的 Debug 与 AndroidTest Kotlin 编译通过；全模块单测 / lint 正在运行。已修 Windows 路径分隔符、规范化盘符、sqlite 换行断言。WebSocket 测试原先发 ping/echo 后立即关闭导致在途 pong 触发 TCP reset；改为持续读取至客户端结束并断言实际收到 pong，80 次聚焦循环通过。Go 全量测试和 vet 正在运行。
 - 后续：完成 lint / 仪器语言切换、签名缺失验证、独立审阅，Conventional Commits 中文说明提交并推送，核实远端 CI。不要把源代码有版本号说成已发布；不再尝试旧视频目录删除（之前工具拒绝）。
+
+### 2026-10-18 推送与首轮 CI 反馈
+- `ebb7f3d` 已推送 main，保留此前所有本地历史。GitHub CI run `39113403703` 实际触发，SDK 安装失败原因是 sdkmanager 不在 PATH，已改为 runner 镜像提供的 `$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager`。
+- 云端 Go Linux 暴露 commands_test 的 Windows 小写盘符硬编码；改为精确平台断言。Windows 暴露短路径/符号链接 allowlist 根与已解析候选路径不一致，现将允许根同样 EvalSymlinks 后比较；新增根别名允许、兄弟目录拒绝回归。符号链接逃逸测试改为每个平台真实存在的外部文件和显式 allowlist，避免用 Windows 不存在的 /etc/hosts。
+- 本机无创建符号链接特权，相关新回归在本机明确 SKIP；不得声称已本机跑过，云端 Linux/Windows 用例继续验证。其余 Go 全量重跑中。
+- API37 模拟器 LanguageSwitchTest 与 AppSettingsLayoutTest 两项通过，实际点击中文入口读回完整中文配对页。旧安装和已有配对数据未动，验证只对新 .debug 包。
+- Lint 32.3.1 的 BidirectionalTextDetector 连续多次卡在 KotlinUFile.allCommentsInFile（采样栈在 .verification）；单独排除实际 issue ID BidiSpoofing 后 70 秒完成并报告两项既有错误。现仅用源码字符扫描替代此项，Gradle lintAnalyze* 强制依赖 checkBidiControls，禁止 Java/Kotlin 真实与转义的双向控制字符；其余 lint errors 保持阻断。
+- 已修录音入口 MissingPermission（在实际调用边界再次检查权限），启动主题 API27 导航栏属性移到 values-v27，Mermaid List.removeFirst 已改 removeAt(0)。最终全量 Android 和 Go 复核中，修复提交尚待推送和新 CI 验证。

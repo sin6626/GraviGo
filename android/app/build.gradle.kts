@@ -60,6 +60,8 @@ android {
         abortOnError = true
         checkReleaseBuilds = true
         disable += "InvalidFragmentVersionForActivityResult"
+        // Lint 32.3.1 loops in KotlinUFile.allCommentsInFile; checkBidiControls checks source directly.
+        disable += "BidiSpoofing"
     }
 }
 
@@ -72,6 +74,13 @@ val validateReleaseSigning by tasks.registering {
     }
 }
 tasks.matching { it.name == "preReleaseBuild" }.configureEach { dependsOn(validateReleaseSigning) }
+
+val checkBidiControls by tasks.registering(Exec::class) {
+    workingDir(rootProject.projectDir.parentFile)
+    val python = if (System.getProperty("os.name").startsWith("Windows")) "python" else "python3"
+    commandLine(python, "android/scripts/check_bidi.py")
+}
+tasks.matching { it.name.startsWith("lintAnalyze") }.configureEach { dependsOn(checkBidiControls) }
 
 dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2026.09.00")

@@ -238,6 +238,10 @@ fun ChatDemoScreen(viewModel: ChatViewModel, onLeaveApp: () -> Unit, deferConver
     }
     val voiceRecorder = remember { VoiceRecorder() }
     fun startVoiceCapture() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            viewModel.failVoiceInput(appString(R.string.msg_78225580c828))
+            return
+        }
         viewModel.startVoiceInput()
         voiceRecorder.start(
             onAudio = viewModel::offerVoiceAudio,

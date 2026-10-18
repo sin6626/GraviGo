@@ -258,6 +258,9 @@ func IsSafeFilePath(path string) bool {
 
 	for _, prefix := range AllowedWorkspaceRoots() {
 		root := filepath.Clean(prefix)
+		if canonical, err := filepath.EvalSymlinks(root); err == nil {
+			root = canonical
+		}
 		candidate := resolved
 		if runtime.GOOS == "windows" {
 			root = strings.ToLower(root)

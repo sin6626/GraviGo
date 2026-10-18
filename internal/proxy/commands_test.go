@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -35,7 +36,11 @@ func TestHandleSlashCommandsUsesSelectedModelAndWorkspace(t *testing.T) {
 	if planner["planModel"] != "MODEL_PLACEHOLDER_M318" {
 		t.Fatalf("selected model was not applied: %#v", planner)
 	}
-	if got := received["workspaceUris"].([]interface{}); len(got) != 1 || got[0] != "file:///d:/Project" {
+	wantWorkspace := "file:///D:/Project"
+	if runtime.GOOS == "windows" {
+		wantWorkspace = "file:///d:/Project"
+	}
+	if got := received["workspaceUris"].([]interface{}); len(got) != 1 || got[0] != wantWorkspace {
 		t.Fatalf("unexpected workspaceUris: %#v", got)
 	}
 	if !strings.Contains(rec.Body.String(), `"name":"plan"`) {

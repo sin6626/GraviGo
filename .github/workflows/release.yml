@@ -34,7 +34,7 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: '1.26.9'
-      - run: sdkmanager --channel=0 'platforms;android-37.0' 'build-tools;36.0.0'
+      - run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --channel=0 "platforms;android-37.0" "build-tools;36.0.0"'
       - name: Build signed APK
         shell: bash
         env:

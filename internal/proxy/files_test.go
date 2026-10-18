@@ -315,20 +315,42 @@ func TestIsSafeFilePath_SymlinkAndSensitiveFiles(t *testing.T) {
 		}
 	}
 
-	// 2. Test Symlink escape attempt from inside whitelisted dir
-	projectsBase := filepath.Join(home, "Projects")
-	if err := os.MkdirAll(projectsBase, 0755); err == nil {
-		tempDir, err := os.MkdirTemp(projectsBase, "symlink-test-*")
-		if err == nil {
-			defer os.RemoveAll(tempDir)
-			targetFile := "/etc/hosts"
-			linkPath := filepath.Join(tempDir, "evil_symlink_hosts")
-			if os.Symlink(targetFile, linkPath) == nil {
-				if IsSafeFilePath(linkPath) {
-					t.Errorf("expected symlink pointing outside whitelist to be rejected: %s -> %s", linkPath, targetFile)
-				}
-			}
-		}
+	// 2. Use a real external file on every platform, with an explicit allowlist.
+	allowed := t.TempDir()
+	targetFile := filepath.Join(t.TempDir(), "outside.txt")
+	if err := os.WriteFile(targetFile, []byte("outside"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("MULTIGRAVITY_ALLOWED_WORKSPACE_ROOTS", allowed)
+	resetWorkspaceRootsForTest()
+	t.Cleanup(resetWorkspaceRootsForTest)
+	linkPath := filepath.Join(allowed, "evil_symlink")
+	if err := os.Symlink(targetFile, linkPath); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+	if IsSafeFilePath(linkPath) {
+		t.Errorf("expected symlink pointing outside whitelist to be rejected: %s -> %s", linkPath, targetFile)
+	}
+}
+
+func TestAllowedWorkspaceRootResolvesSymlinks(t *testing.T) {
+	parent := t.TempDir()
+	workspace := filepath.Join(parent, "workspace")
+	if err := os.Mkdir(workspace, 0700); err != nil {
+		t.Fatal(err)
+	}
+	alias := filepath.Join(parent, "alias")
+	if err := os.Symlink(workspace, alias); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+	t.Setenv("MULTIGRAVITY_ALLOWED_WORKSPACE_ROOTS", alias)
+	resetWorkspaceRootsForTest()
+	t.Cleanup(resetWorkspaceRootsForTest)
+	if !IsSafeFilePath(filepath.Join(workspace, "allowed.txt")) {
+		t.Fatal("canonical path of an explicitly allowed root was rejected")
+	}
+	if IsSafeFilePath(filepath.Join(parent, "outside.txt")) {
+		t.Fatal("sibling of allowed root was exposed")
 	}
 }
 
