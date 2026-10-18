@@ -1,7 +1,7 @@
 # GraviGo 项目开发与维护文档
 
 ## 1. 项目概览
-- **已确定品牌名称**：GraviGo，取代此前 GraviWing 方案。仓库为 `sin6626/GraviGo`，Android namespace / 生产包名为 `io.github.sin6626.gravigo`，Debug 包名追加 `.debug`。签名入口已独立配置，尚无正式密钥，未公开发布。
+- **已确定品牌名称**：GraviGo，取代此前 GraviWing 方案。仓库为 `sin6626/GraviGo`，Android namespace / 生产包名为 `io.github.sin6626.gravigo`，Debug 包名追加 `.debug`。正式签名密钥已生成，保存在本地 Git 忽略目录及用户指定的私有备份仓库；尚未配置 CI 签名 Secrets，未公开发布。
 - **定位**：Google Antigravity AI Agent 移动端与全栈端到端协同系统（Android / iOS / Web / Go 本地网关）。
 - **当前重点任务**：Android 客户端前端 UI 二改与视觉/体验升级重构。
 
@@ -883,3 +883,11 @@ android/app/src/main/java/com/antigravity/mobile/
 - 最终本机 Go 全量通过；CI 第二轮 Linux Go 已成功，Android 仍首次冷构建。Windows 第二轮仅新增别名回归失败：测试未实际创建 allowed.txt，使 Windows 8.3 短路径无法对不存在的候选进行 EvalSymlinks；补建真实文件，并同时验证真实路径与 alias 路径，两种入口均须允许，兄弟目录仍拒绝。
 - GitHub `release` 环境已通过已说明的 gh 后备接口创建，branch policy 仅 `main`，没有上传密钥/密码，也没有触发 draft/public Release。当前仍需最终云端成功并设置 main 必需检查。
 - 已推送 `ebb7f3d` 和 `ffd361b`，源提交和全部先前本地历史保留；About / topics 已用插件读回核实。所有验证产物仅在项目内忽略目录，未提交本机缓存、配对凭据或 APK。
+
+### 2026-10-18 正式签名密钥生成与私有备份
+- 用户明确授权生成正式签名密钥，在项目内留存全部恢复资料，并创建名为 gravigoSecretKey 的 GitHub 私有仓库备份。GitHub 插件没有创建仓库接口，先说明后使用本机 gh 后备入口；上传前、上传后均核实 private=true。
+- 本地资料位于 `.signing/gravigoSecretKey/`，现有 `.gitignore` 的 `.signing/` 已覆盖全部内容；主仓库 `git ls-files .signing` 为空。目录访问权限已限制，密钥和密码没有输出到聊天、命令行参数或公共仓库。
+- 使用现有 JDK keytool 创建 RSA 4096 / SHA256withRSA 的 JKS，别名 gravigo，有效期 10000 天，两个密码独立随机生成。全部恢复资料包含 JKS、密码与元信息 JSON、公钥证书、PowerShell 加载脚本、README、维护规则和 SHA256SUMS。
+- 已用保存的密码读取私钥并生成 CSR，随后从私有仓库重新 clone；9 个文件逐字节和 SHA256 校验一致，恢复副本能再次解锁私钥，证书指纹与元信息一致。验证副本也在项目内忽略目录，访问权限同样受限。
+- 不得因为公共仓库找不到 JKS 就重新生成身份。需要签名时先按本地私有备份 README 恢复或加载；不要将 `.signing/` 强制添加到公共仓库。此次没有配置其他仓库的 Actions Secrets，没有触发发布工作流。
+- 上一代码提交 `06fc9d9` 的最终 CI run `39113936361` 三项全部成功，debug APK 和报告产物已核实。main 已要求 GitHub Actions 的 android、go (ubuntu-24.04)、go (windows-latest) 三项检查；release 环境仅允许 main。
