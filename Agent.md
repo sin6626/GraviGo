@@ -5,6 +5,12 @@
 - **定位**：Google Antigravity AI Agent 移动端与全栈端到端协同系统（Android / iOS / Web / Go 本地网关）。
 - **当前重点任务**：Android 客户端前端 UI 二改与视觉/体验升级重构。
 
+### 2026-10-18 对「自动审批」说法的更正
+
+- 用户指出自己没有开启自动审批。只读核验用户配置为 `sandbox_mode = "danger-full-access"`，未找到显式 `approvals_reviewer = "auto_review"` 配置；当前会话的审批策略为 `never`。官方 Auto-review 文档说明该机制适用于交互审批，`never` 不进入该审批流程。
+- 之前将删除命令的拒绝笼统称作「自动审批拒绝」不够准确。实际可确认的证据仅为执行工具在创建进程前返回 `Rejected: blocked by policy`，没有给出具体触发规则或来源；不能据此断言用户开启 Auto-review，也不能断言是哪层策略导致。
+- 没有修改用户权限设置、尝试绕过拦截或重新发起删除。旧短片两个目录仍未删除；用户对删除的授权已经充分，不需要反复索取授权。
+
 ### 2026-10-18 模拟器首页入口恢复；再次删除视频仍被拦截
 
 - 用户截图为安卓桌面首页，首页没有 GraviGo。ADB 核验应用 `com.antigravity.mobile` 已安装，1.0.0/5，Launcher Activity 可解析；真实应用列表可见 GraviGo 和选定的晶核图标，根因是首页未放快捷图标，不是应用未安装或项目丢失。
