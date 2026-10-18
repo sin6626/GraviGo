@@ -5,6 +5,16 @@
 - **定位**：Google Antigravity AI Agent 移动端与全栈端到端协同系统（Android / iOS / Web / Go 本地网关）。
 - **当前重点任务**：Android 客户端前端 UI 二改与视觉/体验升级重构。
 
+### 2026-10-18 英文文档、App 双语与 CI/首次发布计划（仅计划）
+
+- 用户要求先写计划：README 与 GitHub About 使用英文；随后明确 App 内增加中文/英文切换，按全 App 自有界面本地化规划，聊天/文件/代码原文不自动翻译。
+- 计划文件 `android/docs/release-readiness-plan-2026-10-18.md`，顺序为发布身份/许可 → 干净构建 → 基础 CI → 双语 App → 英文文档 → 正式签名与 draft Release。包括英文 README 开头、GitHub About 草稿、两个最小工作流方案、验收与未决项。
+- 只读核验 GitHub：远端仍为 `sin6626/AntigravityMobile-Android`，main 为 `00c7b51118906f123af8d68b308b1617a4d1e9d9`，核验时本地领先 14 个提交；无 README、About 描述/topics、`.github` 或 Release。GitHub 插件读取，未使用本机 gh，也未改远端。
+- 关键前置问题：根 `.gitignore` 挡住 README/LICENSE/.github；缺 Gradle Wrapper 脚本与 JAR；release 仍 debug 签名；Lint 明确不阻断 errors；网关版本仍 1.0.3；历史 Windows Go 测试失败尚需重现。此前应用 1.0.0/5 与原包名保持不变。
+- 新发现 `android/highlight` 的 LICENSE/NOTICE 明确含 RikkaHub AGPL v3 来源，另有上游 MIT 与其他第三方许可；不能在 README 直接宣称整个项目 MIT，也不能擅自换许可证或去掉来源，先明确分发与源码安排。
+- 语言方案优先 AndroidX 应用语言 API；当前 ComponentActivity/系统 Material 主题需核验迁移 AppCompatActivity 与兼容主题，覆盖 Android 13 前后、重建、草稿与配对保留。没有把“增加开关”当成完成翻译。
+- 官方 CI 调研在 `.verification/2026-10-18-release-plan/ci-official-research.md`。本轮仅新增计划与维护记录，没有创建实际 README/工作流、实施 App 本地化、修改版本/签名、上传密钥、运行云端 CI、推送、打 tag 或发布版本。
+
 ### 2026-10-18 对「自动审批」说法的更正
 
 - 用户指出自己没有开启自动审批。只读核验用户配置为 `sandbox_mode = "danger-full-access"`，未找到显式 `approvals_reviewer = "auto_review"` 配置；当前会话的审批策略为 `never`。官方 Auto-review 文档说明该机制适用于交互审批，`never` 不进入该审批流程。
