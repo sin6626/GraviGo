@@ -124,7 +124,13 @@ internal fun AppSettingsBottomSheet(defaultFileWrap: Boolean, onDefaultFileWrap:
                 }
             }
             Spacer(Modifier.height(12.dp))
-            Text("基于九哥（GHSaiMo）的 antigravity-mobile v1.0.3，继续打磨前端体验与配套网关功能。",
+            Text("把Antigravity，带在身边", color = Ink, fontSize = 15.sp, fontWeight = FontWeight.Medium,
+                lineHeight = 23.sp)
+            Spacer(Modifier.height(8.dp))
+            Text("连接电脑上的 Antigravity，在手机上查看任务进度、发送指令，审阅方案与代码变更。",
+                color = SecondaryInk, fontSize = 13.sp, lineHeight = 21.sp)
+            Spacer(Modifier.height(8.dp))
+            Text("基于九哥（GHSaiMo）的 antigravity-mobile 项目开发，持续打磨移动端体验与跨设备协作能力。",
                 color = SecondaryInk, fontSize = 13.sp, lineHeight = 21.sp)
             Spacer(Modifier.height(4.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
