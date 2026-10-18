@@ -139,6 +139,10 @@ internal fun AppSettingsBottomSheet(defaultFileWrap: Boolean, onDefaultFileWrap:
             Text(appString(R.string.msg_08f75693f6e9),
                 color = SecondaryInk, fontSize = 13.sp, lineHeight = 21.sp)
             Spacer(Modifier.height(4.dp))
+            Text(appString(R.string.license_notice), color = SecondaryInk, fontSize = 12.sp, lineHeight = 18.sp)
+            TextButton(onClick = {
+                linkError = runCatching { uriHandler.openUri("https://github.com/sin6626/GraviGo/blob/main/LICENSE") }.isFailure
+            }, modifier = Modifier.heightIn(min = 48.dp)) { Text(appString(R.string.license_link), color = AccentBlue) }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(appString(R.string.msg_68f6e930aa92) to "https://github.com/sin6626/GraviGo",
                     appString(R.string.msg_f32dd6af4271) to "https://github.com/GHSaiMo/antigravity-mobile").forEach { (label, uri) ->

@@ -29,6 +29,7 @@ class AppSettingsLayoutTest {
             }
         }
         compose.onNodeWithContentDescription(appString(R.string.msg_9650c39513c0)).performScrollTo().performClick().assertIsOff()
+        compose.onNodeWithText(appString(R.string.license_link)).performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(appString(R.string.msg_f32dd6af4271)).performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(appString(R.string.msg_68f6e930aa92)).assertIsDisplayed()
         val bitmap = checkNotNull(InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot())

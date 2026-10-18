@@ -41,7 +41,7 @@ func RunCockpitCmd(args []string) {
 }
 
 func runCockpitHelpCmd() {
-	fmt.Print(`🛸 Multigravity (mgy) - Cockpit Tools 联动配置工具
+	fmt.Print(`🛸 GraviGo Gateway - Cockpit Tools 联动配置工具
 
 用法:
   mgy cockpit [子命令] [参数]
@@ -357,7 +357,7 @@ func runCockpitInteractiveWizard() {
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Println("================================================================================")
-	fmt.Println("🛸 Multigravity - Cockpit Tools 交互式配置向导")
+	fmt.Println("🛸 GraviGo - Cockpit Tools 交互式配置向导")
 	fmt.Println("================================================================================")
 	fmt.Println("本向导将指引您一键完成 Cockpit Tools 网页报表服务与安全 Token 的配置，")
 	fmt.Println("使手机移动端可以实时查看与无缝刷新各账号的配额用量。")
@@ -511,9 +511,9 @@ func runCockpitInteractiveWizard() {
 
 	fmt.Println("================================================================================")
 	fmt.Println("🚀 配置完成！后续使用建议:")
-	fmt.Println("   • 启动网关主服务:   mgy (或 mgy run)")
+	fmt.Println("   • 启动网关主服务:   gravigo-gateway (或 gravigo-gateway run)")
 	fmt.Println("   • 查看 Cockpit 状态: mgy cockpit status")
-	fmt.Println("   • 移动端配对二维码: mgy pair")
+	fmt.Println("   • 移动端配对二维码: gravigo-gateway pair")
 	fmt.Println("================================================================================")
 }
 

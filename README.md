@@ -55,7 +55,7 @@ The former `com.antigravity.mobile` installation is a separate app. Its pairing,
    .\bin\gravigo-gateway.exe run -port 58900
    ```
 
-3. In another terminal, run `.\bin\gravigo-gateway.exe pair`. It requests a fresh, short-lived pairing link and QR code from the running gateway. The app also calls this command `mgy pair`, the gateway's legacy CLI name; use the executable name you built or downloaded.
+3. In another terminal, run `.\bin\gravigo-gateway.exe pair`. It requests a fresh, short-lived pairing link and QR code from the running gateway. The release executable is named `gravigo-gateway.exe`; older installations named `mgy` keep their existing configuration keys and pairing schemes.
 4. Install and open the Android debug APK, then scan the QR code or enter the pairing information. Use a reachable computer address: on the Android emulator, `10.0.2.2` refers to the host computer; `127.0.0.1` refers to the Android device itself.
 
 Keep the gateway on a trusted network, or use a private network such as Tailscale with HTTPS where available. Pairing links and device tokens grant access to your desktop sessions; do not publish them. See [`env.example`](env.example) for the existing configuration keys. The `MULTIGRAVITY_*` keys and legacy deep-link schemes remain supported for compatibility.
@@ -77,6 +77,8 @@ Lint remains blocking on errors. A direct source check rejects bidirectional con
 
 ## Credits and licensing
 
-The original antigravity-mobile code is MIT licensed. The code-highlighting module contains code from RikkaHub under AGPL-3.0 and highlight.js under BSD-3-Clause; the repository therefore must not be described as entirely MIT licensed. Other bundled components retain their own licenses.
+GraviGo is licensed under the GNU Affero General Public License, version 3 (AGPL-3.0-only). Copyright (c) 2026 sin6626 and GraviGo contributors. See [LICENSE](LICENSE), [NOTICE.md](NOTICE.md), and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-Read [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). A single project-wide license for GraviGo additions has not been selected, and binary distribution remains pending a review of the combined licensing and source-distribution requirements.
+The original antigravity-mobile code retains its MIT notice. RikkaHub highlighting is AGPL-3.0, with highlight.js material under BSD-3-Clause. Other third-party components retain their individual licenses and notices.
+
+Release assets must identify their exact source commit. The manual draft workflow includes a source archive generated from that commit, alongside the APK, gateway ZIP, and checksums. The repository includes the source and build instructions; local signing keys, passwords, pairing credentials, and build caches are kept outside tracked source.

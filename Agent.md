@@ -915,3 +915,10 @@ android/app/src/main/java/com/antigravity/mobile/
 - Go vet与全量测试通过。独立新端口/新鉴权数据实际验证 version/help、health200、真实桌面ready200、拒绝未鉴权请求、pair配对码、一次性码拒绝重放、list、鉴权读取工作区、clear实际撤销后失去访问，全部通过。临时进程与端口均已退出。
 - CLI检查发现待修项：clear不解析-port（仅环境变量选端口，与pair/list不一致）；撤销不存在的测试设备时打印失败但exit0；二维码打印的LAN URI写死58900，影响自定义本地端口（静态发现）；部分提示仍叫Multigravity/mgy；现工作流ZIP缺网关quick-start与完整依赖许可文本。此轮只检查与记录，没有修改业务代码。
 - 本机实测不代表macOS/Linux桌面端、Windows ARM、外网隧道、通知或所有账号语音能力可用。临时证据仅项目内忽略目录；主网关PID15400与管理网关PID23868保持运行，未发送真实消息或改原配对。
+
+### 2026-10-18 AGPL 与网关 CLI 修复验收中
+- 用户已明确选择全项目 AGPL v3；根 LICENSE 改为完整 AGPL-3.0-only，新增 NOTICE，保留上游 MIT 与高亮模块原始声明。App 新增中英许可说明与许可证链接，完整许可随 APK assets 打包。
+- 已修 clear 的 -port 解析、失败退出码、HTTP 拒绝时禁止离线修改，以及自定义端口的 LAN 配对链接；Android 支持可选 lan_port，旧链接保持兼容。CLI 可见品牌改为 GraviGo，保留协议与环境变量兼容名称。
+- 发布脚本新增 Windows x64 网关 quick-start、完整 Go 依赖许可、源码提交标识和 ZIP 自检；要求干净提交与二进制 vcs 元信息一致。手动工作流同时准备匹配源码 ZIP 与 SHA256SUMS。
+- 本机 Go 全量测试 / vet、Android 全模块单测 / lint / Debug / AndroidTest 构建已通过；隔离网关实际配对、拒绝重放、工作区读取、指定端口撤销与失败退出码通过。API 37 的语言切换与大字号许可入口两项仪器测试通过；干净提交重建打包及远端 CI 尚待完成。
+- 发布仍由用户明确暂停；不创建 tag、draft/public Release，不上传签名 Secrets，不替换现有运行网关或改原配对。临时验证只在忽略目录 .verification/2026-10-18-gateway-readiness/，密钥仅在 .signing/ 私有备份。

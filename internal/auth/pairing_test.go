@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -164,12 +165,12 @@ func TestGenerateQRCodePNG(t *testing.T) {
 
 func TestPrintPairingQRCode(t *testing.T) {
 	// Ensure print does not panic with single or multiple hosts
-	PrintPairingQRCode("192.168.50.9", 58900, "abc123code", false, "2001:db8::1")
+	PrintPairingQRCode(BuildMultiHostPairingParams("192.168.50.9", 58900, "abc123code", false, "2001:db8::1"))
 }
 
 func TestFormatPairingQRCode(t *testing.T) {
-	out := FormatPairingQRCode("mgy-test.jiuge.space", 443, "abc123code", true, "192.168.50.9")
-	if !strings.Contains(out, "Multigravity 客户端扫码一键配对") && !strings.Contains(out, "Antigravity Mobile 客户端扫码一键配对") {
+	out := FormatPairingQRCode(BuildMultiHostPairingParams("mgy-test.jiuge.space", 443, "abc123code", true, "192.168.50.9"))
+	if !strings.Contains(out, "GraviGo 客户端扫码一键配对") {
 		t.Errorf("expected header banner in output")
 	}
 	if !strings.Contains(out, "Cloudflare 专属域名已生成") {
@@ -181,8 +182,68 @@ func TestFormatPairingQRCode(t *testing.T) {
 	if !strings.Contains(out, "局域网 Wi-Fi 直连 URI:") {
 		t.Errorf("expected LAN URI in output")
 	}
-	if !strings.Contains(out, "请使用 Multigravity 手机客户端扫描上方二维码") && !strings.Contains(out, "请使用 Antigravity 手机客户端扫描上方二维码") {
+	if !strings.Contains(out, "请使用 GraviGo 手机客户端扫描上方二维码") {
 		t.Errorf("expected footer instructions in output")
+	}
+}
+
+func TestPairingBannerPreservesLocalPorts(t *testing.T) {
+	for _, tc := range []struct {
+		name                   string
+		primaryPort, localPort int
+		ssl                    bool
+		want                   string
+	}{
+		{"direct", 58913, 58913, false, "port=58913&ssl=0"},
+		{"cloud-custom", 443, 58913, true, "port=58913&ssl=0"},
+		{"legacy-cloud", 443, 0, true, "port=58900&ssl=0"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			params := MultiHostPairingParams{PrimaryHost: "example.com", Port: tc.primaryPort, Code: "test", SSL: tc.ssl, LANHost: "192.168.1.5", LANPort: tc.localPort}
+			uri := GenerateMultiHostPairingURI(params)
+			if tc.localPort != 0 && !strings.Contains(uri, "lan_port=58913") {
+				t.Fatal("QR URI lost the local port")
+			}
+			banner := FormatPairingQRCode(params)
+			lanLine := strings.Split(banner, "局域网 Wi-Fi 直连 URI:")
+			if len(lanLine) != 2 || !strings.Contains(lanLine[1], tc.want) {
+				t.Fatalf("wrong local endpoint in banner: %q", banner)
+			}
+			if !strings.Contains(banner, "GraviGo") || strings.Contains(banner, "Multigravity") {
+				t.Fatal("incorrect product branding")
+			}
+		})
+	}
+}
+
+func TestCloudPairingSessionKeepsCustomLANPort(t *testing.T) {
+	store, err := NewAuthStore(filepath.Join(t.TempDir(), "auth.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("MULTIGRAVITY_ADMIN_TOKEN", "test-admin")
+	handler := NewAuthHandler(store, NewPairingManager(), "127.0.0.1", 58913, false)
+	handler.SetEndpoints("192.168.1.5", "", "")
+	handler.SetCloudflareURL("https://example.com")
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/session", nil)
+	req.Header.Set("Authorization", "Bearer test-admin")
+	response := httptest.NewRecorder()
+	handler.HandleNewPairingSession(response, req)
+	if response.Code != http.StatusOK {
+		t.Fatalf("session status: %d", response.Code)
+	}
+	var body struct {
+		URI string `json:"uri"`
+	}
+	if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	uri, err := url.Parse(body.URI)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if uri.Query().Get("port") != "443" || uri.Query().Get("lan_port") != "58913" || uri.Query().Get("lan") != "192.168.1.5" {
+		t.Fatalf("pairing endpoints changed: %s", body.URI)
 	}
 }
 
@@ -209,7 +270,7 @@ func TestInitConsoleSyncAndConcurrentLogging(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			PrintPairingQRCode("127.0.0.1", 58900, "testcode", false)
+			PrintPairingQRCode(BuildMultiHostPairingParams("127.0.0.1", 58900, "testcode", false))
 		}()
 	}
 

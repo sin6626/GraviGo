@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"runtime"
@@ -59,7 +61,10 @@ func main() {
 			runListCmd(args[1:])
 			return
 		case "clear":
-			runClearCmd(args[1:])
+			if err := runClearCmd(args[1:]); err != nil {
+				fmt.Fprintln(os.Stderr, "❌", err)
+				os.Exit(1)
+			}
 			return
 		case "version", "-v", "--version":
 			runVersionCmd()
@@ -108,7 +113,7 @@ func runGatewayServer(args []string) {
 	// 2. port: 网关服务 HTTP/WebSocket 监听端口，默认 58900 (可通过 MULTIGRAVITY_PORT 环境变量覆盖)
 	defaultPort := defaultPort()
 
-	fs := flag.NewFlagSet("mgy", flag.ExitOnError)
+	fs := flag.NewFlagSet("gravigo-gateway", flag.ExitOnError)
 	host := fs.String("host", defaultHost, "网关监听的主机/IP 地址（默认 \"\" 双栈绑定所有 IPv4/IPv6 网卡，设为 127.0.0.1 仅限本机访问）")
 	port := fs.Int("port", defaultPort, "网关 HTTP/WebSocket 监听端口（默认 58900）")
 	printQR := fs.Bool("qr", false, "启动时是否输出配对二维码（默认: 未配对时自动输出，已配对时默认隐藏）")
@@ -357,7 +362,7 @@ func runGatewayServer(args []string) {
 
 	// 打印清爽紧凑的启动看板
 	fmt.Println()
-	fmt.Printf("  GraviGo Gateway (mgy) v%s\n", Version)
+	fmt.Printf("  GraviGo Gateway v%s\n", Version)
 	fmt.Println("  --------------------------------------------------")
 	fmt.Printf("  ➜  本地访问:   http://127.0.0.1:%d\n", *port)
 	if lanURL != "-" {
@@ -381,12 +386,14 @@ func runGatewayServer(args []string) {
 
 	if shouldPrintQR {
 		if initialSession, err := pairingMgr.GenerateSession(5 * time.Minute); err == nil {
-			auth.PrintPairingQRCode(qrHost, qrPort, initialSession.Code, cfTunnel != nil, extraHosts...)
+			params := auth.BuildMultiHostPairingParams(qrHost, qrPort, initialSession.Code, cfTunnel != nil, extraHosts...)
+			params.LANPort = *port
+			auth.PrintPairingQRCode(params)
 		} else {
 			log.Printf("⚠️  无法生成初始配对二维码: %v", err)
 		}
 	} else if deviceCount > 0 {
-		fmt.Println("  💡 提示: 执行 `mgy pair` 可随时申请新设备配对二维码。")
+		fmt.Println("  💡 提示: 执行 `gravigo-gateway pair` 可随时申请新设备配对二维码。")
 		fmt.Println()
 	}
 
@@ -406,14 +413,14 @@ func runGatewayServer(args []string) {
 }
 
 func runVersionCmd() {
-	fmt.Printf("GraviGo Gateway (mgy) %s\n", Version)
+	fmt.Printf("GraviGo Gateway %s\n", Version)
 }
 
 func runHelpCmd() {
-	fmt.Printf(`GraviGo Gateway (mgy) %s - Unified Mobile Gateway for Antigravity
+	fmt.Printf(`GraviGo Gateway %s - Unified Mobile Gateway for Antigravity
 
 用法:
-  mgy [子命令] [参数]
+  gravigo-gateway [子命令] [参数]
 
 常用子命令:
   run (默认)        启动网关服务 (局域网直连 + Cloudflare 专属 HTTPS 隧道)
@@ -422,11 +429,11 @@ func runHelpCmd() {
   bark              交互式配置 Bark 实时推送与提示音 (iOS 专用, 支持 status/test/set)
   cloudflare (cf)   交互式配置 Cloudflare 专属穿透隧道与域名 (支持 status/reset/enable)
   list              查看所有已配对授权的移动设备 (支持在线与离线查看)
-  clear [all|id]    清除已配对的设备授权 (支持: mgy clear all 或 mgy clear <device-id>)
+  clear [-port N] [all|id]  撤销已配对设备的授权 (支持: gravigo-gateway clear all 或 gravigo-gateway clear <device-id>)
   version           查看当前版本信息
   help              显示帮助信息
 
-网关运行参数 (用于 mgy 或 mgy run):
+网关运行参数 (用于 gravigo-gateway 或 gravigo-gateway run):
   -port <端口号>    HTTP/WebSocket 监听端口 (默认: 58900, 环境变量: MULTIGRAVITY_PORT)
   -host <主机/IP>   监听地址 (默认: "" 双栈全网卡监听; 设为 127.0.0.1 仅限本机)
   -qr=<true|false>  启动时是否打印配对二维码 (默认: true)
@@ -472,7 +479,7 @@ func runPairCmd(args []string) {
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "❌ 无法连接到网关 (端口 %d): %v\n", targetPort, err)
-		fmt.Fprintf(os.Stderr, "   请确认网关是否已在运行 (启动命令: mgy 或 mgy run)\n")
+		fmt.Fprintf(os.Stderr, "   请确认网关是否已在运行 (启动命令: gravigo-gateway 或 gravigo-gateway run)\n")
 		os.Exit(1)
 	}
 	defer resp.Body.Close()
@@ -546,12 +553,12 @@ func printDeviceTable(devices []auth.PairedDevice, mode string) {
 	fmt.Println("========================================================================================================")
 	if len(devices) == 0 {
 		fmt.Printf("ℹ️  当前暂无已配对设备 (%s)\n", mode)
-		fmt.Println("💡 提示: 执行 mgy pair 可生成配对二维码与扫码链接。")
+		fmt.Println("💡 提示: 执行 gravigo-gateway pair 可生成配对二维码与扫码链接。")
 		fmt.Println("========================================================================================================")
 		return
 	}
 
-	fmt.Printf("📱 Multigravity 已配对设备列表 (共 %d 台 | %s)\n", len(devices), mode)
+	fmt.Printf("📱 GraviGo 已配对设备列表 (共 %d 台 | %s)\n", len(devices), mode)
 	fmt.Println("========================================================================================================")
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
@@ -578,67 +585,82 @@ func printDeviceTable(devices []auth.PairedDevice, mode string) {
 	}
 	w.Flush()
 	fmt.Println("========================================================================================================")
-	fmt.Println("💡 提示: 执行 mgy clear all 可清空所有设备授权；执行 mgy pair 可生成新配对二维码。")
+	fmt.Println("💡 提示: 执行 gravigo-gateway clear all 可清空所有设备授权；执行 gravigo-gateway pair 可生成新配对二维码。")
 }
 
-func runClearCmd(args []string) {
-	target := "all"
-	if len(args) > 0 && args[0] != "" {
-		if args[0] == "all" && len(args) > 1 {
-			target = args[1]
-		} else {
-			target = args[0]
+func runClearCmd(args []string) error {
+	fs := flag.NewFlagSet("clear", flag.ContinueOnError)
+	port := fs.Int("port", defaultPort(), "网关端口")
+	if err := fs.Parse(args); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return nil
 		}
+		return err
 	}
-
-	targetPort := defaultPort()
+	if *port < 1 || *port > 65535 {
+		return fmt.Errorf("网关端口必须在 1 到 65535 之间")
+	}
+	targets := fs.Args()
+	// Keep the former `clear all <device-id>` spelling accepted by older scripts.
+	if len(targets) == 2 && targets[0] == "all" {
+		targets = targets[1:]
+	}
+	if len(targets) > 1 {
+		return fmt.Errorf("用法: gravigo-gateway clear [-port PORT] [all|device-id]")
+	}
+	target := "all"
+	if len(targets) == 1 {
+		target = strings.TrimSpace(targets[0])
+	}
+	if target == "" || target == "." || target == ".." || strings.ContainsAny(target, "/\\?#") {
+		return fmt.Errorf("无效的设备 ID")
+	}
 	adminToken := auth.GetAdminToken()
 	if adminToken == "" {
-		if path, _, err := auth.EnsureAdminToken(false); err == nil && path != "" {
-			if b, err := os.ReadFile(path); err == nil {
-				adminToken = strings.TrimSpace(string(b))
-			}
+		if _, _, err := auth.EnsureAdminToken(false); err != nil {
+			return err
 		}
+		adminToken = auth.GetAdminToken()
 	}
-
-	client := &http.Client{
-		Timeout:   3 * time.Second,
-		Transport: localtls.NewLoopbackTransport(), // SEC-AUDIT M-2: gate InsecureSkipVerify to loopback only
+	client := &http.Client{Timeout: 3 * time.Second, Transport: localtls.NewLoopbackTransport()}
+	endpoint := fmt.Sprintf("http://127.0.0.1:%d/api/v1/devices/%s", *port, url.PathEscape(target))
+	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
+	if err != nil {
+		return err
 	}
-
-	urlStr := fmt.Sprintf("http://127.0.0.1:%d/api/v1/devices/%s", targetPort, target)
-	req, _ := http.NewRequest(http.MethodDelete, urlStr, nil)
 	if adminToken != "" {
 		req.Header.Set("Authorization", "Bearer "+adminToken)
 	}
-
-	if resp, err := client.Do(req); err == nil && (resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusNoContent) {
-		resp.Body.Close()
-		if target == "all" {
-			fmt.Println("✅ [在线网关] 已成功清除所有已配对设备授权。")
-		} else {
-			fmt.Printf("✅ [在线网关] 已成功清除设备 [%s] 的授权。\n", target)
+	resp, requestErr := client.Do(req)
+	if requestErr == nil {
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+			return fmt.Errorf("网关拒绝撤销设备授权 (HTTP %d)，未修改离线凭据", resp.StatusCode)
 		}
-		return
+		fmt.Printf("✅ [在线网关] 已成功撤销 [%s] 的设备授权。\n", target)
+		return nil
 	}
-
-	// Offline fallback
-	store, err := auth.NewAuthStore("")
+	var connectionErr *net.OpError
+	if !errors.As(requestErr, &connectionErr) || connectionErr.Op != "dial" {
+		return fmt.Errorf("撤销设备授权请求失败，未修改离线凭据: %w", requestErr)
+	}
+	store, err := auth.NewAuthStore(os.Getenv("AUTH_STORE_PATH"))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "❌ 无法打开设备凭据存储: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("无法打开设备凭据存储: %w", err)
 	}
 	if target == "all" {
-		count := len(store.ListDevices())
-		store.ClearAll()
-		fmt.Printf("✅ [离线模式] 已清除全部 %d 台已配对设备授权。\n", count)
-	} else {
-		if err := store.RemoveDevice(target); err == nil {
-			fmt.Printf("✅ [离线模式] 已成功清除设备 [%s] 的授权。\n", target)
-		} else {
-			fmt.Printf("⚠️  [离线模式] 清除设备失败: %v\n", err)
+		count, err := store.ClearAll()
+		if err != nil {
+			return fmt.Errorf("保存撤销结果失败: %w", err)
 		}
+		fmt.Printf("✅ [离线模式] 已撤销全部 %d 台设备授权。\n", count)
+	} else {
+		if err := store.RemoveDevice(target); err != nil {
+			return fmt.Errorf("撤销设备授权失败: %w", err)
+		}
+		fmt.Printf("✅ [离线模式] 已成功撤销设备 [%s] 的授权。\n", target)
 	}
+	return nil
 }
 
 // buildRouter constructs and wraps the HTTP routing mux with middleware.

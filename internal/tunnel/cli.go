@@ -46,7 +46,7 @@ func RunCloudflareCmd(args []string) {
 }
 
 func runCloudflareHelpCmd() {
-	fmt.Print(`☁️ Multigravity (mgy) - Cloudflare 专属公网穿透配置工具
+	fmt.Print(`☁️ GraviGo Gateway - Cloudflare 专属公网穿透配置工具
 
 用于管理全自动 Cloudflare 隧道 (自动分配永久专属 HTTPS 域名，扫码即用)。
 
@@ -248,9 +248,9 @@ func runCloudflareInteractiveWizard() {
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Println("================================================================================")
-	fmt.Println("☁️ Multigravity - Cloudflare 专属公网穿透配置向导")
+	fmt.Println("☁️ GraviGo - Cloudflare 专属公网穿透配置向导")
 	fmt.Println("================================================================================")
-	fmt.Println("Multigravity 内置全自动 Cloudflare 隧道调度引擎，可为您的网关全自动签发")
+	fmt.Println("GraviGo 内置全自动 Cloudflare 隧道调度引擎，可为您的网关全自动签发")
 	fmt.Println("专属永久 HTTPS 二级域名，无需公网 IP、无需路由器端口映射，开箱即用。")
 	fmt.Println("================================================================================")
 
@@ -346,6 +346,6 @@ func runCloudflareInteractiveWizard() {
 	fmt.Println("💡 配置完成！后续使用建议:")
 	fmt.Println("   • 启动网关主服务:   mgy")
 	fmt.Println("   • 查看穿透状态:     mgy cloudflare status (或 mgy cf status)")
-	fmt.Println("   • 移动端配对二维码: mgy pair")
+	fmt.Println("   • 移动端配对二维码: gravigo-gateway pair")
 	fmt.Println("================================================================================")
 }

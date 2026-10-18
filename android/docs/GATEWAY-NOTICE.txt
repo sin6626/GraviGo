@@ -8,8 +8,8 @@ Full original MIT license: LICENSE.upstream-MIT (included in this archive).
 GraviGo source, dependencies and notices:
 https://github.com/sin6626/GraviGo
 See the release's recorded source commit for exact build inputs.
-GraviGo additions do not yet have a selected project-wide license.
-Review their licensing before binary distribution.
+GraviGo is licensed under GNU AGPL version 3 only. See LICENSE and NOTICE.md.
+The original MIT notice and other component licenses are preserved.
 
 Go dependencies include github.com/gorilla/websocket (BSD-2-Clause),
 github.com/skip2/go-qrcode (MIT), and github.com/pires/go-proxyproto

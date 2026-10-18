@@ -4,7 +4,7 @@ The release workflow creates a **draft**, not a public release. No production si
 
 ## Before the first binary distribution
 
-Resolve the licensing of GraviGo additions and review the RikkaHub AGPL-3.0 component, the combined app, and the corresponding source to distribute. Keep the existing attribution and full license texts. See [LICENSE](../../LICENSE) and [third-party notices](../../THIRD_PARTY_NOTICES.md). Publishing source does not, by itself, select a license for previously unlicensed additions.
+GraviGo uses AGPL-3.0-only. Preserve the upstream MIT, BSD, Apache, and other third-party notices. Each binary release must identify the exact source commit and include the matching source archive and build instructions; see [LICENSE](../../LICENSE), [NOTICE.md](../../NOTICE.md), and [third-party notices](../../THIRD_PARTY_NOTICES.md).
 
 The production ID is `io.github.sin6626.gravigo`. Debug builds use `io.github.sin6626.gravigo.debug`. The old `com.antigravity.mobile` app cannot be upgraded in place to either ID. Keep the old installation to preserve its private storage; pair the new installation separately. Do not uninstall the old app to solve a package conflict without first considering its data.
 
@@ -43,7 +43,7 @@ Set the environment variable `ANDROID_SIGNING_CERT_SHA256` to the expected produ
 5. Install on a test device, start the gateway against a running Antigravity desktop, pair, and verify conversation reading, message sending, attachments, plan comments, diff comments, and both interface languages. Confirm drafts and attachments survive language switching and app restart. Use a test conversation for write operations.
 6. Review the source and license materials for this exact commit. Publish the draft only after the release owner explicitly approves public distribution.
 
-The workflow produces `GraviGo-1.0.0.apk`, `GraviGo-Gateway-1.0.0-windows-amd64.zip`, and `SHA256SUMS.txt`. The gateway is not Authenticode-signed. No Google Play upload is configured.
+The workflow produces `GraviGo-1.0.0.apk`, `GraviGo-Gateway-1.0.0-windows-amd64.zip`, `GraviGo-1.0.0-source.zip`, and `SHA256SUMS.txt`. The gateway is not Authenticode-signed. No Google Play upload is configured.
 
 ## CI scope
 

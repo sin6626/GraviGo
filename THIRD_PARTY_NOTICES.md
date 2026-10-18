@@ -1,6 +1,6 @@
 # Third-party notices
 
-These notices identify copied or bundled material. They do not replace the full licenses or describe every transitive Gradle/Go dependency.
+GraviGo is distributed under AGPL-3.0-only; see LICENSE and NOTICE.md. These notices preserve the original terms and attribution of copied or bundled material. They do not replace the full licenses or describe every transitive Gradle/Go dependency.
 
 | Component | Source and scope | License text |
 | --- | --- | --- |
@@ -10,7 +10,11 @@ These notices identify copied or bundled material. They do not replace the full 
 | MermaidKotlin | Native diagram parser and renderer; Copyright (c) 2025 Hugo Gonzalez | [MIT](android/mermaidkotlin/LICENSE) |
 | KaTeX | [KaTeX](https://github.com/KaTeX/KaTeX), bundled legacy assets | [MIT](android/app/src/main/assets/katex/LICENSE) |
 | Material Symbols | [Google Material Design icons](https://github.com/google/material-design-icons), bundled font | [Apache-2.0](android/app/src/main/assets/licenses/material_symbols_license.txt) |
+| gorilla/websocket | Go gateway dependency, v1.5.3 | BSD-2-Clause; full text included in gateway ZIP |
+| skip2/go-qrcode | Go gateway dependency, da1b6568686e | MIT; full text included in gateway ZIP |
+| pires/go-proxyproto | Go gateway dependency, v0.7.0 | Apache-2.0; full text included in gateway ZIP |
+| Go runtime and standard library | Gateway build toolchain, Go 1.26.9 | BSD-3-Clause; full text included in gateway ZIP |
 
 The Android APK includes the highlighting component's notices and full license texts in its assets. The release gateway archive includes the upstream MIT text and a gateway-specific notice. Gradle dependencies are declared in each module's `build.gradle.kts`; Go dependencies are declared in `go.mod` and `go.sum`.
 
-Keep the notices and applicable license texts when redistributing the affected material. Review the AGPL component and the licensing of GraviGo additions before publishing a combined Android binary. Source for a draft release must match its recorded commit and include the modifications and build instructions.
+Keep the notices and applicable license texts when redistributing the affected material. Source for a draft release must match its recorded commit and include the modifications and build instructions. The manual workflow packages that commit's source separately from the binary archives.

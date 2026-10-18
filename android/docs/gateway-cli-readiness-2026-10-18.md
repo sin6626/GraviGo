@@ -1,6 +1,17 @@
 # Gateway CLI readiness — 2026-10-18
 
-The Windows x64 gateway can be built and its core connection flow works. It is not yet a finished release archive. The owner explicitly paused publishing and requested this inspection only. No release, tag, signing-secret configuration, deployment replacement, or license selection was performed.
+The original inspection below records the initial findings. The owner subsequently selected AGPL v3 and authorized the fixes described in the follow-up section. Publishing remains paused: no release, tag, signing-secret configuration, or deployment replacement is authorized by these fixes.
+
+## Implementation follow-up
+
+- `clear -port PORT <device-id>` now selects the requested gateway, returns a nonzero exit status on failure, and never changes offline credentials after an HTTP rejection. Offline persistence errors are reported.
+- Pairing links preserve a separate `lan_port` for custom-port gateways behind HTTPS tunnels. Terminal output and Android use that port; older links remain compatible.
+- Product-facing CLI instructions use GraviGo. Existing configuration keys, data paths, and pairing schemes remain compatible.
+- The Windows ZIP packager includes quick-start instructions, the complete project license, retained notices, Go dependency/runtime licenses, and exact source identity. It rejects a dirty worktree or a binary from another commit, then verifies every archived byte. The manual release workflow also archives the matching source and checksums.
+- The project now uses AGPL-3.0-only, retaining the original MIT and component notices. Android includes license texts and a bilingual license entry; the gateway Web/PWA settings offer the public source link.
+- Local Go tests and vet, Android module tests/lint/builds, and the API 37 language and large-font settings tests passed. An isolated real gateway passed health/readiness, pairing, replay rejection, device listing, authenticated workspace reads, selected-port revocation, and missing-device failure checks. Existing gateways and app pairing data were preserved.
+
+Clean-commit packaging and remote CI are final verification steps; the sections below remain historical evidence from the initial inspection.
 
 ## Candidate verified
 
@@ -43,4 +54,4 @@ The probe used a fresh auth store and generated test credentials. It did not pai
 
 This inspection verified Windows x64 against the currently running Antigravity installation. It did not validate macOS, Linux desktop discovery, Windows ARM, a clean Windows installation, public Cloudflare routing, voice-account permissions, notification delivery, or Authenticode signing. Cross-platform Go CI from the previous implementation is separate evidence, not a substitute for those runtime checks.
 
-The RikkaHub AGPL component is in the Android highlighting module. The Go gateway is built from `cmd/gateway`, `internal`, and embedded `web` assets; Android module licensing and gateway dependency notices must be assessed for their actual scope. The owner's project-wide license decision remains pending. This inspection does not choose or change it.
+The RikkaHub AGPL component is in the Android highlighting module. The Go gateway is built from `cmd/gateway`, `internal`, and embedded `web` assets; Android module licensing and gateway dependency notices must be assessed for their actual scope. The owner subsequently chose AGPL v3; see the implementation follow-up above.

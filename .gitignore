@@ -16,10 +16,10 @@
 !/Makefile
 !/env.example
 !/.gitattributes
-!/.gitattributes
 !/README.md
 !/LICENSE
 !/THIRD_PARTY_NOTICES.md
+!/NOTICE.md
 !/.github/
 
 # 2. Android 编译中间件与构建产物

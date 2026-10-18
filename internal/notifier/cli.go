@@ -43,7 +43,7 @@ func RunBarkCmd(args []string) {
 }
 
 func runBarkHelpCmd() {
-	fmt.Print(`🔔 Multigravity (mgy) - Bark 实时推送配置工具 (iOS 专用)
+	fmt.Print(`🔔 GraviGo Gateway - Bark 实时推送配置工具 (iOS 专用)
 
 Bark 是 iOS 平台的极简推送通知客户端，用于在 iPhone / iPad 接收 Agent 状态提醒。
 
@@ -127,7 +127,7 @@ func runBarkTestCmd() {
 
 	start := time.Now()
 	err := client.Send(ctx, BarkPayload{
-		Title: "🎉 Multigravity 测试推送 (iOS)",
+		Title: "🎉 GraviGo 测试推送 (iOS)",
 		Body:  fmt.Sprintf("您的 iPhone 已成功连接到本地网关！测试时间: %s", time.Now().Format("15:04:05")),
 		Sound: cfg.SoundComplete,
 	})
@@ -183,7 +183,7 @@ func runBarkSetCmd(args []string) {
 
 		if err := client.Send(ctx, BarkPayload{
 			Title: "🎉 Bark 配置成功 (iOS)",
-			Body:  "您的 iPhone 已成功与 Multigravity 建立通知联动！",
+			Body:  "您的 iPhone 已成功与 GraviGo 建立通知联动！",
 			Sound: cfg.SoundComplete,
 		}); err == nil {
 			fmt.Println("🎉 测试推送已成功送达您的 iPhone！")
@@ -229,7 +229,7 @@ func runBarkInteractiveWizard() {
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Println("================================================================================")
-	fmt.Println("🔔 Multigravity - Bark 实时推送通知配置向导 (iOS 专用)")
+	fmt.Println("🔔 GraviGo - Bark 实时推送通知配置向导 (iOS 专用)")
 	fmt.Println("================================================================================")
 	fmt.Println("Bark 是 iOS 平台的极简通知推送客户端，专为 iPhone / iPad 用户打造。")
 	fmt.Println("当反重力 Agent 执行任务需要人工审批操作 (Action) 或任务全部执行完成时，")
@@ -336,7 +336,7 @@ func runBarkInteractiveWizard() {
 		start := time.Now()
 		err := client.Send(ctx, BarkPayload{
 			Title: "🎉 Bark 推送配置成功 (iOS)",
-			Body:  fmt.Sprintf("您的 iPhone 已成功与 Multigravity 连接！耗时: %v", time.Since(start).Round(time.Millisecond)),
+			Body:  fmt.Sprintf("您的 iPhone 已成功与 GraviGo 连接！耗时: %v", time.Since(start).Round(time.Millisecond)),
 			Sound: targetSoundComplete,
 		})
 

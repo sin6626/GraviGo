@@ -221,8 +221,8 @@
       "zh": "公网地址请使用 HTTPS；局域网和 Tailscale 地址可使用 HTTP"
     },
     "msg_611fb781fbf6": {
-      "en": "Enter the pairing code from mgy pair or scan its QR code. A gateway address cannot replace the pairing code.",
-      "zh": "还需填写 mgy pair 生成的配对码或扫描配对二维码（网关地址不能代替配对码）"
+      "en": "Enter the pairing code from gravigo-gateway pair or scan its QR code. A gateway address cannot replace the pairing code.",
+      "zh": "还需填写 gravigo-gateway pair 生成的配对码或扫描配对二维码（网关地址不能代替配对码）"
     },
     "msg_f7147eb297cf": {
       "en": "Paste the full pairing link. If you enter only a pairing code, also enter the gateway URL.",
@@ -365,8 +365,8 @@
       "zh": "请先停止生成，再归档会话"
     },
     "msg_4efaa9127551": {
-      "en": "The desktop gateway is out of date. Update and restart mgy, then pull to refresh the chat before reverting.",
-      "zh": "电脑网关版本较旧，请更新并重启 mgy 后下拉刷新会话，再使用回退。"
+      "en": "The desktop gateway is out of date. Update and restart gravigo-gateway, then pull to refresh the chat before reverting.",
+      "zh": "电脑网关版本较旧，请更新并重启 gravigo-gateway 后下拉刷新会话，再使用回退。"
     },
     "msg_9094e63b8f45": {
       "en": "Preview failed",
@@ -509,8 +509,8 @@
       "zh": "配对设置"
     },
     "msg_5bdc68dd1b59": {
-      "en": "Run mgy pair on your computer, then scan the QR code, paste the pairing link, or enter the pairing code and gateway address.",
-      "zh": "在电脑运行 mgy pair，扫描二维码、粘贴配对链接，或填写配对码和网关地址。"
+      "en": "Run gravigo-gateway pair on your computer, then scan the QR code, paste the pairing link, or enter the pairing code and gateway address.",
+      "zh": "在电脑运行 gravigo-gateway pair，扫描二维码、粘贴配对链接，或填写配对码和网关地址。"
     },
     "msg_2f424ccdbb41": {
       "en": "Current address: %1$s",
@@ -521,8 +521,8 @@
       "zh": "配对链接或配对码"
     },
     "msg_ab3143aff4e5": {
-      "en": "agy://pair?... or a pairing code from mgy pair",
-      "zh": "agy://pair?... 或 mgy pair 的配对码"
+      "en": "agy://pair?... or a pairing code from gravigo-gateway pair",
+      "zh": "agy://pair?... 或 gravigo-gateway pair 的配对码"
     },
     "msg_e0fb201616ca": {
       "en": "Custom gateway URL (optional)",
@@ -545,8 +545,8 @@
       "zh": "重新配对"
     },
     "msg_ba61ce41e1b6": {
-      "en": "Scan the mgy pair QR code",
-      "zh": "扫描 mgy pair 二维码"
+      "en": "Scan the gravigo-gateway pair QR code",
+      "zh": "扫描 gravigo-gateway pair 二维码"
     },
     "msg_ac78fcc82ee5": {
       "en": "Scan QR code",
@@ -2647,6 +2647,14 @@
     "sandbox_off": {
       "zh": "关闭",
       "en": "Off"
+    },
+    "license_notice": {
+      "zh": "本软件按 GNU AGPL v3 许可提供，不提供任何担保。许可证、对应源码与构建说明见本项目代码仓库。",
+      "en": "Licensed under GNU AGPL v3, without warranty. See the project repository for the license, corresponding source, and build instructions."
+    },
+    "license_link": {
+      "zh": "开源许可",
+      "en": "License"
     }
   }
 }

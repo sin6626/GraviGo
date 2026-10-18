@@ -9,6 +9,8 @@
     <string name="language">"Language"</string>
     <string name="language_chinese">"Chinese (Simplified)"</string>
     <string name="language_english">"English"</string>
+    <string name="license_link">"License"</string>
+    <string name="license_notice">"Licensed under GNU AGPL v3, without warranty. See the project repository for the license, corresponding source, and build instructions."</string>
     <string name="msg_0006d696d8e1">"added"</string>
     <string name="msg_00138dee6a6f">"Resets in %1$s d%2$s"</string>
     <string name="msg_008814832cf7">"Send message"</string>
@@ -206,7 +208,7 @@
     <string name="msg_4db292340c87">"PowerPoint presentation"</string>
     <string name="msg_4e4399bf6d85">"Always ask"</string>
     <string name="msg_4e8c1baac23d">"Binary file"</string>
-    <string name="msg_4efaa9127551">"The desktop gateway is out of date. Update and restart mgy, then pull to refresh the chat before reverting."</string>
+    <string name="msg_4efaa9127551">"The desktop gateway is out of date. Update and restart gravigo-gateway, then pull to refresh the chat before reverting."</string>
     <string name="msg_4f87a1cc8dd3">"Account &amp; settings"</string>
     <string name="msg_4f8f3547c8b9">"Terminal sandbox"</string>
     <string name="msg_50c36c22407b">"Account details unavailable"</string>
@@ -234,7 +236,7 @@
     <string name="msg_58e21b8737cc">"New chat"</string>
     <string name="msg_58f55ca70bd1">"Plan review policy, always ask"</string>
     <string name="msg_5ab90679d33d">"Progress details"</string>
-    <string name="msg_5bdc68dd1b59">"Run mgy pair on your computer, then scan the QR code, paste the pairing link, or enter the pairing code and gateway address."</string>
+    <string name="msg_5bdc68dd1b59">"Run gravigo-gateway pair on your computer, then scan the QR code, paste the pairing link, or enter the pairing code and gateway address."</string>
     <string name="msg_5be0323e8adc">"Connected"</string>
     <string name="msg_5bf3f2d2f4f7">"Load earlier messages"</string>
     <string name="msg_5c1fcddc0c0d">"Close change review"</string>
@@ -244,7 +246,7 @@
     <string name="msg_5fac8d59f306">"Source: desktop permission preset"</string>
     <string name="msg_60823aaec73b">"Sent"</string>
     <string name="msg_60d85c776d5a">"File ready to send, %1$s, %2$s, %3$s. Tap to preview."</string>
-    <string name="msg_611fb781fbf6">"Enter the pairing code from mgy pair or scan its QR code. A gateway address cannot replace the pairing code."</string>
+    <string name="msg_611fb781fbf6">"Enter the pairing code from gravigo-gateway pair or scan its QR code. A gateway address cannot replace the pairing code."</string>
     <string name="msg_6135d4159e89">"Remove"</string>
     <string name="msg_6178a524369b">"Could not update plan review policy: HTTP %1$s"</string>
     <string name="msg_61f2f5148d11">"❌ Antigravity task failed"</string>
@@ -439,7 +441,7 @@
     <string name="msg_aa63d57fef00">"Loaded, zoom %1$s%%"</string>
     <string name="msg_aa9e366f68d3">"Low"</string>
     <string name="msg_ab27f80d046f">"Ready"</string>
-    <string name="msg_ab3143aff4e5">"agy://pair?... or a pairing code from mgy pair"</string>
+    <string name="msg_ab3143aff4e5">"agy://pair?... or a pairing code from gravigo-gateway pair"</string>
     <string name="msg_ab3d537d2fce">"/plan requires arguments and cannot run on mobile yet"</string>
     <string name="msg_abb6edd1093c">"Task stopped"</string>
     <string name="msg_ac78fcc82ee5">"Scan QR code"</string>
@@ -475,7 +477,7 @@
     <string name="msg_b9c6d4d49885">"Could not load commands"</string>
     <string name="msg_ba4fd5700f37">"Could not register push token (%1$s)"</string>
     <string name="msg_ba52ddc17e1d">"Always review"</string>
-    <string name="msg_ba61ce41e1b6">"Scan the mgy pair QR code"</string>
+    <string name="msg_ba61ce41e1b6">"Scan the gravigo-gateway pair QR code"</string>
     <string name="msg_bac7934617a1">"Could not load the plan review policy: HTTP %1$s"</string>
     <string name="msg_baff8c0bccac">"Resets in %1$s min"</string>
     <string name="msg_bb14d7c41431">"Back to projects"</string>

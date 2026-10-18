@@ -71,11 +71,11 @@ jobs:
         run: |
           mkdir -p gateway-package
           go build -trimpath -ldflags="-s -w -X main.Version=1.0.0" -o gateway-package/gravigo-gateway.exe ./cmd/gateway
-          cp LICENSE gateway-package/
-          cp android/docs/GATEWAY-NOTICE.txt gateway-package/NOTICE.txt
-          cp android/docs/LICENSE.upstream-MIT gateway-package/LICENSE.upstream-MIT
-          cd gateway-package
-          zip ../release-assets/GraviGo-Gateway-1.0.0-windows-amd64.zip gravigo-gateway.exe LICENSE NOTICE.txt LICENSE.upstream-MIT
+          python3 android/scripts/package_gateway.py --binary gateway-package/gravigo-gateway.exe --output release-assets/GraviGo-Gateway-1.0.0-windows-amd64.zip
+      - name: Archive matching source
+        run: |
+          git archive --format=zip --prefix=GraviGo-1.0.0/ --output=release-assets/GraviGo-1.0.0-source.zip "$GITHUB_SHA"
+          printf 'Source commit: %s\nSource: https://github.com/%s/tree/%s\nBuild instructions: README.md and android/docs/releasing.md in the source archive.\n' "$GITHUB_SHA" "$GITHUB_REPOSITORY" "$GITHUB_SHA" > release-assets/SOURCE.txt
       - name: Create draft
         env:
           GH_TOKEN: ${{ github.token }}
@@ -85,9 +85,9 @@ jobs:
             echo 'Tag already exists. Review it before retrying.' >&2
             exit 1
           fi
-          (cd release-assets && sha256sum GraviGo-1.0.0.apk GraviGo-Gateway-1.0.0-windows-amd64.zip > SHA256SUMS.txt)
-          printf 'GraviGo 1.0.0\n\nSource commit: %s\n\nDraft awaiting installation and pairing verification.\n' "$GITHUB_SHA" > release-assets/notes.md
-          gh release create v1.0.0 release-assets/GraviGo-1.0.0.apk release-assets/GraviGo-Gateway-1.0.0-windows-amd64.zip release-assets/SHA256SUMS.txt --draft --target "$GITHUB_SHA" --title 'GraviGo 1.0.0' --notes-file release-assets/notes.md
+          (cd release-assets && sha256sum GraviGo-1.0.0.apk GraviGo-Gateway-1.0.0-windows-amd64.zip GraviGo-1.0.0-source.zip SOURCE.txt > SHA256SUMS.txt)
+          printf 'GraviGo 1.0.0\n\nSource commit: %s\nSource: https://github.com/%s/tree/%s\n\nLicense: AGPL-3.0-only; upstream notices retained.\n\nDraft awaiting installation and pairing verification.\n' "$GITHUB_SHA" "$GITHUB_REPOSITORY" "$GITHUB_SHA" > release-assets/notes.md
+          gh release create v1.0.0 release-assets/GraviGo-1.0.0.apk release-assets/GraviGo-Gateway-1.0.0-windows-amd64.zip release-assets/GraviGo-1.0.0-source.zip release-assets/SOURCE.txt release-assets/SHA256SUMS.txt --draft --target "$GITHUB_SHA" --title 'GraviGo 1.0.0' --notes-file release-assets/notes.md
       - name: Remove signing file
         if: always()
         run: rm -f "$GITHUB_WORKSPACE/.release-signing.jks"

@@ -622,6 +622,7 @@ func (h *AuthHandler) HandleNewPairingSession(w http.ResponseWriter, r *http.Req
 		Code:        session.Code,
 		SSL:         ssl,
 		LANHost:     lanHost,
+		LANPort:     h.port,
 		IPv6Host:    ipv6Host,
 		DDNSHost:    ddnsHost,
 		RelayHost:   relayHost,
@@ -634,23 +635,7 @@ func (h *AuthHandler) HandleNewPairingSession(w http.ResponseWriter, r *http.Req
 		"uri":        uri,
 	})
 
-	// Also print QR code to gateway console/log
-	var extraHosts []string
-	if lanHost != "" && lanHost != primaryHost {
-		extraHosts = append(extraHosts, lanHost)
-	}
-	if h.cfURL == "" {
-		if ipv6Host != "" && ipv6Host != primaryHost {
-			extraHosts = append(extraHosts, ipv6Host)
-		}
-		if ddnsHost != "" && ddnsHost != primaryHost {
-			extraHosts = append(extraHosts, ddnsHost)
-		}
-		if relayHost != "" && relayHost != primaryHost {
-			extraHosts = append(extraHosts, relayHost)
-		}
-	}
-	PrintPairingQRCode(primaryHost, port, session.Code, ssl, extraHosts...)
+	PrintRawPairingQRCode(session.Code, uri)
 }
 
 // isAuthorizedAdmin checks if the request carries a valid admin token,

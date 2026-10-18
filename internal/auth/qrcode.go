@@ -75,6 +75,7 @@ type MultiHostPairingParams struct {
 	Code        string
 	SSL         bool
 	LANHost     string
+	LANPort     int
 	IPv6Host    string
 	DDNSHost    string
 	RelayHost   string
@@ -109,6 +110,9 @@ func GenerateMultiHostPairingURI(p MultiHostPairingParams) string {
 	// 3. lan (host局域网, if present and distinct from primary host)
 	if lan := strings.TrimSpace(p.LANHost); lan != "" && (lan != cleanHost || strings.Contains(cleanHost, ":")) {
 		items = append(items, paramItem{"lan", lan})
+		if p.LANPort > 0 {
+			items = append(items, paramItem{"lan_port", strconv.Itoa(p.LANPort)})
+		}
 	}
 	// 4. port
 	items = append(items, paramItem{"port", fmt.Sprintf("%d", p.Port)})
@@ -216,59 +220,15 @@ func BuildMultiHostPairingParams(primaryHost string, port int, code string, ssl 
 
 // FormatPairingQRCode renders the complete pairing banner, ANSI QR code, and URI instructions
 // into a single formatted string.
-func FormatPairingQRCode(primaryHost string, port int, code string, ssl bool, extraHosts ...string) string {
-	params := BuildMultiHostPairingParams(primaryHost, port, code, ssl, extraHosts...)
-	uri := GenerateMultiHostPairingURI(params)
-
-	var b strings.Builder
-
-	qr, err := qrcode.New(uri, qrcode.Medium)
-	if err != nil {
-		fmt.Fprintf(&b, "\n⚠️  无法生成配对二维码: %v\n🔗 配对链接: %s\n\n", err, uri)
-		return b.String()
-	}
-
-	b.WriteString("\n  📱 Multigravity 客户端扫码一键配对 (5分钟内有效)\n")
-	qrStr := qr.ToSmallString(false)
-	b.WriteString(qrStr)
-	if !strings.HasSuffix(qrStr, "\n") {
-		b.WriteString("\n")
-	}
-	b.WriteString("  请使用 Multigravity 手机客户端扫描上方二维码\n")
-
-	if ssl || (strings.Contains(primaryHost, ".") && strings.ContainsAny(primaryHost, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")) {
-		b.WriteString("  ☁️  Cloudflare 专属域名已生成\n")
-		fmt.Fprintf(&b, "  ☁️  公网配对 URI: %s\n", uri)
-	} else {
-		scheme := "http://"
-		if ssl {
-			scheme = "https://"
-		}
-		if port != 80 && port != 443 {
-			fmt.Fprintf(&b, "  🌐 访问地址: %s%s:%d\n", scheme, primaryHost, port)
-		} else {
-			fmt.Fprintf(&b, "  🌐 访问地址: %s%s\n", scheme, primaryHost)
-		}
-	}
-
-	if params.LANHost != "" {
-		lanURI := GeneratePairingURI(params.LANHost, 58900, code, false)
-		fmt.Fprintf(&b, "  🏠 局域网 Wi-Fi 直连 URI: %s\n", lanURI)
-	}
-	b.WriteString("\n")
-
-	return b.String()
+func FormatPairingQRCode(params MultiHostPairingParams) string {
+	return formatPairingBanner(params.Code, GenerateMultiHostPairingURI(params))
 }
 
-// PrintPairingQRCode generates and renders an ANSI QR code to stdout encoding all candidate
-// network endpoints (e.g. Cloudflare, LAN IPv4), and displays informative pairing instructions.
-// It executes atomically under console synchronization to prevent concurrent log statements from corrupting the QR code.
-func PrintPairingQRCode(primaryHost string, port int, code string, ssl bool, extraHosts ...string) {
-	output := FormatPairingQRCode(primaryHost, port, code, ssl, extraHosts...)
-
+// PrintPairingQRCode writes a complete banner under one console lock.
+func PrintPairingQRCode(params MultiHostPairingParams) {
+	output := FormatPairingQRCode(params)
 	consoleMu.Lock()
 	defer consoleMu.Unlock()
-
 	_, _ = os.Stdout.WriteString(output)
 }
 
@@ -290,14 +250,14 @@ func GenerateQRCodePNG(host string, port int, code string, ssl bool, size int, e
 	return GenerateMultiHostQRCodePNG(params, size)
 }
 
-// PrintRawPairingQRCode prints the pairing banner, QR code, and instructions for a given URI and code.
-func PrintRawPairingQRCode(code string, uri string) {
+// formatPairingBanner keeps generated and server-returned pairing links consistent.
+func formatPairingBanner(code string, uri string) string {
 	var b strings.Builder
 	qr, err := qrcode.New(uri, qrcode.Medium)
 	if err != nil {
 		fmt.Fprintf(&b, "\n⚠️  无法生成配对二维码: %v\n🔗 配对链接: %s\n\n", err, uri)
 	} else {
-		b.WriteString("\n  📱 Multigravity 客户端扫码一键配对 (5分钟内有效)\n")
+		b.WriteString("\n  📱 GraviGo 客户端扫码一键配对 (5分钟内有效)\n")
 		if code != "" {
 			fmt.Fprintf(&b, "  🔑 配对码: %s\n", code)
 		}
@@ -306,7 +266,7 @@ func PrintRawPairingQRCode(code string, uri string) {
 		if !strings.HasSuffix(qrStr, "\n") {
 			b.WriteString("\n")
 		}
-		b.WriteString("  请使用 Multigravity 手机客户端扫描上方二维码\n")
+		b.WriteString("  请使用 GraviGo 手机客户端扫描上方二维码\n")
 
 		if u, err := url.Parse(uri); err == nil {
 			q := u.Query()
@@ -314,6 +274,13 @@ func PrintRawPairingQRCode(code string, uri string) {
 			pStr := q.Get("port")
 			pVal, _ := strconv.Atoi(pStr)
 			sVal := q.Get("ssl") == "1"
+			lanPort, _ := strconv.Atoi(q.Get("lan_port"))
+			if lanPort <= 0 {
+				lanPort = pVal
+				if sVal && pVal == 443 {
+					lanPort = 58900
+				}
+			}
 			lan := q.Get("lan")
 
 			if sVal || (strings.Contains(h, ".") && strings.ContainsAny(h, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")) {
@@ -332,13 +299,19 @@ func PrintRawPairingQRCode(code string, uri string) {
 			}
 
 			if lan != "" {
-				fmt.Fprintf(&b, "  🏠 局域网 Wi-Fi 直连 URI: %s\n", GeneratePairingURI(lan, 58900, code, false))
+				fmt.Fprintf(&b, "  🏠 局域网 Wi-Fi 直连 URI: %s\n", GeneratePairingURI(lan, lanPort, code, false))
 			}
 		}
 		b.WriteString("\n")
 	}
 
+	return b.String()
+}
+
+// PrintRawPairingQRCode prints the exact pairing URI returned by the gateway.
+func PrintRawPairingQRCode(code string, uri string) {
+	output := formatPairingBanner(code, uri)
 	consoleMu.Lock()
 	defer consoleMu.Unlock()
-	_, _ = os.Stdout.WriteString(b.String())
+	_, _ = os.Stdout.WriteString(output)
 }
