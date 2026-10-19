@@ -8,6 +8,9 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.LocaleList
 import androidx.annotation.StringRes
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import java.util.Locale
 
 class GraviGoApplication : Application() {
@@ -25,7 +28,8 @@ class GraviGoApplication : Application() {
 /** Android 13 uses system per-app languages; older devices keep the same choice locally. */
 object AppLanguage {
     private var application: Application? = null
-    @Volatile private var localizedContext: Context? = null
+    // appString callers in Compose observe locale changes without replacing the Activity.
+    private var localizedContext by mutableStateOf<Context?>(null)
     private const val PREFERENCES = "app_language"
     private const val LANGUAGE = "language"
 
@@ -67,7 +71,14 @@ object AppLanguage {
         activity.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).edit().putString(LANGUAGE, language).apply()
         if (Build.VERSION.SDK_INT >= 33) {
             activity.getSystemService(LocaleManager::class.java).applicationLocales = LocaleList.forLanguageTags(language)
-        } else activity.recreate()
+        } else {
+            val configuration = Configuration(activity.resources.configuration).apply {
+                setLocale(Locale.forLanguageTag(language))
+            }
+            @Suppress("DEPRECATION")
+            activity.resources.updateConfiguration(configuration, activity.resources.displayMetrics)
+            activity.onConfigurationChanged(configuration)
+        }
     }
 
     internal fun invalidate() { localizedContext = null }

@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 
 private tailrec fun Context.activity(): Activity? = when (this) {
@@ -22,9 +24,11 @@ private tailrec fun Context.activity(): Activity? = when (this) {
 @Composable
 fun LanguageSelector() {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val language = remember(configuration) { AppLanguage.selected(context) }
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         listOf("zh-CN" to "简体中文", "en" to "English").forEach { (tag, label) ->
-            FilterChip(selected = AppLanguage.selected(context) == tag,
+            FilterChip(selected = language == tag,
                 onClick = { context.activity()?.let { AppLanguage.change(it, tag) } },
                 label = { Text(label) }, modifier = Modifier.heightIn(min = 48.dp))
         }

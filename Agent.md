@@ -935,3 +935,11 @@ android/app/src/main/java/com/antigravity/mobile/
 - 真机在验证期间从 ADB 列表断开，已请求用户重新接线。正确组件的真机直接启动已通过，但同步后 Studio 到真机的完整复测尚待重新接入；不把模拟器验证当作该项完成。
 - README.md 改为中文首页，新增 README.en.md 并在 .gitignore 放行，两份互链。定位改为独立 Antigravity Android 远程客户端，说明 Remote 体验动机、九哥来源、新旧包名、真机/模拟器地址、网关停机会断连及 Studio 同步排错；保留 AGPL 与原作者声明。
 - GitHub 插件缺少仓库简介写接口，按用户备用规则使用 gh repo edit 更新英文 About，再通过 GitHub 插件读回核实。网关 README 与 Agent.md 当前定位同步更新。文档本地链接、语言跳转、代码围栏及旧定位清理检查通过；不改 App 行为，不触发发布。
+
+### 2026-10-19 开发版模拟器配对与语言切换黑屏修复
+- 用户明确只需打通模拟器，暂不复验真机。Studio 运行的新包 io.github.sin6626.gravigo.debug 与旧包私有数据独立，此次连接页源于新包尚未配对；58901/PID11992 当时正常监听。用原网关原生 pair 命令签发一次性码，通过新包已有深链配对，未打印凭据、未重置旧配对。
+- 新包真实配对接口200；强制停止并冷启动该新包后仍自动恢复 /healthz=200、/api/v1/auth/endpoints=200、/gateway/cascade/messages=200、/gateway/cascade/stream=101、/gateway/cascade/diffs=200，实际会话正文可见。最终保持新包前台、中文、原58901网关运行，没有发送消息。
+- 语言切换前通过真实设置按钮三次切换录到14个全黑帧；新增仪器截图回归在基线APK切英文时捕获4个黑帧并失败。只跳过重建时开屏初始化的假设仍失败，已撤回。实际问题是locale改变触发Activity重建，窗口销毁到新帧之间出现黑屏。
+- 最终仅接管 locale|layoutDirection，保留Activity与Compose状态；API33+继续使用系统LocaleManager，使用系统管理的Activity Context；旧系统更新本地资源并派发配置变更。MainActivity收到配置变化时刷新本地化缓存和本地错误，appString缓存使用可观察状态，LanguageSelector读取LocalConfiguration更新选择态。不拦截其他类型的系统重建，正常开屏逻辑保留。
+- 新版语言截图回归、同Activity中资源/草稿/附件/本地错误与ViewModel保留测试、大字号设置、开屏动画合计4项仪器检查通过；减少动画专用用例未开启条件而跳过。真实设置页三次切换后检查109帧，全黑帧0且设置面板保持打开、两种文案正确。Debug/AndroidTest构建、App单测与lint通过；664项翻译生成检查通过。
+- 证据仅在忽略目录 .verification/2026-10-19-language-reconnect/，含基线APK、前后录屏/帧分析、原生接口脱敏摘要与测试日志。API37模拟器已实测，API32以下兼容路径尚未实机验证；不得声称真机已完整验收。发布继续暂停。

@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.content.Context
 import io.github.sin6626.gravigo.i18n.AppLanguage
 import android.content.Intent
+import android.content.res.Configuration
+import android.os.Build
 import android.animation.ValueAnimator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,7 +22,7 @@ import io.github.sin6626.gravigo.ui.demo.ChatDemoScreen
 class MainActivity : ComponentActivity() {
     override fun attachBaseContext(newBase: Context) {
         AppLanguage.invalidate()
-        super.attachBaseContext(AppLanguage.wrap(newBase))
+        super.attachBaseContext(if (Build.VERSION.SDK_INT >= 33) newBase else AppLanguage.wrap(newBase))
     }
     private val chatViewModel by viewModels<ChatViewModel>()
     private var wasBackgrounded = false
@@ -63,6 +65,12 @@ class MainActivity : ComponentActivity() {
         }
         setContent { ChatDemoScreen(chatViewModel, onLeaveApp = { moveTaskToBack(true) }, deferConversation = launchInProgress) }
         if (savedInstanceState == null) intent?.dataString?.let(chatViewModel::pair)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        AppLanguage.invalidate()
+        chatViewModel.refreshLocalErrors()
     }
 
     override fun onStop() {
