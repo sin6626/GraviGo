@@ -102,6 +102,7 @@ internal fun AppSettingsBottomSheet(defaultFileWrap: Boolean, onDefaultFileWrap:
             HorizontalDivider(color = Color(0xFFEBEDF0))
             Spacer(Modifier.height(20.dp))
             Text(appString(R.string.language), color = SecondaryInk, fontSize = 12.sp)
+            Spacer(Modifier.height(8.dp))
             LanguageSelector()
             Spacer(Modifier.height(20.dp))
             Text(appString(R.string.msg_ce9b12499c47), color = SecondaryInk, fontSize = 12.sp)

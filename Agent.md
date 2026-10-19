@@ -943,3 +943,6 @@ android/app/src/main/java/com/antigravity/mobile/
 - 最终仅接管 locale|layoutDirection，保留Activity与Compose状态；API33+继续使用系统LocaleManager，使用系统管理的Activity Context；旧系统更新本地资源并派发配置变更。MainActivity收到配置变化时刷新本地化缓存和本地错误，appString缓存使用可观察状态，LanguageSelector读取LocalConfiguration更新选择态。不拦截其他类型的系统重建，正常开屏逻辑保留。
 - 新版语言截图回归、同Activity中资源/草稿/附件/本地错误与ViewModel保留测试、大字号设置、开屏动画合计4项仪器检查通过；减少动画专用用例未开启条件而跳过。真实设置页三次切换后检查109帧，全黑帧0且设置面板保持打开、两种文案正确。Debug/AndroidTest构建、App单测与lint通过；664项翻译生成检查通过。
 - 证据仅在忽略目录 .verification/2026-10-19-language-reconnect/，含基线APK、前后录屏/帧分析、原生接口脱敏摘要与测试日志。API37模拟器已实测，API32以下兼容路径尚未实机验证；不得声称真机已完整验收。发布继续暂停。
+
+### 2026-10-19 设置页语言标题间距
+- 按用户截图反馈，在账号与设置的“语言”标题和语言选项之间增加8dp间距，仅调整该处排版，保留语言选择与既有48dp触控区。
