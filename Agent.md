@@ -2,7 +2,7 @@
 
 ## 1. 项目概览
 - **已确定品牌名称**：GraviGo，取代此前 GraviWing 方案。仓库为 `sin6626/GraviGo`，Android namespace / 生产包名为 `io.github.sin6626.gravigo`，Debug 包名追加 `.debug`。正式签名密钥已生成，保存在本地 Git 忽略目录及用户指定的私有备份仓库；尚未配置 CI 签名 Secrets，未公开发布。
-- **定位**：Google Antigravity AI Agent 移动端与全栈端到端协同系统（Android / iOS / Web / Go 本地网关）。
+- **定位**：独立的 Antigravity Android 远程客户端，通过电脑上的 Go 网关操控桌面会话。项目源于改善 Antigravity Remote 手机使用体验，基于九哥的 antigravity-mobile 项目继续开发。
 - **当前重点任务**：Android 客户端前端 UI 二改与视觉/体验升级重构。
 
 ### 2026-10-18 英文文档、App 双语与 CI/首次发布计划（仅计划）
@@ -928,3 +928,10 @@ android/app/src/main/java/com/antigravity/mobile/
 - 使用原 bin/mgy-management.exe、原 android/design/.verification/management-gateway/auth_store.json 与管理员令牌目录恢复58901，仅监听127.0.0.1，隧道与通知关闭；进程PID11992。保留旧配对、账号、会话及现有58900/隧道；没有发送消息或重装应用。
 - 恢复后模拟器nc /healthz=200，App实际 /api/v1/auth/endpoints=200、/healthz=200、/gateway/cascade/stream=101、/gateway/cascade/diffs=200，两个网关health/ready均200。证据在忽略目录 .verification/2026-10-19-gateway-recovery/。没有证据确定网关之前为何退出；电脑重启或关闭进程后仍需重新启动，未新增开机任务。
 - 前次推送db1c486的CI run39132420221三项全部通过，GitHub尚无Release。README重定位为独立Antigravity安卓远程客户端、中文首页与英文对应版本的计划已交用户审阅，尚未实施；不得把companion译为合作伙伴或暗示Google官方关系。
+
+### 2026-10-19 修复 Studio 启动身份与双语 README
+- 用户截图报错组件为 com.antigravity.mobile/io.github.sin6626.gravigo.MainActivity；在 vivo V2339FA 真机上使用同一组件重现 Error type 3。真机已装 io.github.sin6626.gravigo.debug，系统可解析其 Launcher，用正确组件 am start -W 返回 Status: ok。
+- 源码 applicationId / namespace / manifest 已正确，Studio 运行配置使用 Default Activity；根因是改名后 IDE 尚未同步 Gradle 模型。通过原生 UI 点击 Sync Project with Gradle Files，项目标题从 antigravity-mobile 更新为 GraviGo，再从 Studio 的 app 运行配置实际安装启动，模拟器前台正确为 io.github.sin6626.gravigo.debug/io.github.sin6626.gravigo.MainActivity。没有为兼容旧错误添加 Activity alias，也没有重置用户数据或删除缓存。
+- 真机在验证期间从 ADB 列表断开，已请求用户重新接线。正确组件的真机直接启动已通过，但同步后 Studio 到真机的完整复测尚待重新接入；不把模拟器验证当作该项完成。
+- README.md 改为中文首页，新增 README.en.md 并在 .gitignore 放行，两份互链。定位改为独立 Antigravity Android 远程客户端，说明 Remote 体验动机、九哥来源、新旧包名、真机/模拟器地址、网关停机会断连及 Studio 同步排错；保留 AGPL 与原作者声明。
+- GitHub 插件缺少仓库简介写接口，按用户备用规则使用 gh repo edit 更新英文 About，再通过 GitHub 插件读回核实。网关 README 与 Agent.md 当前定位同步更新。文档本地链接、语言跳转、代码围栏及旧定位清理检查通过；不改 App 行为，不触发发布。

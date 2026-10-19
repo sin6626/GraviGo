@@ -1,6 +1,6 @@
 # GraviGo Gateway 1.0.0 for Windows x64
 
-The gateway connects the GraviGo Android app to Antigravity on your computer. Keep it running while you use the phone app. Extract the entire ZIP to a folder you control; do not run the executable from inside the archive.
+GraviGo is an independent Android remote client for Antigravity. This gateway lets the app control Antigravity sessions on your computer. Keep it running while you use the phone app. Extract the entire ZIP to a folder you control; do not run the executable from inside the archive.
 
 ## Connect on your local network
 

@@ -17,6 +17,7 @@
 !/env.example
 !/.gitattributes
 !/README.md
+!/README.en.md
 !/LICENSE
 !/THIRD_PARTY_NOTICES.md
 !/NOTICE.md
