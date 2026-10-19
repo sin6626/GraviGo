@@ -922,3 +922,9 @@ android/app/src/main/java/com/antigravity/mobile/
 - 发布脚本新增 Windows x64 网关 quick-start、完整 Go 依赖许可、源码提交标识和 ZIP 自检；要求干净提交与二进制 vcs 元信息一致。手动工作流同时准备匹配源码 ZIP 与 SHA256SUMS。
 - 本机 Go 全量测试 / vet、Android 全模块单测 / lint / Debug / AndroidTest 构建已通过；隔离网关实际配对、拒绝重放、工作区读取、指定端口撤销与失败退出码通过。API 37 的语言切换与大字号许可入口两项仪器测试通过；干净提交 924c693 重建打包、ZIP 逐字节校验与源码归档排除私密资料验证通过，远端 CI 待推送后核实。
 - 发布仍由用户明确暂停；不创建 tag、draft/public Release，不上传签名 Secrets，不替换现有运行网关或改原配对。临时验证只在忽略目录 .verification/2026-10-18-gateway-readiness/，密钥仅在 .signing/ 私有备份。
+
+### 2026-10-19 模拟器网关连接再次恢复
+- 用户反馈模拟器 App 连不上。现场仅主网关 bin/mgy.exe PID15400 监听58900，健康/桌面ready均200；旧包 com.antigravity.mobile 前台持续请求10.0.2.2:58901失败，ADB在线。模拟器nc到58901明确Connection refused，独立网关未运行。
+- 使用原 bin/mgy-management.exe、原 android/design/.verification/management-gateway/auth_store.json 与管理员令牌目录恢复58901，仅监听127.0.0.1，隧道与通知关闭；进程PID11992。保留旧配对、账号、会话及现有58900/隧道；没有发送消息或重装应用。
+- 恢复后模拟器nc /healthz=200，App实际 /api/v1/auth/endpoints=200、/healthz=200、/gateway/cascade/stream=101、/gateway/cascade/diffs=200，两个网关health/ready均200。证据在忽略目录 .verification/2026-10-19-gateway-recovery/。没有证据确定网关之前为何退出；电脑重启或关闭进程后仍需重新启动，未新增开机任务。
+- 前次推送db1c486的CI run39132420221三项全部通过，GitHub尚无Release。README重定位为独立Antigravity安卓远程客户端、中文首页与英文对应版本的计划已交用户审阅，尚未实施；不得把companion译为合作伙伴或暗示Google官方关系。
