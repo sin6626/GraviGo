@@ -1,6 +1,20 @@
 # GraviGo Gateway 1.0.0 for Windows x64
 
-GraviGo is an independent Android remote client for Antigravity. This gateway lets the app control Antigravity sessions on your computer. Keep it running while you use the phone app. Extract the entire ZIP to a folder you control; do not run the executable from inside the archive.
+GraviGo is an independent Android remote client for Antigravity. This gateway lets the app control Antigravity sessions on your computer. Keep it running while you use the phone app.
+
+## Install with one command
+
+In PowerShell on Windows x64, run:
+
+```powershell
+irm https://raw.githubusercontent.com/sin6626/GraviGo/main/android/scripts/install-gateway.ps1 | iex
+```
+
+The installer resolves the latest stable release once, downloads its gateway ZIP, checks SHA-256, and extracts all files into `%LOCALAPPDATA%\GraviGo\Gateway\<version>`. No administrator access is required. It prints the installed directory and the startup and pairing commands. Existing versions are verified without overwriting files. Pairing data, PATH, and startup settings are preserved.
+
+To choose another directory, download the [installer](https://raw.githubusercontent.com/sin6626/GraviGo/main/android/scripts/install-gateway.ps1), inspect it, then run `powershell -NoProfile -ExecutionPolicy Bypass -File .\install-gateway.ps1 -InstallDir 'D:\GraviGo'`. If an existing version is incomplete or has changed, the installer stops; choose a different installation directory to keep the existing files.
+
+For a manual installation, download the complete ZIP from [Releases](https://github.com/sin6626/GraviGo/releases/latest), check `SHA256SUMS.txt`, and extract it to a folder you control. Do not run the executable from inside the archive.
 
 ## Connect on your local network
 

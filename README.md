@@ -27,6 +27,18 @@ App 与网关版本为 **1.0.0**，Android 版本号为 **5**。正式下载见 
 
 目前优先支持 Windows x64 电脑。网关在 CI 中也会进行 Linux 编译与测试，但这不代表 Linux 桌面集成已经完整验证。当前集成验证使用 Antigravity 2.19.1；桌面端接口更新后可能需要适配。
 
+## 安装 Windows 网关
+
+在 Windows x64 的 PowerShell 中执行一行命令，无需管理员权限：
+
+```powershell
+irm https://raw.githubusercontent.com/sin6626/GraviGo/main/android/scripts/install-gateway.ps1 | iex
+```
+
+脚本自动下载最新稳定版、校验 SHA-256，并将网关和完整许可文件解压到 `%LOCALAPPDATA%\GraviGo\Gateway\<版本号>`。安装后会显示启动和配对命令；先打开 Antigravity，再按提示启动网关并保持终端运行。它不会修改 PATH、设置开机自启或重置已有配对。
+
+再次执行会检查已有版本，不覆盖正在使用的文件。也可以从 [Releases](https://github.com/sin6626/GraviGo/releases/latest) 手动下载并解压完整 ZIP，详见[网关指南](android/docs/GATEWAY-README.md)。
+
 ## 构建项目
 
 需要准备：
