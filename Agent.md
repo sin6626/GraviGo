@@ -1,5 +1,13 @@
 # GraviGo 项目开发与维护文档
 
+### 2026-10-20 三版竖屏产品宣发预览交付
+- 用户选择抖音／小红书9:16，并要求真实操作＋动效、发布会感、功能演示三个版本各做一个预览。已完成A-hybrid.mp4、B-hero.mp4、C-demo.mp4，均15秒/1080×1920/30fps/H.264＋AAC，位于.verification/gravigo-product-promo/delivery/；compare.html可并排播放，manifest.json含校验和与实际验收结果。完整60～75秒影片与旁白待选方向后再展开。
+- 新增opt-in ProductPromoCaptureTest与capture_native.py，复用FakeGateway但使用独立SharedPreferences/cache命名空间，实际渲染ChatDemoScreen与方案预览窗口；屏幕录制仅在专用演示内容ready后启动，不使用真实网关/账号/项目。采集测试OK(1 test)，保存四张原生画面与操作录屏，方案窗口图片从录屏提取，避免Compose根截图遗漏Dialog。
+- 三版共用原生录屏与正式晶核图标，A按使用场景串联、B以图标/大字/镜头节奏为主、C用步骤标签与阅读局部放大。背景配乐由脚本原创合成，无配音或外部采样。使用Noto Sans CJK SC并保留Adobe版权和完整SIL OFL声明。
+- Playwright后台渲染与FFmpeg流式编码，不落数千帧到磁盘；支持单版重渲染及关键帧检查。发现SimpleHTTPRequestHandler不支持Range会使Chromium始终取首帧，已加入MP4字节范围响应和每次实际时间校验，画面现在随原生录屏正确变化。三版完整解码、实际450帧/15秒/分辨率/编码/音频采样率/哈希、零黑帧和浏览器寻帧/播放至结束均通过；关键画面已人工查看。
+- 制作脚本与英文复现说明在android/design/promo/；媒体、复制的字体和项目内编码工具均忽略。仅新增采集测试与两个默认不改变既有行为的FakeGateway标签参数，未修改App业务、包名、版本或配对。58901健康仍ok，采集后恢复正式App前台。
+- 初次组合进程清理命令被执行工具以blocked by policy拒绝，未执行；改用此次下载自身原始执行会话的Ctrl+C正常取消，确认额外Gradle下载PID39496已退出，未停其他JVM或网关。全部渲染/验收脚本与本地HTTP服务已退出，最终检查无Python进程。制作与渲染产物只在当前项目内，未发布到外部平台。
+
 ### 2026-10-20 新产品宣发视频启动
 - 用户希望制作GraviGo产品宣发视频，当前先整理产品定位、文案与分镜。脚本草案为android/design/promo/BRIEF.zh-CN.md，推荐60～75秒中文、真实App画面加产品动效，聚焦任务进度/发送指令/方案与代码审阅，沿用正式晶核图标和已批准标语。
 - 已通过异步问题询问发布平台/画幅与表现形式，尚待回复；没有开始成片渲染或宣称成片完成。片源需使用专用演示内容，不展示账号/私有代码/配对凭据，不将公网或Mac完整桌面连接当作已验证卖点。

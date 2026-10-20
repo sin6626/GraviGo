@@ -3281,6 +3281,8 @@ class ChatUxTest {
         @Volatile var failurePath: String? = null
         @Volatile var failureCode = 500
         @Volatile var accountName = "测试账号"
+        @Volatile var primaryModelLabel: String? = null
+        @Volatile var primaryConversationTitle: String? = null
         @Volatile var liveStream = false
         @Volatile var messageText = "original message"
         @Volatile var filePreviewName = "plan.md"
@@ -3450,7 +3452,7 @@ class ChatUxTest {
                                 ?: if (path.contains("cascadeId=A")) "A" else "B"
                             val body = when {
                                 path.contains("GetUserStatus") -> """{"userStatus":{"name":"$accountName","email":"test@example.com","profilePictureUrl":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==","planStatus":{"planInfo":{"teamsTier":"PRO","planName":"Pro"}},"cascadeModelConfigData":{"clientModelConfigs":[
-                                    {"modelId":"gemini-3.8-flash-high","label":"Gemini fixture${if (thinkingVariants) " (High)" else ""}","modelOrAlias":{"model":"MODEL_PLACEHOLDER_M318"},"supportsImages":true,"supportedMimeTypes":{"text/plain":true,"application/pdf":true},"allowedTiers":["PRO"]},
+                                    {"modelId":"gemini-3.8-flash-high","label":"${primaryModelLabel ?: ("Gemini fixture" + if (thinkingVariants) " (High)" else "")}","modelOrAlias":{"model":"MODEL_PLACEHOLDER_M318"},"supportsImages":true,"supportedMimeTypes":{"text/plain":true,"application/pdf":true},"allowedTiers":["PRO"]},
                                     ${if (thinkingVariants) """{"modelId":"gemini-3.8-flash-medium","label":"Gemini fixture (Medium)","modelOrAlias":{"model":"MODEL_MEDIUM"},"supportsImages":true,"supportedMimeTypes":{"text/plain":true},"allowedTiers":["PRO"]},
                                     {"modelId":"gemini-3.8-flash-low","label":"Gemini fixture (Low)","modelOrAlias":{"model":"MODEL_LOW"},"supportsImages":true,"supportedMimeTypes":{"text/plain":true},"allowedTiers":["PRO"]},""" else ""}
                                     {"modelId":"claude-fixture","label":"Claude fixture","modelOrAlias":{"model":"MODEL_PLACEHOLDER_M26"},"supportsImages":true,"supportedMimeTypes":{"text/plain":true},"allowedTiers":["PRO"]},
@@ -3495,7 +3497,7 @@ class ChatUxTest {
                                 path.startsWith("/api/v1/files/raw") -> "PDF-DATA"
                                 management && path.contains("GetAllCascadeTrajectories") -> {
                                     val summaries = JSONObject()
-                                    for (key in if (createdProject) listOf("A", "B", "C") else listOf("A", "B")) summaries.put(key, JSONObject().put("summary", key)
+                                    for (key in if (createdProject) listOf("A", "B", "C") else listOf("A", "B")) summaries.put(key, JSONObject().put("summary", if (key == "A") primaryConversationTitle ?: key else key)
                                         .put("status", "IDLE").put("annotations", annotations[key] ?: JSONObject()).apply {
                                             if (projectFixture && key in listOf("B", "C")) put("trajectoryMetadata", JSONObject()
                                                 .put("projectId", "p").put("workspaceUris", org.json.JSONArray().put("file:///test/project")))

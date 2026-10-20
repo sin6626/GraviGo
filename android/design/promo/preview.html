@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GraviGo · 三种竖版风格预览</title>
+<style>
+@font-face{font-family:Promo;src:url(assets/NotoSansCJKsc-Regular.otf)}
+*{box-sizing:border-box}body{margin:0;background:#090c14;color:white;font:16px Promo,sans-serif}
+canvas{display:block;width:1080px;height:1920px}body.review canvas{width:min(480px,100vw);height:auto;margin:auto}
+nav{max-width:480px;margin:18px auto;display:flex;gap:8px;flex-wrap:wrap}button,input{font:inherit}button{padding:10px;border:1px solid #59617a;color:white;background:#171d2d;border-radius:10px}input{width:100%}body.render nav{display:none}
+</style>
+<canvas id="film" width="1080" height="1920"></canvas>
+<nav><button data-variant="A">A 操作＋动效</button><button data-variant="B">B 发布会感</button><button data-variant="C">C 功能演示</button><button id="play">播放／暂停</button><input id="scrub" type="range" min="0" max="15" step="0.033" value="0"></nav>
+<script>
+const canvas=document.getElementById('film'),c=canvas.getContext('2d');
+const W=1080,H=1920,DURATION=15;
+const image=src=>new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=src});
+const video=document.createElement('video');video.muted=true;video.preload='auto';video.playsInline=true;video.src='assets/native-demo.mp4';
+let icon,screens,variant='A',playing=false,current=0,last=0;
+const clamp=x=>Math.max(0,Math.min(1,x)),ease=x=>1-Math.pow(1-clamp(x),3);
+function round(x,y,w,h,r=32){c.beginPath();c.roundRect(x,y,w,h,r)}
+function text(value,x,y,size=54,color='#f7f8fc',weight=400,align='left'){
+ c.font=`${weight} ${size}px Promo`;c.fillStyle=color;c.textAlign=align;c.textBaseline='alphabetic';c.fillText(value,x,y);
+}
+function lines(values,x,y,size=80,color='#f7f8fc',weight=600,gap=1.32){values.forEach((v,i)=>text(v,x,y+i*size*gap,size,color,weight))}
+function pill(value,x,y,color='#bdc7ff',fill='#1c2338',size=28){
+ c.font=`400 ${size}px Promo`;const width=c.measureText(value).width+40;c.fillStyle=fill;round(x,y,width,size+30,22);c.fill();text(value,x+20,y+size+10,size,color);return width;
+}
+function background(time,light=false){
+ c.fillStyle=light?'#f2f4f8':'#0b0e17';c.fillRect(0,0,W,H);
+ const gradient=c.createRadialGradient(850+30*Math.sin(time*.2),740,0,750,900,1000);
+ gradient.addColorStop(0,light?'rgba(133,157,255,.14)':'rgba(85,104,221,.19)');gradient.addColorStop(1,'rgba(80,99,220,0)');c.fillStyle=gradient;c.fillRect(0,0,W,H);
+ c.fillStyle=light?'rgba(5,12,35,.035)':'rgba(222,229,255,.025)';
+ for(let n=0;n<350;n++){const x=(n*157.37)%W,y=(n*397.51)%H;c.fillRect(x,y,1.2,1.2)}
+}
+function brand(light=false){
+ c.drawImage(icon,76,86,64,64);text('GraviGo',158,135,40,light?'#17223a':'#eef1ff',600);
+ text('Antigravity 安卓远程客户端',1004,132,24,light?'#6b748a':'#949eb8',400,'right');
+}
+function foot(light=false){text('演示会话 · 局域网连接 · 电脑网关需保持运行',540,1810,24,light?'#758097':'#758099',400,'center')}
+function phone(media,x,y,w,{angle=0,alpha=1,shadow=true,crop=null}={}){
+ const h=crop?w*crop[3]/crop[2]:w*1920/1080;c.save();c.globalAlpha=alpha;c.translate(x+w/2,y+h/2);c.rotate(angle);
+ if(shadow){c.shadowColor='rgba(0,0,0,.42)';c.shadowBlur=65;c.shadowOffsetY=28;c.fillStyle='#111722';round(-w/2-10,-h/2-10,w+20,h+20,52);c.fill()}
+ c.shadowBlur=0;c.shadowOffsetY=0;c.fillStyle='#fff';round(-w/2,-h/2,w,h,44);c.fill();c.clip();
+ if(crop)c.drawImage(media,...crop,-w/2,-h/2,w,h);else c.drawImage(media,-w/2,-h/2,w,h);c.restore();
+ c.save();c.translate(x+w/2,y+h/2);c.rotate(angle);c.strokeStyle='rgba(184,196,223,.38)';c.lineWidth=2;round(-w/2-1,-h/2-1,w+2,h+2,45);c.stroke();c.restore();
+}
+function closing(time,light=false){
+ background(time,light);const ink=light?'#18243e':'#f4f6ff';
+ const breathe=1+Math.sin(time*1.8)*.018;c.save();c.translate(540,640);c.scale(breathe,breathe);
+ c.shadowBlur=95;c.shadowColor='rgba(108,138,255,.3)';c.drawImage(icon,-150,-150,300,300);c.restore();
+ text('GraviGo',540,955,114,ink,600,'center');
+ text('把Antigravity，带在身边',540,1090,52,light?'#414e69':'#b7c4ee',400,'center');
+ c.fillStyle=light?'#dfe6ff':'#202b4f';round(290,1230,500,88,44);c.fill();text('Android 1.0.0 · 现已发布',540,1287,33,light?'#304783':'#d1ddff',400,'center');
+ text('github.com/sin6626/GraviGo',540,1430,34,light?'#263f70':'#afc5ff',400,'center');
+ foot(light);text('基于 GHSaiMo / antigravity-mobile',540,1860,20,light?'#8a91a2':'#636e88',400,'center');
+}
+function hybrid(t){
+ if(t>=12.4){closing(t);return}
+ background(t);brand();
+ let title,subtitle,stage;
+ if(t<3.3){title=['离开工位，','也能跟上进度。'];subtitle='电脑上的 Antigravity，手机上继续关注。';stage=0}
+ else if(t<6.2){title=['任务进行到哪，','打开手机就能看。'];subtitle='会话、进度、回复，随手跟进。';stage=0}
+ else if(t<9.4){title=['想到什么，','随手补一句。'];subtitle='补充要求，传回电脑上的当前会话。';stage=1}
+ else{title=['方案出来，','先审再继续。'];subtitle='在手机上阅读方案，决定下一步。';stage=2}
+ const entry=ease((t%3.1)/.65);c.save();c.translate(0,10*(1-entry));lines(title,84,287,79);c.restore();
+ text(subtitle,86,461,30,'#929fbf');
+ const drift=Math.sin(t*.45)*5;phone(video,225,540+drift,630,{angle:-.012+Math.sin(t*.38)*.008});
+ const badges=['01 看进度','02 补充指令','03 审阅方案'];let x=86;
+ badges.forEach((s,i)=>{x+=pill(s,x,1708,i===stage?'#d9e2ff':'#77839f',i===stage?'#28365f':'#141c2f',25)+15});
+ foot();
+}
+function hero(t){
+ if(t>=12){closing(t);return}
+ background(t);brand();
+ if(t<3){
+  const p=ease(t/1.1);c.save();c.translate(540,760-35*p);c.rotate(Math.sin(t*.6)*.04);c.shadowColor='rgba(103,137,255,.32)';c.shadowBlur=120;c.drawImage(icon,-205,-205,410,410);c.restore();
+  text('把Antigravity，',540,1235,88,'#f5f7ff',600,'center');text('带在身边',540,1365,98,'#abc6ff',600,'center');
+  text('GraviGo / Android',540,1535,34,'#8495ba',400,'center');
+ }else{
+  const section=t<6?0:t<9?1:2;
+  text(['看进度','发指令','审方案'][section],80,375,152,'#eff3ff',600);
+  const w=650,angle=-.045+Math.sin(t*.32)*.018;phone(video,225,510,w,{angle});
+  pill(['任务，尽在眼前。','灵感，接着往下走。','每一步，都看得清。'][section],88,1700,'#d2ddff','#26304d',31);
+  c.save();c.globalAlpha=.18;c.strokeStyle='#91b5ff';c.lineWidth=2;c.beginPath();c.moveTo(87,426);c.lineTo(994,426);c.stroke();c.restore();
+ }
+ foot();
+}
+function demo(t){
+ if(t>=12.5){closing(t,true);return}
+ background(t,true);brand(true);
+ const section=t<3.4?0:t<7?1:2;
+ const headings=['手机上，查看任务进度','补一句要求，继续推进','打开方案，逐项审阅'];
+ text('GraviGo 怎么用？',78,255,76,'#1a2947',600);
+ text(headings[section],80,342,40,'#53647d');
+ const labels=['1 看进度','2 补要求','3 审方案'];let x=78;
+ labels.forEach((v,i)=>{x+=pill(v,x,390,i===section?'#fff':'#7a859a',i===section?'#37548e':'#e5e9f1',29)+18});
+ if(section===0)phone(video,200,510,680,{angle:0});
+ else if(section===1)phone(video,115,580,850,{crop:[0,570,1080,1350]});
+ else phone(video,160,560,760,{crop:[0,180,1080,1550]});
+ foot(true);
+}
+function sourceTime(t,v){
+ if(v==='A')return Math.min(14,t<3.3?t*.45:t<6.2?1.4+(t-3.3)*.38:t<9.4?2.5+(t-6.2)*1.75:10.8+(t-9.4)*1.1);
+ if(v==='B')return Math.min(14,t<3?0:t<6?.5+(t-3)*.6:t<9?2.5+(t-6)*1.4:10.8+(t-9)*.95);
+ return Math.min(14,t<3.4?.4+t*.6:t<7?2.5+(t-3.4)*1.6:10.8+(t-7)*.55);
+}
+async function seek(time){
+ time=Math.min(Math.max(time,.05),video.duration-.08);
+ if(Math.abs(video.currentTime-time)<.012&&video.readyState>=2)return;
+ await new Promise((resolve,reject)=>{const done=()=>{video.removeEventListener('error',fail);requestAnimationFrame(()=>requestAnimationFrame(resolve))};const fail=()=>reject(new Error('Video seek failed'));video.addEventListener('seeked',done,{once:true});video.addEventListener('error',fail,{once:true});video.currentTime=time});
+ if(Math.abs(video.currentTime-time)>.12)throw Error('Native video did not seek to the requested frame');
+}
+window.drawFrame=async(t,v='A')=>{
+ if(!['A','B','C'].includes(v)||!Number.isFinite(t))throw Error('Invalid frame request');
+ await window.ready;await seek(sourceTime(t,v));c.clearRect(0,0,W,H);({A:hybrid,B:hero,C:demo})[v](t);return {width:W,height:H,time:t,variant:v};
+};
+window.ready=(async()=>{
+ document.body.className=new URLSearchParams(location.search).has('render')?'render':'review';
+ await document.fonts.load('400 50px Promo');[icon,...screens]=await Promise.all(['assets/brand.png','assets/01-conversation.png','assets/02-instruction.png','assets/03-plan-ready.png','assets/04-plan.png'].map(image));
+ if(video.readyState<1)await new Promise((resolve,reject)=>{video.addEventListener('loadedmetadata',resolve,{once:true});video.addEventListener('error',()=>reject(Error('Native video could not load')),{once:true})});
+ return {duration:DURATION,width:W,height:H,nativeDuration:video.duration};
+})();
+window.ready.then(()=>window.drawFrame(0,'A'));
+document.querySelectorAll('[data-variant]').forEach(b=>b.onclick=()=>{variant=b.dataset.variant;current=0;window.drawFrame(0,variant)});
+document.getElementById('scrub').oninput=e=>{current=+e.target.value;window.drawFrame(current,variant)};
+document.getElementById('play').onclick=()=>{playing=!playing;last=performance.now();if(playing)requestAnimationFrame(tick)};
+async function tick(now){if(!playing)return;current=(current+(now-last)/1000)%DURATION;last=now;await window.drawFrame(current,variant);document.getElementById('scrub').value=current;requestAnimationFrame(tick)}
+</script>
+</html>
