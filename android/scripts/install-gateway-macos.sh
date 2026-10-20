@@ -10,7 +10,7 @@ gravigo_install() (
         x86_64) target=amd64 ;;
         *) echo "Unsupported Mac architecture: $arch" >&2; exit 1 ;;
     esac
-    release_url=$(curl --fail --silent --show-error --location --head --output /dev/null --write-out '%{url_effective}' https://github.com/sin6626/GraviGo/releases/latest)
+    release_url=$(curl --fail --silent --show-error --location --connect-timeout 15 --max-time 60 --head --output /dev/null --write-out '%{url_effective}' https://github.com/sin6626/GraviGo/releases/latest)
     if [[ ! "$release_url" =~ ^https://github\.com/sin6626/GraviGo/releases/tag/v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
         echo 'Could not resolve a supported stable release.' >&2; exit 1
     fi
@@ -24,13 +24,13 @@ gravigo_install() (
     archive=$(mktemp "$root/.download-archive.XXXXXX")
     sums=$(mktemp "$root/.download-checksums.XXXXXX")
     trap 'rm -f -- "$archive"; rm -f -- "$sums"' EXIT
-    curl --fail --silent --show-error --location "$base/SHA256SUMS-macos.txt" --output "$sums"
+    curl --fail --silent --show-error --location --connect-timeout 15 --max-time 60 "$base/SHA256SUMS-macos.txt" --output "$sums"
     expected=$(awk -v file="$asset" '$2 == file {print $1}' "$sums")
     if [[ ! "$expected" =~ ^[0-9a-fA-F]{64}$ ]]; then
         echo 'Missing or ambiguous macOS gateway SHA-256 checksum.' >&2; exit 1
     fi
     echo "Downloading GraviGo Gateway $version for $arch..."
-    curl --fail --silent --show-error --location "$base/$asset" --output "$archive"
+    curl --fail --silent --show-error --location --connect-timeout 15 --max-time 180 "$base/$asset" --output "$archive"
     actual=$(shasum -a 256 "$archive" | awk '{print $1}')
     [ "$actual" = "$expected" ] || { echo 'Gateway SHA-256 mismatch. Nothing was installed.' >&2; exit 1; }
 

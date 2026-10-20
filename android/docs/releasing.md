@@ -51,6 +51,8 @@ Run **Publish macOS gateways** manually on `main`. This mode checks out the exis
 
 Both publication workflows and normal CI use the read-only **macOS gateways** build workflow. Its CI artifacts are reused by **Draft release** for future builds, so all newly drafted platform binaries share one source commit. When preparing another version, update the version and tag consistently in the workflows and the packager.
 
+After upload, **Verify macOS public installer** installs through the public raw URL on both native Mac architectures, executes the downloaded gateway, and checks repeat installation. This read-only workflow can also be run manually without uploading or replacing assets. Use an independent checkout for packaging: Go 1.26.9 recognizes `.git` directories but can stamp the parent repository for a nested linked worktree. The packager rejects that source mismatch.
+
 ## 1.0.0 acceptance record
 
 - Android API 37 emulator: signed APK installation, pairing, conversation reading, language switching, and restart checks.

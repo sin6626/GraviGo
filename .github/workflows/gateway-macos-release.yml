@@ -41,3 +41,6 @@ jobs:
           sha256sum GraviGo-Gateway-1.0.0-darwin-amd64.tar.gz GraviGo-Gateway-1.0.0-darwin-arm64.tar.gz > SHA256SUMS-macos.txt
           gh release upload v1.0.0 GraviGo-Gateway-1.0.0-darwin-amd64.tar.gz GraviGo-Gateway-1.0.0-darwin-arm64.tar.gz
           gh release upload v1.0.0 SHA256SUMS-macos.txt
+  verify:
+    needs: publish
+    uses: ./.github/workflows/verify-gateway-macos.yml

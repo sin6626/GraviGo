@@ -1,0 +1,33 @@
+name: Verify macOS public installer
+on:
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: amd64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    env:
+      GRAVIGO_INSTALL_DIR: ${{ github.workspace }}/.verification/public-gateway
+    steps:
+      - name: Install from the public URL and execute the downloaded gateway
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          set -euo pipefail
+          url=https://raw.githubusercontent.com/sin6626/GraviGo/main/android/scripts/install-gateway-macos.sh
+          curl -fsSL --connect-timeout 15 --max-time 60 "$url" | bash
+          gateway="$GRAVIGO_INSTALL_DIR/1.0.0-$ARCH/gravigo-gateway"
+          test -x "$gateway"
+          test "$("$gateway" version)" = 'GraviGo Gateway 1.0.0'
+          test -d "$GRAVIGO_INSTALL_DIR/1.0.0-$ARCH/licenses"
+          curl -fsSL --connect-timeout 15 --max-time 60 "$url" | bash
