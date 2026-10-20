@@ -974,3 +974,10 @@ android/app/src/main/java/com/antigravity/mobile/
 - 支持 -InstallDir；重复运行逐文件对照已校验ZIP，只复用相同安装，拒绝覆盖修改/不完整文件。拒绝越界解压，下载文件以唯一名称存于安装目录并逐个删除；不改PATH、不装服务、不启动/停止网关、不触碰 .multigravity 配对或私有签名。
 - 确定性脚本自检覆盖首次/重复安装、校验失败、缺失校验项、拒绝覆盖、ZIP路径越界及下载清理，PowerShell5.1与7均通过；加入Windows CI。真实GitHub1.0.0下载/校验/解压/重复安装通过，exe version=1.0.0；实测仅项目内忽略目录.verification/gateway-installer-*，没有改当前运行网关。
 - 中英文README、网关指南、Release说明提供相同一行命令，安装代码b80ba10已推送；公开raw入口通过原样irm|iex实测并运行下载产物确认version=1.0.0。Release正文已更新且通过GitHub插件读回，原5项资产和563972f源码标识不变。GitHub CI39364398680已触发；真机/公网范围与旧视频删除授权状态沿用之前约定。
+
+### 2026-10-20 补齐 macOS 网关（进行中）
+- 用户要求Mac也提供网关与一行安装。新增兼容系统Bash3.2的install-gateway-macos.sh，自动识别Intel/Apple Silicon及Rosetta，使用内置curl/tar/shasum；SHA-256校验、拒绝越界和链接、已有安装逐文件对比不覆盖；不依赖Python/Homebrew，不改PATH/配对/启动项/Gatekeeper。
+- package_gateway.py保留原Windows ZIP默认行为，增加两个darwin目标tar.gz、可执行权限与逐字节自检，以及--source-root核对干净源码和Go嵌入提交。发行说明来自打包工具，源码身份与许可来自实际构建的源码目录。
+- 新增只读可复用macOS gateways构建：macos-15(arm64)、macos-15-intel(amd64)原生Go测试/vet、执行version/help、安装脚本失败用例、打包，接入CI与未来Draft release。单独手动Publish macOS gateways以v1.0.0原提交构建，上传前与已发布SOURCE.txt核对，只追加两包及独立SHA256SUMS-macos.txt，不覆盖原Windows/源码资产或修改tag。
+- 安装脚本离线自检已在WSL通过，覆盖Intel/Apple Silicon/Rosetta、重复安装、校验错误、缺项、不覆盖与符号链接拒绝/下载清理；本地交叉编译和原生Actions验证进行中。Mac真实Antigravity桌面连接流程尚未验收，无Apple Developer ID/公证，文档按此明确限制。
+- 暂存工作树位于.verification/mac-gateway-release-source，固定563972f(v1.0.0)，不改当前网关或配对。待推送、原生两架构构建成功、追加资产及公开安装入口读回后收尾。

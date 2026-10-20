@@ -39,11 +39,17 @@ Set the environment variable `ANDROID_SIGNING_CERT_SHA256` to the expected produ
 1. Ensure the commit is on `main`, its CI checks pass, and the version is consistent in the app, gateway, and workflow.
 2. In GitHub Actions, choose **Draft release**, select `main`, and run it. It invokes CI again for that same commit before accessing signing secrets.
 3. Verify that the draft points to the intended commit. The workflow refuses an existing `v1.0.0` tag and does not replace a published release. If an earlier draft exists, inspect its commit and assets before removing or retrying it.
-4. Download the APK, Windows x64 gateway archive, and `SHA256SUMS.txt` from the draft. Verify the checksums and the APK's certificate with Android `apksigner verify --verbose --print-certs`.
+4. Download the APK, Windows x64 and both macOS gateway archives, and the checksum manifests from the draft. Verify the checksums and the APK's certificate with Android `apksigner verify --verbose --print-certs`. Check native startup on each Mac architecture before claiming support for that environment.
 5. Install on a test device, start the gateway against a running Antigravity desktop, pair, and verify conversation reading, message sending, attachments, plan comments, diff comments, and both interface languages. Confirm drafts and attachments survive language switching and app restart. Use a test conversation for write operations.
 6. Review the source and license materials for this exact commit. Publish the draft only after the release owner explicitly approves public distribution.
 
-The workflow produces `GraviGo-1.0.0.apk`, `GraviGo-Gateway-1.0.0-windows-amd64.zip`, `GraviGo-1.0.0-source.zip`, and `SHA256SUMS.txt`. The gateway is not Authenticode-signed. No Google Play upload is configured.
+The workflow produces `GraviGo-1.0.0.apk`, the Windows x64 ZIP, `GraviGo-Gateway-1.0.0-darwin-amd64.tar.gz`, `GraviGo-Gateway-1.0.0-darwin-arm64.tar.gz`, matching source, and checksum manifests. Mac packages preserve executable permissions and all component notices. Windows Authenticode, Apple Developer ID signing/notarization, and Google Play uploads are not configured.
+
+## Add macOS packages to the existing 1.0.0 release
+
+Run **Publish macOS gateways** manually on `main`. This mode checks out the existing `v1.0.0` tag, tests and builds on native Apple Silicon and Intel runners, then checks both packages' embedded source identity against the published `SOURCE.txt`. It uploads only the two new Mac archives and `SHA256SUMS-macos.txt`; it does not overwrite existing assets, modify `SHA256SUMS.txt`, or move the tag. Uploading an already existing asset fails instead of replacing it.
+
+Both publication workflows and normal CI use the read-only **macOS gateways** build workflow. Its CI artifacts are reused by **Draft release** for future builds, so all newly drafted platform binaries share one source commit. When preparing another version, update the version and tag consistently in the workflows and the packager.
 
 ## 1.0.0 acceptance record
 
@@ -55,6 +61,6 @@ The workflow produces `GraviGo-1.0.0.apk`, `GraviGo-Gateway-1.0.0-windows-amd64.
 
 ## CI scope
 
-CI runs Android unit tests in all modules, lint, a debug APK build, and instrumentation-test compilation. It also checks generated translations and runs Go formatting, vet, tests, and builds on Windows and Linux. Emulator UI tests remain a local release check.
+CI runs Android unit tests in all modules, lint, a debug APK build, and instrumentation-test compilation. It also checks generated translations and runs Go formatting, vet, tests, and builds on Windows and Linux. Native Apple Silicon and Intel runners test Go code, execute the gateway, check installer failure cases, and package each Mac architecture. Emulator UI tests remain a local release check.
 
 Protect `main` with the `android` and both `go` matrix checks after the first successful Actions run. Branch-protection changes require repository administration access and are separate from committing workflow files. Keep action references pinned to full commits when updating them.

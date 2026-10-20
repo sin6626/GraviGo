@@ -76,6 +76,12 @@ jobs:
         run: |
           git archive --format=zip --prefix=GraviGo-1.0.0/ --output=release-assets/GraviGo-1.0.0-source.zip "$GITHUB_SHA"
           printf 'Source commit: %s\nSource: https://github.com/%s/tree/%s\nBuild instructions: README.md and android/docs/releasing.md in the source archive.\n' "$GITHUB_SHA" "$GITHUB_REPOSITORY" "$GITHUB_SHA" > release-assets/SOURCE.txt
+      - name: Download macOS gateways built by CI
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          pattern: gateway-macos-*
+          path: release-assets
+          merge-multiple: true
       - name: Create draft
         env:
           GH_TOKEN: ${{ github.token }}
@@ -85,10 +91,11 @@ jobs:
             echo 'Tag already exists. Review it before retrying.' >&2
             exit 1
           fi
-          (cd release-assets && sha256sum GraviGo-1.0.0.apk GraviGo-Gateway-1.0.0-windows-amd64.zip GraviGo-1.0.0-source.zip SOURCE.txt > SHA256SUMS.txt)
+          (cd release-assets && sha256sum GraviGo-Gateway-1.0.0-darwin-amd64.tar.gz GraviGo-Gateway-1.0.0-darwin-arm64.tar.gz > SHA256SUMS-macos.txt)
+          (cd release-assets && sha256sum GraviGo-1.0.0.apk GraviGo-Gateway-1.0.0-windows-amd64.zip GraviGo-Gateway-1.0.0-darwin-amd64.tar.gz GraviGo-Gateway-1.0.0-darwin-arm64.tar.gz GraviGo-1.0.0-source.zip SOURCE.txt SHA256SUMS-macos.txt > SHA256SUMS.txt)
           cp android/docs/releases/1.0.0.md release-assets/notes.md
           printf '\nSource commit: %s\nSource: https://github.com/%s/tree/%s\n' "$GITHUB_SHA" "$GITHUB_REPOSITORY" "$GITHUB_SHA" >> release-assets/notes.md
-          gh release create v1.0.0 release-assets/GraviGo-1.0.0.apk release-assets/GraviGo-Gateway-1.0.0-windows-amd64.zip release-assets/GraviGo-1.0.0-source.zip release-assets/SOURCE.txt release-assets/SHA256SUMS.txt --draft --target "$GITHUB_SHA" --title 'GraviGo 1.0.0' --notes-file release-assets/notes.md
+          gh release create v1.0.0 release-assets/GraviGo-1.0.0.apk release-assets/GraviGo-Gateway-1.0.0-windows-amd64.zip release-assets/GraviGo-Gateway-1.0.0-darwin-amd64.tar.gz release-assets/GraviGo-Gateway-1.0.0-darwin-arm64.tar.gz release-assets/GraviGo-1.0.0-source.zip release-assets/SOURCE.txt release-assets/SHA256SUMS.txt release-assets/SHA256SUMS-macos.txt --draft --target "$GITHUB_SHA" --title 'GraviGo 1.0.0' --notes-file release-assets/notes.md
       - name: Remove signing file
         if: always()
         run: rm -f "$GITHUB_WORKSPACE/.release-signing.jks"

@@ -25,9 +25,11 @@ GraviGo 是一个用于远程操控电脑端 Antigravity 的 Android 应用。�
 
 App 与网关版本为 **1.0.0**，Android 版本号为 **5**。正式下载见 [GitHub Releases](https://github.com/sin6626/GraviGo/releases)；源码中的版本号不代表对应二进制已发布。
 
-目前优先支持 Windows x64 电脑。网关在 CI 中也会进行 Linux 编译与测试，但这不代表 Linux 桌面集成已经完整验证。当前集成验证使用 Antigravity 2.19.1；桌面端接口更新后可能需要适配。
+提供 Windows x64、macOS Apple Silicon 和 Intel 网关包。macOS 在两类原生运行器上测试、构建并检查安装脚本，连接真实 Antigravity 的完整桌面流程尚未在 Mac 上验收。Linux 进行编译与测试，暂不提供安装包。当前 Windows 集成验证使用 Antigravity 2.19.1；桌面端接口更新后可能需要适配。
 
-## 安装 Windows 网关
+## 安装网关
+
+### Windows
 
 在 Windows x64 的 PowerShell 中执行一行命令，无需管理员权限：
 
@@ -38,6 +40,18 @@ irm https://raw.githubusercontent.com/sin6626/GraviGo/main/android/scripts/insta
 脚本自动下载最新稳定版、校验 SHA-256，并将网关和完整许可文件解压到 `%LOCALAPPDATA%\GraviGo\Gateway\<版本号>`。安装后会显示启动和配对命令；先打开 Antigravity，再按提示启动网关并保持终端运行。它不会修改 PATH、设置开机自启或重置已有配对。
 
 再次执行会检查已有版本，不覆盖正在使用的文件。也可以从 [Releases](https://github.com/sin6626/GraviGo/releases/latest) 手动下载并解压完整 ZIP，详见[网关指南](android/docs/GATEWAY-README.md)。
+
+### macOS
+
+在“终端”中执行，自动选择 Apple Silicon 或 Intel 包，无需 Homebrew、Python 或 `sudo`：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sin6626/GraviGo/main/android/scripts/install-gateway-macos.sh | bash
+```
+
+脚本校验 SHA-256，并将完整网关安装到 `~/Library/Application Support/GraviGo/Gateway/<版本号>-<架构>`，随后显示启动与配对命令。打开 Antigravity，再按提示运行 `./gravigo-gateway run -port 58900`；另一个终端运行 `./gravigo-gateway pair -port 58900`。已有配对保留，不设置开机自启。
+
+Mac 包尚未经过 Apple Developer ID 签名或公证；系统拦截时可按 [Apple 的说明](https://support.apple.com/en-us/102445)在“隐私与安全性”中处理。安装脚本不会关闭 Gatekeeper 或自动移除隔离标记。
 
 ## 构建项目
 

@@ -1,0 +1,43 @@
+name: Publish macOS gateways
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gravigo-macos-release
+  cancel-in-progress: false
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/gateway-macos.yml
+    with:
+      source_ref: v1.0.0
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          pattern: gateway-macos-*
+          path: macos-assets
+          merge-multiple: true
+      - name: Add verified macOS packages to 1.0.0
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        working-directory: macos-assets
+        run: |
+          set -euo pipefail
+          test "$(gh release view v1.0.0 --json isDraft --jq .isDraft)" = false
+          gh release download v1.0.0 --pattern SOURCE.txt --dir .
+          source_line=$(grep '^Source commit: ' SOURCE.txt)
+          test -n "$source_line"
+          for archive in GraviGo-Gateway-1.0.0-darwin-amd64.tar.gz GraviGo-Gateway-1.0.0-darwin-arm64.tar.gz; do
+            tar -xzOf "$archive" SOURCE.txt | grep -Fx "$source_line"
+          done
+          sha256sum GraviGo-Gateway-1.0.0-darwin-amd64.tar.gz GraviGo-Gateway-1.0.0-darwin-arm64.tar.gz > SHA256SUMS-macos.txt
+          gh release upload v1.0.0 GraviGo-Gateway-1.0.0-darwin-amd64.tar.gz GraviGo-Gateway-1.0.0-darwin-arm64.tar.gz
+          gh release upload v1.0.0 SHA256SUMS-macos.txt

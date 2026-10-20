@@ -25,9 +25,11 @@ Voice transcription uses the desktop account's capabilities. Availability depend
 
 The app and gateway are version **1.0.0**; the Android version code is **5**. Published downloads are listed on [GitHub Releases](https://github.com/sin6626/GraviGo/releases). A version number in the source does not confirm a published signed download.
 
-Windows x64 is the initial desktop target. The gateway is also compiled and tested on Linux in CI; this does not establish complete desktop integration support there. The current integration was exercised with Antigravity 2.19.1 and may need changes when its desktop interfaces change.
+Gateway packages are available for Windows x64 and macOS on Apple Silicon and Intel. Native macOS runners test and build both architectures and check the installer; the full connection flow with a real Antigravity desktop has not been accepted on a Mac. Linux is compiled and tested without a packaged installer. The Windows integration was exercised with Antigravity 2.19.1 and may need changes when its desktop interfaces change.
 
-## Install the Windows gateway
+## Install the gateway
+
+### Windows
 
 Run this one-line command in PowerShell on Windows x64. Administrator access is not required:
 
@@ -38,6 +40,18 @@ irm https://raw.githubusercontent.com/sin6626/GraviGo/main/android/scripts/insta
 The installer downloads the latest stable release, verifies its SHA-256 checksum, and extracts the gateway and complete licenses into `%LOCALAPPDATA%\GraviGo\Gateway\<version>`. It prints the commands to start the gateway and pair your phone. Open Antigravity first and keep the gateway terminal running. The installer preserves pairing data and does not change PATH or configure automatic startup.
 
 Running it again verifies the installed version without replacing existing files. You can also download and extract the complete ZIP from [Releases](https://github.com/sin6626/GraviGo/releases/latest). See the [gateway guide](android/docs/GATEWAY-README.md) for details.
+
+### macOS
+
+In Terminal, run this command. It selects the Apple Silicon or Intel package automatically; Homebrew, Python, and `sudo` are not required:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sin6626/GraviGo/main/android/scripts/install-gateway-macos.sh | bash
+```
+
+The installer verifies SHA-256, installs the complete gateway into `~/Library/Application Support/GraviGo/Gateway/<version>-<architecture>`, and prints startup and pairing commands. Open Antigravity and run `./gravigo-gateway run -port 58900` in the printed directory. In another terminal in that directory, run `./gravigo-gateway pair -port 58900`. Pairing data is preserved; automatic startup is not configured.
+
+Mac packages do not have an Apple Developer ID signature or notarization. If macOS blocks execution, follow [Apple's instructions](https://support.apple.com/en-us/102445) in Privacy & Security. The installer does not disable Gatekeeper or remove quarantine attributes.
 
 ## Build
 

@@ -11,6 +11,10 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  macos:
+    uses: ./.github/workflows/gateway-macos.yml
+    with:
+      source_ref: ${{ github.sha }}
   android:
     runs-on: ubuntu-24.04
     timeout-minutes: 40

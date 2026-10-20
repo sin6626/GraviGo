@@ -1,0 +1,59 @@
+name: macOS gateways
+on:
+  workflow_call:
+    inputs:
+      source_ref:
+        type: string
+        default: ''
+permissions:
+  contents: read
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: amd64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check out exact gateway source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.source_ref || github.sha }}
+          path: .verification/macos-source
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.26.9'
+      - name: Check installer on native macOS
+        run: bash android/scripts/test-install-gateway-macos.sh
+      - name: Test and package native gateway
+        env:
+          CGO_ENABLED: '0'
+          GOARCH: ${{ matrix.arch }}
+          GOOS: darwin
+        run: |
+          set -euo pipefail
+          output="$GITHUB_WORKSPACE/.verification/macos-build"
+          mkdir -p "$output" "$GITHUB_WORKSPACE/.verification/macos-packages"
+          cd .verification/macos-source
+          test "$(go env GOHOSTARCH)" = "$GOARCH"
+          go vet ./...
+          go test -count=1 -timeout=10m ./...
+          go build -trimpath -ldflags="-s -w -X main.Version=1.0.0" -o "$output/gravigo-gateway" ./cmd/gateway
+          test "$("$output/gravigo-gateway" version)" = 'GraviGo Gateway 1.0.0'
+          "$output/gravigo-gateway" help > "$output/help.txt"
+          cd "$GITHUB_WORKSPACE"
+          python3 android/scripts/package_gateway.py --source-root .verification/macos-source --target "darwin-$GOARCH" --binary "$output/gravigo-gateway" --output ".verification/macos-packages/GraviGo-Gateway-1.0.0-darwin-$GOARCH.tar.gz"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: gateway-macos-${{ matrix.arch }}
+          retention-days: 7
+          path: .verification/macos-packages/*.tar.gz
