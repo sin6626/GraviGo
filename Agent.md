@@ -1,5 +1,10 @@
 # GraviGo 项目开发与维护文档
 
+### 2026-10-20 新产品宣发视频启动
+- 用户希望制作GraviGo产品宣发视频，当前先整理产品定位、文案与分镜。脚本草案为android/design/promo/BRIEF.zh-CN.md，推荐60～75秒中文、真实App画面加产品动效，聚焦任务进度/发送指令/方案与代码审阅，沿用正式晶核图标和已批准标语。
+- 已通过异步问题询问发布平台/画幅与表现形式，尚待回复；没有开始成片渲染或宣称成片完成。片源需使用专用演示内容，不展示账号/私有代码/配对凭据，不将公网或Mac完整桌面连接当作已验证卖点。
+- 新工程中间文件预留项目内.verification/gravigo-product-promo/；旧git-story-film和git-story-film-setup在本轮核对时均已不存在，本轮没有执行删除。后续素材与新宣发片使用独立目录。
+
 ### 2026-10-20 最新发布状态
 - v1.0.0 已公开发布：https://github.com/sin6626/GraviGo/releases/tag/v1.0.0 ，发布源码提交563972f66a27091e504f0430cbc35922be905a88，发布工作流39358428581与该提交CI39358422693均成功。
 - 已下载并验证5项资产：正式APK、Windows AMD64网关ZIP、对应源码ZIP、SOURCE.txt和SHA256SUMS.txt；四项文件校验和匹配，网关构建提交匹配且modified=false，APK正式证书匹配备份，包名/版本正确且非debuggable。
