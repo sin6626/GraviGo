@@ -1,5 +1,12 @@
 # GraviGo 项目开发与维护文档
 
+### 2026-10-20 最新发布状态
+- v1.0.0 已公开发布：https://github.com/sin6626/GraviGo/releases/tag/v1.0.0 ，发布源码提交563972f66a27091e504f0430cbc35922be905a88，发布工作流39358428581与该提交CI39358422693均成功。
+- 已下载并验证5项资产：正式APK、Windows AMD64网关ZIP、对应源码ZIP、SOURCE.txt和SHA256SUMS.txt；四项文件校验和匹配，网关构建提交匹配且modified=false，APK正式证书匹配备份，包名/版本正确且非debuggable。
+- 下载的正式APK已在模拟器保数据安装，实际配对、会话阅读、桌面账号刷新、中英切换、冷启动后配对与会话恢复通过。真实模型发送与回复测试通过；16项UI/协议验收经聚焦复验通过。真机验收按用户要求留空，公网和远程推送未列入首发验证范围。
+- 新启动入口已在端口空闲时实际构建并启动新版模拟器网关，58901健康且desktopReady通过，继续使用原配对数据。未断言原网关此前退出原因。
+- 旧视频批量清理例外尚未收到用户回复，两个旧视频目录未删除。最后的维护记录推送与切换开发版组合命令被执行工具以blocked by policy拦截，未执行；本节仅为更小范围的本地维护记录，不得把这些后续动作说成已完成。
+
 ## 1. 项目概览
 - **已确定品牌名称**：GraviGo，取代此前 GraviWing 方案。仓库为 `sin6626/GraviGo`，Android namespace / 生产包名为 `io.github.sin6626.gravigo`，Debug 包名追加 `.debug`。正式签名密钥已生成，保存在本地 Git 忽略目录及用户指定的私有备份仓库；尚未配置 CI 签名 Secrets，未公开发布。
 - **定位**：独立的 Antigravity Android 远程客户端，通过电脑上的 Go 网关操控桌面会话。项目源于改善 Antigravity Remote 手机使用体验，基于九哥的 antigravity-mobile 项目继续开发。
