@@ -973,4 +973,4 @@ android/app/src/main/java/com/antigravity/mobile/
 - 用户要求网关用一行指令下载，避免手动处理 Release ZIP。新增 android/scripts/install-gateway.ps1，Windows x64 / PowerShell 5.1 与 7；从官方仓库最新稳定 Release 一次解析版本，校验对应资产 URL 与 SHA-256 后解压完整网关和许可到用户安装目录，输出启动/配对指令。ZIP仍为实际发布载体，不重制1.0.0资产或移动tag。
 - 支持 -InstallDir；重复运行逐文件对照已校验ZIP，只复用相同安装，拒绝覆盖修改/不完整文件。拒绝越界解压，下载文件以唯一名称存于安装目录并逐个删除；不改PATH、不装服务、不启动/停止网关、不触碰 .multigravity 配对或私有签名。
 - 确定性脚本自检覆盖首次/重复安装、校验失败、缺失校验项、拒绝覆盖、ZIP路径越界及下载清理，PowerShell5.1与7均通过；加入Windows CI。真实GitHub1.0.0下载/校验/解压/重复安装通过，exe version=1.0.0；实测仅项目内忽略目录.verification/gateway-installer-*，没有改当前运行网关。
-- 中英文README、网关指南、Release说明提供相同一行命令；推送后还需验证公开raw入口并更新Release正文。真机/公网范围与旧视频删除授权状态沿用之前约定。
+- 中英文README、网关指南、Release说明提供相同一行命令，安装代码b80ba10已推送；公开raw入口通过原样irm|iex实测并运行下载产物确认version=1.0.0。Release正文已更新且通过GitHub插件读回，原5项资产和563972f源码标识不变。GitHub CI39364398680已触发；真机/公网范围与旧视频删除授权状态沿用之前约定。
