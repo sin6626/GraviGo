@@ -423,7 +423,7 @@ func runHelpCmd() {
   gravigo-gateway [子命令] [参数]
 
 常用子命令:
-  run (默认)        启动网关服务 (局域网直连 + Cloudflare 专属 HTTPS 隧道)
+  run (默认)        启动网关服务 (局域网直连；Cloudflare HTTPS 隧道需显式启用)
   pair              向正在运行的网关申请并打印新配对二维码与链接
   cockpit           交互式配置 Cockpit 报表服务与安全 Token (支持 status/token/restart)
   bark              交互式配置 Bark 实时推送与提示音 (iOS 专用, 支持 status/test/set)

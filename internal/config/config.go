@@ -295,8 +295,7 @@ type CloudflareConfig struct {
 	Region        string // optional region code
 }
 
-// GetCloudflareConfig extracts Cloudflare Tunnel settings from environment variables.
-// Cloudflare Tunnel is ENABLED by default out of the box using DefaultCloudflareWorkerURL.
+// GetCloudflareConfig extracts opt-in Cloudflare Tunnel settings from environment variables.
 func GetCloudflareConfig() CloudflareConfig {
 	workerURL := strings.TrimSpace(os.Getenv("CF_WORKER_URL"))
 	if workerURL == "" {
@@ -335,7 +334,7 @@ func GetCloudflareConfig() CloudflareConfig {
 		region = strings.TrimSpace(os.Getenv("TUNNEL_REGION"))
 	}
 
-	enabled := true
+	enabled := false
 	if v := os.Getenv("CF_TUNNEL_ENABLED"); v != "" {
 		vLower := strings.ToLower(v)
 		enabled = (vLower == "1" || vLower == "true" || vLower == "yes")

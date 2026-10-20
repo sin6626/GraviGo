@@ -86,7 +86,8 @@ jobs:
             exit 1
           fi
           (cd release-assets && sha256sum GraviGo-1.0.0.apk GraviGo-Gateway-1.0.0-windows-amd64.zip GraviGo-1.0.0-source.zip SOURCE.txt > SHA256SUMS.txt)
-          printf 'GraviGo 1.0.0\n\nSource commit: %s\nSource: https://github.com/%s/tree/%s\n\nLicense: AGPL-3.0-only; upstream notices retained.\n\nDraft awaiting installation and pairing verification.\n' "$GITHUB_SHA" "$GITHUB_REPOSITORY" "$GITHUB_SHA" > release-assets/notes.md
+          cp android/docs/releases/1.0.0.md release-assets/notes.md
+          printf '\nSource commit: %s\nSource: https://github.com/%s/tree/%s\n' "$GITHUB_SHA" "$GITHUB_REPOSITORY" "$GITHUB_SHA" >> release-assets/notes.md
           gh release create v1.0.0 release-assets/GraviGo-1.0.0.apk release-assets/GraviGo-Gateway-1.0.0-windows-amd64.zip release-assets/GraviGo-1.0.0-source.zip release-assets/SOURCE.txt release-assets/SHA256SUMS.txt --draft --target "$GITHUB_SHA" --title 'GraviGo 1.0.0' --notes-file release-assets/notes.md
       - name: Remove signing file
         if: always()

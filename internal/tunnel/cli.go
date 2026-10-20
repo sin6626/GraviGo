@@ -12,7 +12,7 @@ import (
 	"antigravity-mobile/internal/config"
 )
 
-// RunCloudflareCmd handles the "mgy cloudflare" and "mgy cf" CLI commands and subcommands.
+// RunCloudflareCmd handles the "gravigo-gateway cloudflare" and "mgy cf" CLI commands and subcommands.
 func RunCloudflareCmd(args []string) {
 	if len(args) == 0 {
 		runCloudflareInteractiveWizard()
@@ -39,7 +39,7 @@ func RunCloudflareCmd(args []string) {
 	case "help", "-h", "--help":
 		runCloudflareHelpCmd()
 	default:
-		fmt.Fprintf(os.Stderr, "❌ 未知子命令: mgy cloudflare %s\n\n", args[0])
+		fmt.Fprintf(os.Stderr, "❌ 未知子命令: gravigo-gateway cloudflare %s\n\n", args[0])
 		runCloudflareHelpCmd()
 		os.Exit(1)
 	}
@@ -51,19 +51,19 @@ func runCloudflareHelpCmd() {
 用于管理全自动 Cloudflare 隧道 (自动分配永久专属 HTTPS 域名，扫码即用)。
 
 用法:
-  mgy cloudflare [子命令] [参数]
+  gravigo-gateway cloudflare [子命令] [参数]
   mgy cf         [子命令] [参数]   (快捷别名)
 
 常用命令:
-  mgy cloudflare             进入交互式向导，配置公网穿透开关、Worker 调度器与暗号
-  mgy cloudflare status      查看穿透状态、专属域名、缓存凭据与 cloudflared 引擎
-  mgy cloudflare enable      一键开启 Cloudflare 专属穿透隧道
-  mgy cloudflare disable     关闭穿透隧道 (仅限局域网内网直连)
-  mgy cloudflare reset       清除本地隧道凭据缓存，下次启动时重新申请全新域名
-  mgy cloudflare set-worker  设置自定义 Cloudflare Worker 调度器地址
-  mgy cloudflare set-code    设置 Worker 调度器专属暗号/邀请码
-  mgy cloudflare set-token   手动指定已有专属 Tunnel Token
-  mgy cloudflare help        显示此帮助信息
+  gravigo-gateway cloudflare             进入交互式向导，配置公网穿透开关、Worker 调度器与暗号
+  gravigo-gateway cloudflare status      查看穿透状态、专属域名、缓存凭据与 cloudflared 引擎
+  gravigo-gateway cloudflare enable      一键开启 Cloudflare 专属穿透隧道
+  gravigo-gateway cloudflare disable     关闭穿透隧道 (仅限局域网内网直连)
+  gravigo-gateway cloudflare reset       清除本地隧道凭据缓存，下次启动时重新申请全新域名
+  gravigo-gateway cloudflare set-worker  设置自定义 Cloudflare Worker 调度器地址
+  gravigo-gateway cloudflare set-code    设置 Worker 调度器专属暗号/邀请码
+  gravigo-gateway cloudflare set-token   手动指定已有专属 Tunnel Token
+  gravigo-gateway cloudflare help        显示此帮助信息
 `)
 }
 
@@ -111,7 +111,7 @@ func runCloudflareStatusCmd() {
 	// Worker URL
 	workerStr := cfCfg.WorkerURL
 	if workerStr == config.DefaultCloudflareWorkerURL {
-		workerStr = fmt.Sprintf("%s (官方公共调度器)", workerStr)
+		workerStr = fmt.Sprintf("%s (上游公共调度器)", workerStr)
 	}
 	fmt.Fprintf(w, "Worker 调度器\t%s\t负责自动注册与绑定域名的调度节点\n", workerStr)
 
@@ -143,7 +143,7 @@ func runCloudflareStatusCmd() {
 
 	if !cfCfg.Enabled {
 		fmt.Println("💡 提示: 穿透功能当前处于关闭状态，外部设备无法通过专属 HTTPS 域名直连。")
-		fmt.Println("   -> 执行 `mgy cloudflare enable` 可快速开启。")
+		fmt.Println("   -> 执行 `gravigo-gateway cloudflare enable` 可快速开启。")
 	} else if hasCache {
 		fmt.Println("🎉 专属域名已就绪！启动网关 (执行 `mgy`) 后即可通过此域名在外网随时连回家中。")
 	} else {
@@ -189,7 +189,7 @@ func runCloudflareResetCmd() {
 
 func runCloudflareSetWorkerCmd(args []string) {
 	if len(args) == 0 {
-		fmt.Fprintf(os.Stderr, "❌ 请提供 Worker 调度器 URL\n用法: mgy cloudflare set-worker <https://your-worker.dev>\n")
+		fmt.Fprintf(os.Stderr, "❌ 请提供 Worker 调度器 URL\n用法: gravigo-gateway cloudflare set-worker <https://your-worker.dev>\n")
 		os.Exit(1)
 	}
 	urlStr := strings.TrimRight(strings.TrimSpace(args[0]), "/")
@@ -212,7 +212,7 @@ func runCloudflareSetWorkerCmd(args []string) {
 
 func runCloudflareSetCodeCmd(args []string) {
 	if len(args) == 0 {
-		fmt.Fprintf(os.Stderr, "❌ 请提供调度器邀请码/暗号\n用法: mgy cloudflare set-code <暗号>\n")
+		fmt.Fprintf(os.Stderr, "❌ 请提供调度器邀请码/暗号\n用法: gravigo-gateway cloudflare set-code <暗号>\n")
 		os.Exit(1)
 	}
 	code := strings.TrimSpace(args[0])
@@ -229,7 +229,7 @@ func runCloudflareSetCodeCmd(args []string) {
 
 func runCloudflareSetTokenCmd(args []string) {
 	if len(args) == 0 {
-		fmt.Fprintf(os.Stderr, "❌ 请提供 Tunnel Token\n用法: mgy cloudflare set-token <Token>\n")
+		fmt.Fprintf(os.Stderr, "❌ 请提供 Tunnel Token\n用法: gravigo-gateway cloudflare set-token <Token>\n")
 		os.Exit(1)
 	}
 	token := strings.TrimSpace(args[0])
@@ -345,7 +345,7 @@ func runCloudflareInteractiveWizard() {
 	fmt.Println("================================================================================")
 	fmt.Println("💡 配置完成！后续使用建议:")
 	fmt.Println("   • 启动网关主服务:   mgy")
-	fmt.Println("   • 查看穿透状态:     mgy cloudflare status (或 mgy cf status)")
+	fmt.Println("   • 查看穿透状态:     gravigo-gateway cloudflare status (或 mgy cf status)")
 	fmt.Println("   • 移动端配对二维码: gravigo-gateway pair")
 	fmt.Println("================================================================================")
 }

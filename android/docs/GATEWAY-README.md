@@ -39,7 +39,7 @@ To stop the gateway, press **Ctrl+C** in its running terminal. Closing it or res
 
 The default configuration and pairing files remain under `%USERPROFILE%\.multigravity`. Existing `MULTIGRAVITY_*` environment keys and `agy://` / `multigravity://` pairing schemes remain compatible. The release executable is named `gravigo-gateway.exe`; an older executable named `mgy` may still exist separately on your PATH.
 
-Cloudflare remote access is optional. The local-network example disables it explicitly. Configure your own supported tunnel setup before enabling it; local testing does not establish public routing availability. Do not expose the plain HTTP gateway directly to an untrusted network.
+GraviGo 1.0.0 defaults to local-network access. Automatic Cloudflare tunneling is disabled unless you explicitly set `CF_TUNNEL_ENABLED=1`. The upstream public dispatcher/domain returned Cloudflare 1010/403 in this release environment, and public routing is outside the verified release baseline. Configure and verify your own private network or supported HTTPS tunnel before remote use. Do not expose the plain HTTP gateway directly to an untrusted network.
 
 ## Source and licenses
 

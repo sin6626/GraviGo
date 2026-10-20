@@ -132,6 +132,8 @@ func TestRedactBarkEndpoint(t *testing.T) {
 
 func TestGetCloudflareConfig(t *testing.T) {
 	// 1. Test defaults
+	t.Setenv("CF_TUNNEL_ENABLED", "")
+	t.Setenv("CLOUDFLARE_TUNNEL_ENABLED", "")
 	t.Setenv("CF_EDGE_IP_VERSION", "")
 	t.Setenv("TUNNEL_EDGE_IP_VERSION", "")
 	t.Setenv("CF_PROTOCOL", "")
@@ -146,16 +148,20 @@ func TestGetCloudflareConfig(t *testing.T) {
 	if cfg.Protocol != "http2" {
 		t.Errorf("expected default Protocol = http2, got %s", cfg.Protocol)
 	}
-	if !cfg.Enabled {
-		t.Errorf("expected default Enabled = true")
+	if cfg.Enabled {
+		t.Errorf("public tunneling must be explicitly enabled")
 	}
 
 	// 2. Test overrides
 	t.Setenv("CF_EDGE_IP_VERSION", "6")
 	t.Setenv("CF_PROTOCOL", "quic")
 	t.Setenv("CF_REGION", "us")
+	t.Setenv("CF_TUNNEL_ENABLED", "1")
 
 	cfgOverridden := GetCloudflareConfig()
+	if !cfgOverridden.Enabled {
+		t.Error("explicit Cloudflare enable must remain supported")
+	}
 	if cfgOverridden.EdgeIPVersion != "6" {
 		t.Errorf("expected overridden EdgeIPVersion = 6, got %s", cfgOverridden.EdgeIPVersion)
 	}

@@ -23,7 +23,7 @@ GraviGo 是一个用于远程操控电脑端 Antigravity 的 Android 应用。�
 
 ## 当前状态
 
-App 与网关的源码版本为 **1.0.0**，Android 版本号为 **5**。首个公开版本仍在准备中；源码中的版本号不代表已经发布正式签名安装包。
+App 与网关版本为 **1.0.0**，Android 版本号为 **5**。正式下载见 [GitHub Releases](https://github.com/sin6626/GraviGo/releases)；源码中的版本号不代表对应二进制已发布。
 
 目前优先支持 Windows x64 电脑。网关在 CI 中也会进行 Linux 编译与测试，但这不代表 Linux 桌面集成已经完整验证。当前集成验证使用 Antigravity 2.19.1；桌面端接口更新后可能需要适配。
 
@@ -48,6 +48,18 @@ Linux 使用 `./android/gradlew -p android` 替代 Windows Wrapper 命令。
 Debug APK 位于 `android/app/build/outputs/apk/debug/app-debug.apk`，包名为 `io.github.sin6626.gravigo.debug`。正式版包名为 `io.github.sin6626.gravigo`。
 
 早期的 `com.antigravity.mobile` 是另一个独立安装的应用，其配对、草稿和私有存储不会自动迁移。如果仍需要旧数据，请保留原安装，并为新 GraviGo 单独配对。更换包名或签名不能直接覆盖原应用。
+
+## 启动开发环境
+
+先打开 Antigravity 和 Android 模拟器，再在仓库根目录运行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\android\scripts\start-dev.ps1
+```
+
+此入口检查或启动 `58901` 模拟器网关，构建并保数据安装 Debug APK，然后从实际 APK 读取包名和入口 Activity 启动，避免混用 IDE 中的旧包名。已有健康网关会被复用，不会自动停服；端口空闲时构建新版网关。现有开发配对会继续使用，首次连接时填写 `http://10.0.2.2:58901` 并申请配对码。
+
+只检查或启动网关时，运行 `android/scripts/start-emulator-gateway.ps1`。脚本复用已有管理网关的数据目录；新克隆使用项目内被 Git 忽略的 `.local/emulator-gateway/`。它不会设置开机自启，也不会重置配对。
 
 ## Android Studio 提示 Activity 不存在
 
@@ -79,6 +91,8 @@ Activity class {com.antigravity.mobile/io.github.sin6626.gravigo.MainActivity} d
 网关关闭或电脑重启后，手机连接也会中断，需要重新启动对应网关。网关 ZIP 的完整使用说明见[网关指南](android/docs/GATEWAY-README.md)。
 
 请在可信网络中使用网关，或通过 Tailscale 等专用网络配合 HTTPS 访问。配对链接和设备令牌会授予电脑会话访问权限，不要公开。环境变量见 [`env.example`](env.example)；现有 `MULTIGRAVITY_*` 配置键与旧版深链协议继续兼容。旧安装中名为 `mgy` 的程序与新版 `gravigo-gateway.exe` 可能分别存在。
+
+1.0.0 的已验收连接范围是局域网。自动 Cloudflare 穿透默认关闭，需要显式设置 `CF_TUNNEL_ENABLED=1`；上游域名在当前环境返回 1010/403，公网与远程推送不列入本版已验证能力。真机验收按项目所有者要求暂缓。
 
 ## CI 与发布准备
 

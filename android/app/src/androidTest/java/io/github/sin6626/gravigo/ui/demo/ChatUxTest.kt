@@ -558,7 +558,7 @@ class ChatUxTest {
                 compose.runOnIdle { vm.refreshModels() }
                 compose.waitUntil(10_000) { vm.state.value.models.size == 3 }
                 compose.runOnIdle { vm.selectModel("text-fixture") }
-                val uri = androidx.core.content.FileProvider.getUriForFile(compose.activity, "io.github.sin6626.gravigo.fileprovider", file)
+                val uri = androidx.core.content.FileProvider.getUriForFile(compose.activity, "${compose.activity.packageName}.fileprovider", file)
                 compose.runOnIdle { vm.addImages(listOf(uri)) }
                 compose.waitUntil(10_000) { vm.state.value.attachments.size == 1 }
                 compose.runOnIdle { vm.send() }
@@ -596,7 +596,7 @@ class ChatUxTest {
         FakeGateway().use { gateway ->
             val prefs = PreferencesManager(app).apply { gatewayBaseUrl = gateway.url; deviceToken = "file-token" }
             val source = File(compose.activity.cacheDir, "mobile-file-contract.txt").apply { writeText("FILE_CONTRACT_OK") }
-            val uri = androidx.core.content.FileProvider.getUriForFile(compose.activity, "io.github.sin6626.gravigo.fileprovider", source)
+            val uri = androidx.core.content.FileProvider.getUriForFile(compose.activity, "${compose.activity.packageName}.fileprovider", source)
             val store = ViewModelStore()
             try {
                 var vm = ChatViewModel(app).also { store.put("file-draft", it) }
@@ -608,12 +608,16 @@ class ChatUxTest {
                 compose.onNodeWithText("mobile-file-contract.txt").assertIsDisplayed()
                 compose.onNodeWithText("待发送 · 16 B · text/plain").assertIsDisplayed()
                 saveScreenshot("file-attachment-draft.png")
+                assertNotNull("File draft must be persisted before restarting its ViewModel", prefs.loadDraftFile("android_new_chat"))
 
-                compose.runOnIdle { store.clear() }
-                vm = ChatViewModel(app).also { store.put("file-restored", it) }
-                compose.runOnIdle { visibleVm.value = vm }
-                compose.waitUntil(10_000) { vm.state.value.fileAttachment?.displayName == "mobile-file-contract.txt" &&
-                    !vm.state.value.isRestoringDraft && !vm.state.value.isLoadingMessages && vm.state.value.models.isNotEmpty() }
+                compose.runOnIdle {
+                    store.clear()
+                    vm = ChatViewModel(app).also { store.put("file-restored", it) }
+                    visibleVm.value = vm
+                }
+                compose.waitUntil(10_000) { !vm.state.value.isRestoringDraft &&
+                    !vm.state.value.isLoadingMessages && vm.state.value.models.isNotEmpty() }
+                assertEquals("File draft must survive its ViewModel restart", "mobile-file-contract.txt", vm.state.value.fileAttachment?.displayName)
                 compose.runOnIdle { vm.setDraft("读取这个文件"); vm.send() }
                 compose.waitUntil(10_000) {
                     gateway.requests.any { it.first.contains("SendUserCascadeMessage") } || vm.state.value.error != null
@@ -629,7 +633,7 @@ class ChatUxTest {
                 assertEquals("FILE_CONTRACT_OK", String(android.util.Base64.decode(media.getString("inlineData"), android.util.Base64.DEFAULT)))
                 assertNull(vm.state.value.fileAttachment)
                 assertNull(prefs.loadDraftFile("android_new_chat"))
-                compose.onNodeWithContentDescription("发送中文件，mobile-file-contract.txt，text/plain").assertIsDisplayed()
+                compose.onNodeWithContentDescription("文件，mobile-file-contract.txt，text/plain", substring = true).assertIsDisplayed()
                 saveScreenshot("file-attachment-sent.png")
 
                 compose.waitUntil(10_000) { vm.state.value.isRunning }
@@ -732,7 +736,7 @@ class ChatUxTest {
                 val file = File(compose.activity.cacheDir, "reliability-native-source.png")
                 file.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
                 bitmap.recycle()
-                val uri = androidx.core.content.FileProvider.getUriForFile(app, "io.github.sin6626.gravigo.fileprovider", file)
+                val uri = androidx.core.content.FileProvider.getUriForFile(app, "${app.packageName}.fileprovider", file)
                 compose.runOnIdle { vm.openConversation("recovery-fixture"); vm.setDraft("进程重启后保留的草稿"); vm.addImages(listOf(uri)) }
                 compose.waitUntil(10_000) { vm.state.value.attachments.size == 1 && !vm.state.value.isLoadingMessages }
                 file.delete() // The picked source vanishes; only our persisted private copy can restore it.
@@ -763,7 +767,7 @@ class ChatUxTest {
             var vm = ChatViewModel(app)
             val store = ViewModelStore().apply { put("restore", vm) }
             val file = File(compose.activity.cacheDir, "restore-${UUID.randomUUID()}.png").apply { writeBytes(gateway.imageBytes) }
-            val uri = androidx.core.content.FileProvider.getUriForFile(compose.activity, "io.github.sin6626.gravigo.fileprovider", file)
+            val uri = androidx.core.content.FileProvider.getUriForFile(compose.activity, "${compose.activity.packageName}.fileprovider", file)
             try {
                 compose.runOnIdle { vm.openConversation("A"); vm.setDraft("A draft"); vm.addImages(listOf(uri)) }
                 compose.waitUntil(10_000) { vm.state.value.attachments.size == 1 }
@@ -2681,10 +2685,10 @@ class ChatUxTest {
                 saveScreenshot("pending-plan-fullscreen.png")
                 compose.onNodeWithContentDescription("文件内容").performScrollToIndex(35)
                 compose.onNodeWithText("步骤 35").assertIsDisplayed()
-                compose.onNodeWithText("关闭").performClick()
+                compose.onNodeWithContentDescription("关闭文件预览").performClick()
                 compose.onNodeWithText("查看与评论").performClick()
                 compose.onNodeWithText("步骤 35").assertIsDisplayed()
-                compose.onNodeWithText("关闭").performClick()
+                compose.onNodeWithContentDescription("关闭文件预览").performClick()
 
                 gateway.failurePath = "SendUserCascadeMessage"
                 gateway.block = { path -> if (path.contains("SendUserCascadeMessage")) {
@@ -2937,7 +2941,7 @@ class ChatUxTest {
             try {
                 compose.setContent { ChatDemoScreen(vm, {}) }
                 compose.waitUntil(10_000) { vm.state.value.models.isNotEmpty() && vm.state.value.isRunning }
-                val uri = androidx.core.content.FileProvider.getUriForFile(compose.activity, "io.github.sin6626.gravigo.fileprovider", file)
+                val uri = androidx.core.content.FileProvider.getUriForFile(compose.activity, "${compose.activity.packageName}.fileprovider", file)
                 compose.runOnIdle { vm.addImages(listOf(uri)) }
                 compose.waitUntil(10_000) { vm.state.value.attachments.size == 1 }
                 gateway.block = { path -> if (path.contains("SendUserCascadeMessage")) {

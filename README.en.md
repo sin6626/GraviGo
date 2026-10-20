@@ -23,7 +23,7 @@ Voice transcription uses the desktop account's capabilities. Availability depend
 
 ## Project status
 
-The app and gateway are version **1.0.0**; the Android version code is **5**. The first public release is being prepared. A version number in the source does not mean a signed download has been published.
+The app and gateway are version **1.0.0**; the Android version code is **5**. Published downloads are listed on [GitHub Releases](https://github.com/sin6626/GraviGo/releases). A version number in the source does not confirm a published signed download.
 
 Windows x64 is the initial desktop target. The gateway is also compiled and tested on Linux in CI; this does not establish complete desktop integration support there. The current integration was exercised with Antigravity 2.19.1 and may need changes when its desktop interfaces change.
 
@@ -47,6 +47,18 @@ On Linux, use `./android/gradlew -p android` instead of the Windows wrapper. The
 
 The earlier `com.antigravity.mobile` installation is a separate app. Its pairing, drafts, and private storage are not migrated automatically. Keep it installed if you need its data; pair the new GraviGo installation separately. Changing an app ID or signing certificate cannot update an existing Android installation in place.
 
+## Start the development environment
+
+Open Antigravity and the Android emulator, then run from the repository root:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\android\scripts\start-dev.ps1
+```
+
+This entry point checks or starts the emulator gateway on port `58901`, builds and installs the debug APK while preserving app data, and reads the package and launcher activity from that APK. It avoids mixing old IDE package metadata with a renamed activity. A healthy existing gateway is reused; when the port is free, the script builds the current gateway source. Existing development pairing is retained. For a first pairing, use `http://10.0.2.2:58901` and request a pairing code.
+
+To check or start only the gateway, run `android/scripts/start-emulator-gateway.ps1`. It preserves the existing management gateway's data directory; a fresh clone uses ignored project-local `.local/emulator-gateway/` storage. It does not install a startup service or reset pairing.
+
 ## Fix an Android Studio launch error
 
 If Run reports `Activity class {com.antigravity.mobile/io.github.sin6626.gravigo.MainActivity} does not exist`, Android Studio is using the old application ID with the renamed activity. Run **Sync Project with Gradle Files**, select the app's **debug** build variant, and run the **app** configuration with **Launch: Default Activity**. The installed development package is `io.github.sin6626.gravigo.debug`; its launcher activity is `io.github.sin6626.gravigo.MainActivity`.
@@ -64,13 +76,15 @@ Do not uninstall the earlier app or clear its storage to fix this error. After t
    ```
 
 3. In another terminal, run `.\bin\gravigo-gateway.exe pair -port 58900`. It requests a fresh, short-lived pairing link and QR code from the running gateway. The release executable is named `gravigo-gateway.exe`; older installations named `mgy` keep their existing configuration keys and pairing schemes.
-4. Install and open the Android debug APK, then scan the QR code or enter the pairing information. Use a reachable computer address: on the Android emulator, `10.0.2.2` refers to the host computer; `127.0.0.1` refers to the Android device itself.
+4. Install and open the Android APK from Releases or the debug APK built above, then scan the QR code or enter the pairing information. Use a reachable computer address: on the Android emulator, `10.0.2.2` refers to the host computer; `127.0.0.1` refers to the Android device itself.
 
 Both devices must be able to reach the selected address. Allow the gateway through Windows Firewall only on a trusted private network. For a custom port, use the same port in `run`, `pair`, `list`, `clear`, and the app.
 
 Closing the gateway or restarting the computer stops phone access until you start that gateway again. See the [gateway guide](android/docs/GATEWAY-README.md) for the extracted ZIP instructions.
 
 Keep the gateway on a trusted network, or use a private network such as Tailscale with HTTPS where available. Pairing links and device tokens grant access to your desktop sessions; do not publish them. See [`env.example`](env.example) for the existing configuration keys. The `MULTIGRAVITY_*` keys and legacy deep-link schemes remain supported for compatibility.
+
+The verified 1.0.0 connection baseline is local networking. Automatic Cloudflare tunneling is disabled unless explicitly enabled with `CF_TUNNEL_ENABLED=1`. The upstream domain returned 1010/403 in this environment; public routing and remote push delivery are not claimed as validated features. Physical-device acceptance is deferred at the owner's request.
 
 ## Checks and release preparation
 

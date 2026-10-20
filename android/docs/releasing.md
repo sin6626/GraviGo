@@ -45,6 +45,14 @@ Set the environment variable `ANDROID_SIGNING_CERT_SHA256` to the expected produ
 
 The workflow produces `GraviGo-1.0.0.apk`, `GraviGo-Gateway-1.0.0-windows-amd64.zip`, `GraviGo-1.0.0-source.zip`, and `SHA256SUMS.txt`. The gateway is not Authenticode-signed. No Google Play upload is configured.
 
+## 1.0.0 acceptance record
+
+- Android API 37 emulator: signed APK installation, pairing, conversation reading, language switching, and restart checks.
+- A real desktop model send/reply check uses a disposable conversation; attachment and review payload/UI checks use an isolated test gateway.
+- Physical-device acceptance: **deferred by the owner**, not marked passed.
+- The verified connection baseline is LAN. Upstream automatic Cloudflare HTTPS returned 1010/403 here; independent public-tunnel probing did not establish an end-to-end success. Automatic tunneling is opt-in. Remote push delivery and older Android device compatibility remain outside the verified baseline.
+- Use the draft's exact assets for final checksum, package, signing-certificate, and source-commit verification before publishing.
+
 ## CI scope
 
 CI runs Android unit tests in all modules, lint, a debug APK build, and instrumentation-test compilation. It also checks generated translations and runs Go formatting, vet, tests, and builds on Windows and Linux. Emulator UI tests remain a local release check.

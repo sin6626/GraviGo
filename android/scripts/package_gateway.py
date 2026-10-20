@@ -39,6 +39,9 @@ def main():
         "licenses/antigravity-mobile-MIT.txt": ROOT / "android/docs/LICENSE.upstream-MIT",
         "licenses/Go-LICENSE.txt": Path(command("go", "env", "GOROOT")) / "LICENSE",
     }
+    for notice in sorted((ROOT / "web/licenses").iterdir()):
+        if notice.is_file():
+            files[f"licenses/web/{notice.name}"] = notice
     for module, name in (("github.com/gorilla/websocket", "gorilla-websocket"),
                          ("github.com/skip2/go-qrcode", "skip2-go-qrcode"),
                          ("github.com/pires/go-proxyproto", "pires-go-proxyproto")):

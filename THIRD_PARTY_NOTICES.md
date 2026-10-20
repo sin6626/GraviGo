@@ -14,6 +14,7 @@ GraviGo is distributed under AGPL-3.0-only; see LICENSE and NOTICE.md. These not
 | skip2/go-qrcode | Go gateway dependency, da1b6568686e | MIT; full text included in gateway ZIP |
 | pires/go-proxyproto | Go gateway dependency, v0.7.0 | Apache-2.0; full text included in gateway ZIP |
 | Go runtime and standard library | Gateway build toolchain, Go 1.26.9 | BSD-3-Clause; full text included in gateway ZIP |
+| Mermaid JavaScript 10.9.1 and identified bundled components | Legacy gateway Web renderer; DOMPurify 3.0.9, js-yaml 4.1.0, Cytoscape 3.28.1, KaTeX 0.16.9 | [Retained upstream texts](web/licenses/NOTICE.md), also included in the gateway ZIP |
 
 The Android APK includes the highlighting component's notices and full license texts in its assets. The release gateway archive includes the upstream MIT text and a gateway-specific notice. Gradle dependencies are declared in each module's `build.gradle.kts`; Go dependencies are declared in `go.mod` and `go.sum`.
 
