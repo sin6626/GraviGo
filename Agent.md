@@ -975,9 +975,12 @@ android/app/src/main/java/com/antigravity/mobile/
 - 确定性脚本自检覆盖首次/重复安装、校验失败、缺失校验项、拒绝覆盖、ZIP路径越界及下载清理，PowerShell5.1与7均通过；加入Windows CI。真实GitHub1.0.0下载/校验/解压/重复安装通过，exe version=1.0.0；实测仅项目内忽略目录.verification/gateway-installer-*，没有改当前运行网关。
 - 中英文README、网关指南、Release说明提供相同一行命令，安装代码b80ba10已推送；公开raw入口通过原样irm|iex实测并运行下载产物确认version=1.0.0。Release正文已更新且通过GitHub插件读回，原5项资产和563972f源码标识不变。GitHub CI39364398680已触发；真机/公网范围与旧视频删除授权状态沿用之前约定。
 
-### 2026-10-20 补齐 macOS 网关（进行中）
+### 2026-10-20 补齐 macOS 网关（已发布与验证）
 - 用户要求Mac也提供网关与一行安装。新增兼容系统Bash3.2的install-gateway-macos.sh，自动识别Intel/Apple Silicon及Rosetta，使用内置curl/tar/shasum；SHA-256校验、拒绝越界和链接、已有安装逐文件对比不覆盖；不依赖Python/Homebrew，不改PATH/配对/启动项/Gatekeeper。
 - package_gateway.py保留原Windows ZIP默认行为，增加两个darwin目标tar.gz、可执行权限与逐字节自检，以及--source-root核对干净源码和Go嵌入提交。发行说明来自打包工具，源码身份与许可来自实际构建的源码目录。
 - 新增只读可复用macOS gateways构建：macos-15(arm64)、macos-15-intel(amd64)原生Go测试/vet、执行version/help、安装脚本失败用例、打包，接入CI与未来Draft release。单独手动Publish macOS gateways以v1.0.0原提交构建，上传前与已发布SOURCE.txt核对，只追加两包及独立SHA256SUMS-macos.txt，不覆盖原Windows/源码资产或修改tag。
-- 安装脚本离线自检已在WSL通过，覆盖Intel/Apple Silicon/Rosetta、重复安装、校验错误、缺项、不覆盖与符号链接拒绝/下载清理；本地交叉编译和原生Actions验证进行中。Mac真实Antigravity桌面连接流程尚未验收，无Apple Developer ID/公证，文档按此明确限制。
-- 暂存工作树位于.verification/mac-gateway-release-source，固定563972f(v1.0.0)，不改当前网关或配对。待推送、原生两架构构建成功、追加资产及公开安装入口读回后收尾。
+- 安装脚本离线自检在WSL与原生Mac均通过，覆盖Intel/Apple Silicon/Rosetta、重复安装、校验错误、缺项、不覆盖与符号链接拒绝/下载清理。CI39372945027的Android/Windows/Linux及两架构Mac五项全通过；发布工作流39372988404的两个原生测试构建与上传均成功。
+- Release1.0.0现有8项资产：在原5项基础上追加darwin-amd64/arm64 tar.gz与SHA256SUMS-macos.txt；新包均嵌入原563972f源码身份，完整17文件含许可和0755可执行权限。下载真实公开资产的SHA/CPU/权限/源码核验通过；原5项资产内容和tag未改，Release正文经插件读回确认包含Mac命令。
+- 公开安装工作流39373563076在原生macos-15与macos-15-intel上从raw公开入口下载最新版，执行实际发布网关version=1.0.0，并重复安装确认不覆盖，全部成功。安装网络请求有连接/总耗时上限；同一公开验证可手动复跑，也接入后续Mac发布。
+- 本地Go1.26.9源码确认仅识别.git目录，嵌套linked worktree会误嵌父仓库提交；打包器成功拒绝该产物。改用项目内.verification/mac-gateway-release-clone独立检出原tag后两架构交叉编译、打包与Windows默认ZIP回归均通过。原临时linked worktree已检查边界和干净状态后移除，未绕过源码校验。
+- 当前58901网关仍为PID20832，不停服、不改配对。Mac真实Antigravity桌面连接流程尚未验收，无Apple Developer ID/公证，文档按此明确限制；真机、公网与旧视频清理待授权范围沿用先前记录。
