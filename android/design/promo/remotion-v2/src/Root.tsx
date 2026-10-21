@@ -1,4 +1,6 @@
 import { Composition, Folder, Series, useVideoConfig } from "remotion";
+import { Audio } from "@remotion/media";
+import { staticFile } from "remotion";
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { slide } from "@remotion/transitions/slide";
 import { fade } from "@remotion/transitions/fade";
@@ -13,103 +15,124 @@ import { ReleaseEnd } from "./scenes/ReleaseEnd";
 const PalmRelay = () => {
   const { fps } = useVideoConfig();
   return (
-    <TransitionSeries>
-      <TransitionSeries.Sequence
-        name="电脑继续跑，你接着走"
-        durationInFrames={4 * fps}
+    <>
+      <Audio
+        name="配乐：Close Up"
         premountFor={fps}
-      >
-        <PalmOpen title="电脑继续跑。" subtitle="你接着走。" />
-      </TransitionSeries.Sequence>
-      <TransitionSeries.Transition
-        presentation={slide({ direction: "from-bottom" })}
-        timing={linearTiming({ durationInFrames: 0.5 * fps })}
+        src={staticFile("music/a-close-up.wav")}
       />
-      <TransitionSeries.Sequence
-        name="补充要求与审阅方案"
-        durationInFrames={11 * fps}
-        premountFor={fps}
-      >
-        <PalmProof title="补充一句，" subtitle="方案出来，" />
-      </TransitionSeries.Sequence>
-      <TransitionSeries.Transition
-        presentation={slide({ direction: "from-right" })}
-        timing={linearTiming({ durationInFrames: 0.5 * fps })}
-      />
-      <TransitionSeries.Sequence
-        name="掌心接力品牌落版"
-        durationInFrames={4 * fps}
-        premountFor={fps}
-      >
-        <ReleaseEnd kind="palm" />
-      </TransitionSeries.Sequence>
-    </TransitionSeries>
+      <TransitionSeries>
+        <TransitionSeries.Sequence
+          name="电脑继续跑，你接着走"
+          durationInFrames={4 * fps}
+          premountFor={fps}
+        >
+          <PalmOpen title="电脑继续跑。" subtitle="你接着走。" />
+        </TransitionSeries.Sequence>
+        <TransitionSeries.Transition
+          presentation={slide({ direction: "from-bottom" })}
+          timing={linearTiming({ durationInFrames: 0.5 * fps })}
+        />
+        <TransitionSeries.Sequence
+          name="补充要求与审阅方案"
+          durationInFrames={11 * fps}
+          premountFor={fps}
+        >
+          <PalmProof title="补充一句，" subtitle="方案出来，" />
+        </TransitionSeries.Sequence>
+        <TransitionSeries.Transition
+          presentation={slide({ direction: "from-right" })}
+          timing={linearTiming({ durationInFrames: 0.5 * fps })}
+        />
+        <TransitionSeries.Sequence
+          name="掌心接力品牌落版"
+          durationInFrames={4 * fps}
+          premountFor={fps}
+        >
+          <ReleaseEnd kind="palm" />
+        </TransitionSeries.Sequence>
+      </TransitionSeries>
+    </>
   );
 };
 
 const WeightlessOrbit = () => {
   const { fps } = useVideoConfig();
   return (
-    <TransitionSeries>
-      <TransitionSeries.Sequence
-        name="悬浮晶核与品牌主张"
-        durationInFrames={5 * fps}
+    <>
+      <Audio
+        name="配乐：Vastness"
         premountFor={fps}
-      >
-        <OrbitOpen title="让开发，" subtitle="轻一点。" />
-      </TransitionSeries.Sequence>
-      <TransitionSeries.Transition
-        presentation={fade()}
-        timing={linearTiming({ durationInFrames: 0.5 * fps })}
+        src={staticFile("music/b-vastness.wav")}
       />
-      <TransitionSeries.Sequence
-        name="进入会话与方案"
-        durationInFrames={10 * fps}
-        premountFor={fps}
-      >
-        <OrbitProof title="跟进，" subtitle="每一步，" />
-      </TransitionSeries.Sequence>
-      <TransitionSeries.Transition
-        presentation={fade()}
-        timing={linearTiming({ durationInFrames: 0.5 * fps })}
-      />
-      <TransitionSeries.Sequence
-        name="失重轨道品牌落版"
-        durationInFrames={4 * fps}
-        premountFor={fps}
-      >
-        <ReleaseEnd kind="orbit" />
-      </TransitionSeries.Sequence>
-    </TransitionSeries>
+      <TransitionSeries>
+        <TransitionSeries.Sequence
+          name="悬浮晶核与品牌主张"
+          durationInFrames={5 * fps}
+          premountFor={fps}
+        >
+          <OrbitOpen title="让开发，" subtitle="轻一点。" />
+        </TransitionSeries.Sequence>
+        <TransitionSeries.Transition
+          presentation={fade()}
+          timing={linearTiming({ durationInFrames: 0.5 * fps })}
+        />
+        <TransitionSeries.Sequence
+          name="进入会话与方案"
+          durationInFrames={10 * fps}
+          premountFor={fps}
+        >
+          <OrbitProof title="跟进，" subtitle="每一步，" />
+        </TransitionSeries.Sequence>
+        <TransitionSeries.Transition
+          presentation={fade()}
+          timing={linearTiming({ durationInFrames: 0.5 * fps })}
+        />
+        <TransitionSeries.Sequence
+          name="失重轨道品牌落版"
+          durationInFrames={4 * fps}
+          premountFor={fps}
+        >
+          <ReleaseEnd kind="orbit" />
+        </TransitionSeries.Sequence>
+      </TransitionSeries>
+    </>
   );
 };
 
 const StopWaiting = () => {
   const { fps } = useVideoConfig();
   return (
-    <Series>
-      <Series.Sequence
-        name="AI在写，你还在等"
-        durationInFrames={3 * fps}
+    <>
+      <Audio
+        name="配乐：Tech House vibes"
         premountFor={fps}
-      >
-        <EditorialOpen title="AI在写。" subtitle="你还在等？" />
-      </Series.Sequence>
-      <Series.Sequence
-        name="看进度、补要求、审方案"
-        durationInFrames={12 * fps}
-        premountFor={fps}
-      >
-        <EditorialProof title="再补一句。" subtitle="然后审方案。" />
-      </Series.Sequence>
-      <Series.Sequence
-        name="别守着电脑品牌落版"
-        durationInFrames={3 * fps}
-        premountFor={fps}
-      >
-        <ReleaseEnd kind="editorial" />
-      </Series.Sequence>
-    </Series>
+        src={staticFile("music/c-tech-house.wav")}
+      />
+      <Series>
+        <Series.Sequence
+          name="AI在写，你还在等"
+          durationInFrames={3 * fps}
+          premountFor={fps}
+        >
+          <EditorialOpen title="AI在写。" subtitle="你还在等？" />
+        </Series.Sequence>
+        <Series.Sequence
+          name="看进度、补要求、审方案"
+          durationInFrames={12 * fps}
+          premountFor={fps}
+        >
+          <EditorialProof title="再补一句。" subtitle="然后审方案。" />
+        </Series.Sequence>
+        <Series.Sequence
+          name="别守着电脑品牌落版"
+          durationInFrames={3 * fps}
+          premountFor={fps}
+        >
+          <ReleaseEnd kind="editorial" />
+        </Series.Sequence>
+      </Series>
+    </>
   );
 };
 

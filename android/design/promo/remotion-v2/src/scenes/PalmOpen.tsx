@@ -39,7 +39,6 @@ const PalmOpenInner = ({ title, subtitle, style }: CopyProps) => {
             ["0px 48px", "0px 0px"],
             { ...hold, easing: Easing.bezier(0.16, 1, 0.3, 1) },
           ),
-          opacity: interpolate(frame, [0, 0.6 * fps], [0, 1], hold),
         }}
       >
         {title}
@@ -91,7 +90,7 @@ const PalmOpenInner = ({ title, subtitle, style }: CopyProps) => {
           translate: interpolate(
             frame,
             [0, 1.4 * fps],
-            ["0px 260px", "0px 0px"],
+            ["0px 120px", "0px 0px"],
             { ...hold, easing: Easing.bezier(0.12, 0.85, 0.2, 1) },
           ),
         }}

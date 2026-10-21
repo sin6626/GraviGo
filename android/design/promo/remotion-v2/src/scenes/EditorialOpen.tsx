@@ -26,7 +26,7 @@ const EditorialOpenInner = ({ title, subtitle, style }: CopyProps) => {
         name="第一问"
         style={{
           position: "absolute",
-          left: 78,
+          left: 104,
           top: 350,
           fontSize: 164,
           lineHeight: 1.2,
@@ -35,7 +35,7 @@ const EditorialOpenInner = ({ title, subtitle, style }: CopyProps) => {
           translate: interpolate(
             frame,
             [0, 0.6 * fps],
-            ["-140px 0px", "0px 0px"],
+            ["-24px 0px", "0px 0px"],
             { ...hold, easing: Easing.bezier(0.16, 1, 0.3, 1) },
           ),
         }}
@@ -55,7 +55,7 @@ const EditorialOpenInner = ({ title, subtitle, style }: CopyProps) => {
           translate: interpolate(
             frame,
             [0.3 * fps, 1 * fps],
-            ["170px 0px", "0px 0px"],
+            ["48px 0px", "0px 0px"],
             { ...hold, easing: Easing.bezier(0.16, 1, 0.3, 1) },
           ),
           opacity: interpolate(frame, [0.3 * fps, 0.5 * fps], [0, 1], hold),
@@ -101,6 +101,7 @@ const EditorialOpenInner = ({ title, subtitle, style }: CopyProps) => {
           fontSize: 48,
           lineHeight: 1.6,
           fontWeight: 500,
+          opacity: interpolate(frame, [1.2 * fps, 1.6 * fps], [0, 1], hold),
         }}
       >
         用 Android 手机，

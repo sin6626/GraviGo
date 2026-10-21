@@ -1,5 +1,11 @@
 # GraviGo 项目开发与维护文档
 
+### 2026-10-21 三份 Remotion 配乐短片导出完成
+- 用户“去制作”后完成A《掌心接力》、B《失重轨道》、C《别守着电脑》的18秒1080×1920/30fps成片，三个独立音轨节点保留Studio可编辑性。没有旁白，不把18秒短片称为60～75秒长版；本轮没有对外发布。
+- 配乐采用Mixkit的Close Up/Michael Ramir C.、Vastness/Andrew Ev、Tech House vibes/Alejandro Magaña，独立许可与来源随CREDITS.txt交付。prepare_music.py生成经响度处理及淡入淡出的18秒立体声片段，原始音乐只留Git忽略缓存，不单独分发或声称原创。
+- render_delivery.ps1输出H.264/yuv420p、BT.709有限范围、AAC/48kHz/立体声；修正开场首帧主标题不可见、A卡片与底部说明重叠、C切带进入时遮挡产品说明。三支实际MP4完整解码、540帧/18秒/颜色/音频、零全黑帧及Chromium寻帧和播放至结束均通过，开场/功能段/落版实际导出画面已查看。ESLint/TypeScript和新增Python脚本编译检查通过。
+- 成片、海报、compare.html、CREDITS.txt与含SHA-256和验收结果的manifest.json位于.verification/gravigo-promo-remotion-v2/delivery/。源码与复现说明纳入本地Git；媒体、音乐、缓存和编码工具继续忽略。保持Studio4317供用户预览；验收浏览器/HTTP服务和临时Python已退出，不停止其他插件或既有网关。
+
 ### 2026-10-21 宣发片第一轮被否定，按 Remotion 重做
 - 用户明确批评上一轮审美与三个版本的呈现，要求重做三份并指定remotion-create技能，允许先给计划。第一轮A/B/C不再视为被认可的方向，旧媒体仅保留历史，未删除文件。
 - 新导演计划android/design/promo/ART-DIRECTION-V2.zh-CN.md：A《掌心接力》暖白钴蓝和内容接力，B《失重轨道》深色悬浮与空间层次，C《别守着电脑》酸橙色编辑排版与短视频节拍。每套各有开场、产品证明与落版，使用真实原生界面局部，避免整屏缩成细长边框。

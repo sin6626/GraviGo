@@ -56,7 +56,6 @@ const OrbitOpenInner = ({ title, subtitle, style }: CopyProps) => {
             ["0px 65px", "0px 0px"],
             { ...hold, easing: Easing.bezier(0.16, 1, 0.3, 1) },
           ),
-          opacity: interpolate(frame, [0, 1.1 * fps], [0, 1], hold),
         }}
       >
         {title}
