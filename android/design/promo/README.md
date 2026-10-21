@@ -1,5 +1,7 @@
 # GraviGo product promo previews
 
+The first-round previews below were rejected by the owner. The active work is the [Remotion V2 project](remotion-v2/README.md) and its [new director's plan](ART-DIRECTION-V2.zh-CN.md). Keep this directory's earlier scripts as production history, not as the approved creative direction.
+
 The current delivery contains three Chinese, 15-second concepts for Douyin and Xiaohongshu. All use 1080×1920 video at 30fps, H.264/AAC, the approved GraviGo icon, original synthesized music, and native Android UI rendered with isolated demonstration data.
 
 | Concept | Treatment |

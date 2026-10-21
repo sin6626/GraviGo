@@ -1,5 +1,13 @@
 # GraviGo 项目开发与维护文档
 
+### 2026-10-21 宣发片第一轮被否定，按 Remotion 重做
+- 用户明确批评上一轮审美与三个版本的呈现，要求重做三份并指定remotion-create技能，允许先给计划。第一轮A/B/C不再视为被认可的方向，旧媒体仅保留历史，未删除文件。
+- 新导演计划android/design/promo/ART-DIRECTION-V2.zh-CN.md：A《掌心接力》暖白钴蓝和内容接力，B《失重轨道》深色悬浮与空间层次，C《别守着电脑》酸橙色编辑排版与短视频节拍。每套各有开场、产品证明与落版，使用真实原生界面局部，避免整屏缩成细长边框。
+- 官方脚手架创建android/design/promo/remotion-v2，create-video4.0.534的模板选择4.0.537，全部Remotion依赖已锁同版。Studio已在http://localhost:4317实际加载后再写组成，保持Node服务供用户交互查看；三个主合成均18秒/1080×1920/30fps，7个场景独立连接，可编辑文案与时间。
+- 复用隔离演示原生画面／录屏与已批准晶核图标，新增带原始OFL声明的Noto Sans SC和Manrope变量字体；public、依赖和全部临时产物均忽略，缓存放本项目.verification/gravigo-promo-remotion-v2。未操作模拟器、真实网关或配对，未发布到外部。
+- ESLint与TypeScript通过；verify_studio.py在临时浏览器通过Studio正式WebMCP接口检查7个独立场景及三份主合成的0/80/180/330/500/539帧、播放暂停和错误状态，均通过。已用Remotion still检查开场／功能段／落版关键画面，并修正文段裁切和输入近景留白。普通Chrome启动器spawn UNKNOWN已用已安装的Chrome Headless Shell解决，未修改系统浏览器或配置。
+- 当前交付为计划、九张关键画面和无声Studio动态草案，音乐、旁白及最终MP4未制作，不把草案称作定稿。对比图为.verification/gravigo-promo-remotion-v2/directions-v2.png，Studio的三个主合成入口可直接播放。源码纳入主仓库本地版本控制，未推送；Studio保留运行以供视觉方向反馈，验收Python进程已退出。
+
 ### 2026-10-20 三版竖屏产品宣发预览交付
 - 用户选择抖音／小红书9:16，并要求真实操作＋动效、发布会感、功能演示三个版本各做一个预览。已完成A-hybrid.mp4、B-hero.mp4、C-demo.mp4，均15秒/1080×1920/30fps/H.264＋AAC，位于.verification/gravigo-product-promo/delivery/；compare.html可并排播放，manifest.json含校验和与实际验收结果。完整60～75秒影片与旁白待选方向后再展开。
 - 新增opt-in ProductPromoCaptureTest与capture_native.py，复用FakeGateway但使用独立SharedPreferences/cache命名空间，实际渲染ChatDemoScreen与方案预览窗口；屏幕录制仅在专用演示内容ready后启动，不使用真实网关/账号/项目。采集测试OK(1 test)，保存四张原生画面与操作录屏，方案窗口图片从录屏提取，避免Compose根截图遗漏Dialog。
