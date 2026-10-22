@@ -1,4 +1,5 @@
 """Check the full film and every connected chapter in real Remotion Studio."""
+import argparse
 import json
 import os
 from pathlib import Path
@@ -13,6 +14,10 @@ BRIDGE = """window.filmTools=new Map();Object.defineProperty(document,'modelCont
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--language', choices=['zh', 'en'], default='zh')
+    args = parser.parse_args()
+    english = args.language == 'en'
     records = []
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -31,7 +36,7 @@ def main():
                 tool('select_composition', {'compositionName': name})
                 page.wait_for_function("async n=>(await window.filmTools.get('get_playback_state').execute({})).currentContent?.compositionId===n", arg=name)
 
-            for key, title, duration in CHAPTERS:
+            for key, title, duration in ([] if english else CHAPTERS):
                 name = 'Film-' + key
                 select(name)
                 for frame in [120, min(390, (duration - 1) * 60)]:
@@ -40,23 +45,26 @@ def main():
                     assert tool('get_playback_state')['currentFrame'] == frame
                     assert tool('get_current_error') is None, name
                 records.append({'scene': name, 'standalonePreview': 'passed'})
-            select('GraviGo-FullFilm')
+            select('GraviGo-FullFilm-EN' if english else 'GraviGo-FullFilm')
             cursor = 0
             for key, _, duration in CHAPTERS:
                 tool('seek_to_frame', {'frame': round((cursor + 2) * 60)})
                 page.wait_for_timeout(220)
                 assert tool('get_current_error') is None, key
+                records.append({'scene': key, 'timelinePreview': 'passed'})
                 cursor += duration - .8
             tool('seek_to_frame', {'frame': 3300})
-            tool('play'); page.wait_for_timeout(1200); tool('pause')
-            assert tool('get_playback_state')['currentFrame'] > 3300
+            page.wait_for_function("async ()=>(await window.filmTools.get('get_playback_state').execute({})).currentFrame===3300", timeout=30000)
+            tool('play')
+            page.wait_for_function("async ()=>(await window.filmTools.get('get_playback_state').execute({})).currentFrame>3300", timeout=30000)
+            tool('pause')
             assert tool('get_current_error') is None
             assert not errors, errors
-            page.screenshot(path=str(OUT / 'full-film-studio.png'))
+            page.screenshot(path=str(OUT / ('full-film-studio-en.png' if english else 'full-film-studio.png')))
         finally:
             browser.close()
-    (OUT / 'studio-checks.json').write_text(json.dumps(records, indent=2), encoding='utf-8')
-    print('All 15 standalone chapters, full timeline seeking and playback passed.', flush=True)
+    (OUT / ('studio-checks-en.json' if english else 'studio-checks.json')).write_text(json.dumps(records, indent=2), encoding='utf-8')
+    print('Chapter previews, full timeline seeking and playback passed.', flush=True)
 
 
 if __name__ == '__main__':

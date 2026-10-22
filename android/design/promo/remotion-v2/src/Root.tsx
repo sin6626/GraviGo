@@ -155,6 +155,15 @@ const StopWaiting = () => {
 export const RemotionRoot = () => (
   <>
     <Composition
+      id="GraviGo-FullFilm-EN"
+      component={FullFilm}
+      width={1080}
+      height={1920}
+      fps={60}
+      durationInFrames={8868}
+      defaultProps={{ showDetailLenses: false, language: "en" }}
+    />
+    <Composition
       id="GraviGo-FullFilm-V2"
       component={FullFilm}
       width={1080}

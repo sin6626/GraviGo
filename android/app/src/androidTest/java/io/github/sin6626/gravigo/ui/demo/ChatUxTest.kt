@@ -3282,6 +3282,8 @@ class ChatUxTest {
         @Volatile var failurePath: String? = null
         @Volatile var failureCode = 500
         @Volatile var accountName = "测试账号"
+        @Volatile var demoEnglish = false
+        private fun demoText(zh: String, en: String) = if (demoEnglish) en else zh
         @Volatile var accountEmail = "test@example.com"
         @Volatile var secondaryModelLabel = "Claude fixture"
         @Volatile var thirdModelLabel = "Text fixture"
@@ -3340,9 +3342,9 @@ class ChatUxTest {
         private fun queuedMessagesJson(): String {
             val messages = mutableListOf<JSONObject>()
             if ("q-edit" !in deletedQueueIds) messages += JSONObject()
-                .put("id", "q-edit").put("text", "先补充单元测试").put("createdAt", "2026-10-13T08:00:00Z")
+                .put("id", "q-edit").put("text", demoText("先补充单元测试", "Add unit tests first")).put("createdAt", "2026-10-13T08:00:00Z")
             if ("q-delete" !in deletedQueueIds) messages += JSONObject()
-                .put("id", "q-delete").put("text", "然后检查动画").put("createdAt", "2026-10-13T08:01:00Z")
+                .put("id", "q-delete").put("text", demoText("然后检查动画", "Then check animations")).put("createdAt", "2026-10-13T08:01:00Z")
             queuedDraftText?.takeIf { "q-new" !in deletedQueueIds && !deferQueuedSync }?.let { messages += JSONObject()
                 .put("id", "q-new").put("text", it).put("media", if (queuedImagesInAttachmentsOnly) org.json.JSONArray() else org.json.JSONArray(queuedDraftMedia))
                 .put("attachments", org.json.JSONArray(queuedDraftAttachments))
@@ -3353,11 +3355,11 @@ class ChatUxTest {
             val tasks = mutableListOf<JSONObject>()
             if ("task-browser" !in stoppedTaskIds) tasks += JSONObject()
                 .put("id", "task-browser").put("stepIndex", 8).put("toolName", "run_command")
-                .put("toolSummary", "运行浏览器检查").put("commandLine", "npm run test:e2e")
+                .put("toolSummary", demoText("运行浏览器检查", "Run browser checks")).put("commandLine", "npm run test:e2e")
                 .put("startedAt", taskStartedTime ?: "2026-10-13T08:00:00Z")
             if ("task-preview" !in stoppedTaskIds) tasks += JSONObject()
                 .put("id", "task-preview").put("stepIndex", 9).put("toolName", "run_command")
-                .put("toolSummary", "生成预览资源").put("commandLine", "./gradlew renderPreview")
+                .put("toolSummary", demoText("生成预览资源", "Build preview assets")).put("commandLine", "./gradlew renderPreview")
                 .put("startedAt", taskStartedTime ?: "2026-10-13T08:01:00Z")
             return org.json.JSONArray(tasks).toString()
         }
@@ -3430,7 +3432,7 @@ class ChatUxTest {
                                 output.write("HTTP/1.1 200 OK\r\nContent-Type: application/connect+json\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n".toByteArray())
                                 writeChunk(output, connectFrame(0, """{"ready":{"sessionId":"voice-session"}}"""))
                                 voiceEnded.await(5, TimeUnit.SECONDS)
-                                writeChunk(output, connectFrame(0, """{"transcription":{"text":"继续检查动画","isFinal":true}}"""))
+                                writeChunk(output, connectFrame(0, """{"transcription":{"text":"${demoText("继续检查动画", "Continue checking animations")}","isFinal":true}}"""))
                                 writeChunk(output, connectFrame(0, """{"complete":{}}"""))
                                 writeChunk(output, connectFrame(2, "{}"))
                                 output.write("0\r\n\r\n".toByteArray()); output.flush()
@@ -3480,11 +3482,11 @@ class ChatUxTest {
                                 path.startsWith("/api/v1/auth/pair") -> """{"device_id":"test-device","device_token":"new-token"}"""
                                 path.startsWith("/api/v1/auth/endpoints") -> """{"endpoints":$endpointsJson,"platform":"windows"}"""
                                 path.startsWith("/gateway/workspace/context") -> """{"workspaceUri":"file:///test/project","items":[{"type":"file","name":"ChatViewModel.kt","relativePath":"src/ChatViewModel.kt","rootName":"project","rootUri":"file:///test/project","uri":"file:///test/project/src/ChatViewModel.kt","size":42,"scopeItem":{"file":{"absoluteUri":"file:///test/project/src/ChatViewModel.kt","workspaceUrisToRelativePaths":{"file:///test/project":"src/ChatViewModel.kt"},"numFiles":1,"numBytes":42}}}]}"""
-                                path.startsWith("/gateway/commands") -> """{"commands":[{"info":{"name":"plan","modelFacingText":"<PLAN />","type":"SLASH_COMMAND_TYPE_SYSTEM","icon":"ballot"},"title":"plan","description":"先制定方案"}]}"""
+                                path.startsWith("/gateway/commands") -> """{"commands":[{"info":{"name":"plan","modelFacingText":"<PLAN />","type":"SLASH_COMMAND_TYPE_SYSTEM","icon":"ballot"},"title":"plan","description":"${demoText("先制定方案", "Plan first")}"}]}"""
                                 path == "/gateway/preferences/plan-review" -> """{"policy":"$planReviewPolicy","planningCommand":"plan","planningModeToggleSupported":false}"""
                                 path == "/gateway/desktop/status" -> """{"permission":{"preset":"TURBO","source":"EFFECTIVE_SETTINGS","terminalPolicy":"CASCADE_COMMANDS_AUTO_EXECUTION_EAGER","nonWorkspaceFilePolicy":"AGENT_SETTING_POLICY_ALLOW","sandboxEnabled":false,"planReviewPolicy":"ALWAYS"},"mcpServers":[
                                     {"name":"cua-driver","status":"MCP_SERVER_STATUS_READY","enabled":true,"toolCount":57,"enabledToolCount":57,"toolErrorCount":0},
-                                    {"name":"browser-tools","status":"MCP_SERVER_STATUS_ERROR","enabled":true,"toolCount":4,"enabledToolCount":3,"toolErrorCount":1,"error":"连接进程已退出","requiresAuthentication":true}
+                                    {"name":"browser-tools","status":"MCP_SERVER_STATUS_ERROR","enabled":true,"toolCount":4,"enabledToolCount":3,"toolErrorCount":1,"error":"${demoText("连接进程已退出", "Connection process exited")}","requiresAuthentication":true}
                                 ]}"""
                                 path.startsWith("/gateway/projects") -> if (projectFixture) """[{"id":"p","name":"$projectName","uri":"file:///test/project"}]""" else "[]"
                                 path.startsWith("/gateway/subagents") -> if (subagentFixture && path.contains("parentId=A")) """{"subagents":[
@@ -3496,7 +3498,7 @@ class ChatUxTest {
                                 ]}""" else """{"cascadeId":"$id","files":[]}"""
                                 management && path.contains("/revert/preview") -> """{"cascadeId":"A","stepIndex":0,"targetStepIndex":-1,"hasCodeChanges":${previewFiles > 0},"files":[${(0 until previewFiles).joinToString { """{"fileName":"${if (it == 0) "Agent.md" else "file-$it.kt"}","actionType":"MODIFY","additions":1,"deletions":2}""" }}]}"""
                                 management && path.startsWith("/gateway/cascade/messages") ->
-                                    """{"status":"${if (running && !reverted) "RUNNING" else "IDLE"}","activeModel":"$activeModel","messages":${if (reverted) "[]" else "[{\"id\":\"step-0\",\"type\":\"user\",\"text\":\"$messageText\",\"stepIndex\":0,\"canRevert\":true${if (userImage) ",\"imageUrls\":[\"$url/image.png\"]" else ""}}]"},"cascadeId":"$id","canProceed":${planFixture && !planProceeded},"proceedArtifactUri":${if (planFixture && !planProceeded) "\"file:///test/plan.md\"" else "null"},"pendingInteraction":${if (interactionFixture && !interactionSubmitted) """{"type":"ask_question","trajectoryId":"trajectory-A","stepIndex":4,"toolName":"mcp__review__ask_question","title":"选择需要保留的体验","options":[{"id":"a","text":"保留动效"},{"id":"b","text":"保留滚动位置"},{"id":"c","text":"保留错误恢复"}],"isMultiSelect":true,"hasWriteIn":true,"writeInLabel":"补充说明","writeInPlaceholder":"填写其他要求"}""" else "null"},"queuedMessages":${if (queueFixture) queuedMessagesJson() else "[]"},"runningTasks":${if (taskFixture) runningTasksJson() else "[]"}}"""
+                                    """{"status":"${if (running && !reverted) "RUNNING" else "IDLE"}","activeModel":"$activeModel","messages":${if (reverted) "[]" else "[{\"id\":\"step-0\",\"type\":\"user\",\"text\":\"$messageText\",\"stepIndex\":0,\"canRevert\":true${if (userImage) ",\"imageUrls\":[\"$url/image.png\"]" else ""}}]"},"cascadeId":"$id","canProceed":${planFixture && !planProceeded},"proceedArtifactUri":${if (planFixture && !planProceeded) "\"file:///test/plan.md\"" else "null"},"pendingInteraction":${if (interactionFixture && !interactionSubmitted) """{"type":"ask_question","trajectoryId":"trajectory-A","stepIndex":4,"toolName":"mcp__review__ask_question","title":"${demoText("选择需要保留的体验", "Choose what to keep")}","options":[{"id":"a","text":"${demoText("保留动效", "Keep animations")}"},{"id":"b","text":"${demoText("保留滚动位置", "Keep scroll position")}"},{"id":"c","text":"${demoText("保留错误恢复", "Keep error recovery")}"}],"isMultiSelect":true,"hasWriteIn":true,"writeInLabel":"${demoText("补充说明", "Additional notes")}","writeInPlaceholder":"${demoText("填写其他要求", "Add other requirements")}"}""" else "null"},"queuedMessages":${if (queueFixture) queuedMessagesJson() else "[]"},"runningTasks":${if (taskFixture) runningTasksJson() else "[]"}}"""
                                 path.startsWith("/api/v1/files/content") -> JSONObject()
                                     .put("uri", "file:///test/plan.md")
                                     .put("filename", filePreviewName)

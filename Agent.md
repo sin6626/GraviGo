@@ -1043,3 +1043,15 @@ android/app/src/main/java/com/antigravity/mobile/
 - 公开安装工作流39373563076在原生macos-15与macos-15-intel上从raw公开入口下载最新版，执行实际发布网关version=1.0.0，并重复安装确认不覆盖，全部成功。安装网络请求有连接/总耗时上限；同一公开验证可手动复跑，也接入后续Mac发布。
 - 本地Go1.26.9源码确认仅识别.git目录，嵌套linked worktree会误嵌父仓库提交；打包器成功拒绝该产物。改用项目内.verification/mac-gateway-release-clone独立检出原tag后两架构交叉编译、打包与Windows默认ZIP回归均通过。原临时linked worktree已检查边界和干净状态后移除，未绕过源码校验。
 - 当前58901网关仍为PID20832，不停服、不改配对。Mac真实Antigravity桌面连接流程尚未验收，无Apple Developer ID/公证，文档按此明确限制；真机、公网与旧视频清理待授权范围沿用先前记录。
+
+### 2026-10-22 双语产品片与 README 发布进行中
+- 用户选定无遮挡中文v2，要求中文README展示中文视频、英文README展示新英文视频，并给GitHub About追加原话：烂尾的项目（因为我大概率不会用）。已授权发布；不得覆盖已归档v1/v2。
+- 英文版16段真实原生组件与合成演示数据录制均通过，独立素材public/film-en；英文完整片保持147.8秒/60fps/无遮挡，正在导出和验收。只改演示测试、文案与制作脚本，不改App业务。
+- GitHub插件无附件上传和About写接口，已向用户说明备用CLI；README内联需网页user-attachments。用户已明确允许使用当前浏览器会话上传GitHub视频附件；仅此用途，不投稿issue/comment。Cua按standard existing-profile授权运行，不绕过拒绝。
+- 远端当前main=47c3844；本轮尚未上传影片、更新README/About或提交。真机及公网范围沿用现有验收限制。
+
+### 2026-10-22 双语影片发布验收
+- 中文README已通过网页上传并提交原v2附件；英文片147.8秒/1080x1920/60fps，16项原生英语演示通过，独立素材与可重建源码已推送3256057。英文最终标题间距已修，完整解码/零黑帧/音轨/正常速度全片播放通过，SHA256=3fa5f631403af913dabad88cdacecc32584b48bea60ee046bed13a4041b9e44a，44,462,609字节；中文v1/v2哈希不变。
+- 英文README网页附件提交9537d25，中文76329dc，分支codex/bilingual-product-films。附件地址分别e364fffc-5630-4c69-b030-fdef29220fae与6df80b11-0367-4075-95c5-6bfb31a43a83；中文公网下载哈希已与原片一致，英文正在核验。About已追加用户原话并读回确认。
+- GitHub插件create_blob返回403 Resource not accessible by integration，已按用户备用规则切换本地Git推送；网页附件不写入Git。main有android/两平台Go必需检查，按分支PR流程等待CI再合并，不绕过。当前最终PR/CI/主分支页面验收尚未完成。
+- 新英片完整导出后仅重新渲染代码审阅4164..4883共720帧，按原8868帧顺序合成CRF17并保留原AAC；最终交付均以verify-v2-en-final.log和versions/v2-en/manifest.json为准。临时工序与大媒体仍仅留忽略目录。

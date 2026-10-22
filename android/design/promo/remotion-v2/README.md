@@ -1,4 +1,4 @@
-# GraviGo — Remotion product shorts
+# GraviGo — Remotion product films
 
 ## Complete product film
 
@@ -19,6 +19,10 @@ python verify_film.py --ffmpeg <absolute-ffmpeg-path> --ffprobe <absolute-ffprob
 ```
 
 `prepare_film.py` checks successful native action tests and source-frame metadata before copying all footage into ignored `public/film/`. The film uses **Close Up** and **Tech House vibes** under their separate Mixkit music license, with a crossfade between sections. There is no narration.
+
+The English composition is `GraviGo-FullFilm-EN`. It keeps v2's 147.8-second timeline and unobstructed phone layout, with English headings, captions and native Android recordings. Pass `--language en` to `capture_features.py`, `prepare_film.py`, `verify_film_studio.py` and `verify_film.py`; pass `-Language en` to `render_film.ps1`. English footage goes to `public/film-en/` and the finished delivery to `.verification/gravigo-film-v3/versions/v2-en/`. Capture restores the debug app's previous locale and uses isolated synthetic data. It does not change the device's system language or release app data.
+
+Video music: **Close Up** by Michael Ramir C. and **Tech House vibes** by Alejandro Magaña (A. M.), under the [Mixkit Stock Music Free License](https://mixkit.co/license/modal/musicFree/). Noto Sans SC and Manrope fonts use the SIL Open Font License. Native UI footage demonstrates real components with a test gateway; voice transcription depends on desktop-account permissions. The public README videos are GitHub attachments, outside Git history. They use the same v2 presentation in their respective languages.
 
 The complete local MP4, poster, chapter navigation page `watch.html`, credits, and checksums are written to `.verification/gravigo-film-v3/versions/v2/` at the repository root. `verify_film.py` checks the actual file, decodes all 8,868 frames, samples every chapter and transition, and plays the complete video from beginning to end in Chromium. Native event-driven capture and authored 60fps motion graphics are different; source normalization does not create new native interaction detail. This workflow does not publish to any platform.
 

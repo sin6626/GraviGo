@@ -10,6 +10,14 @@ GraviGo 是一个用于远程操控电脑端 Antigravity 的 Android 应用。�
 
 [![CI](https://github.com/sin6626/GraviGo/actions/workflows/ci.yml/badge.svg)](https://github.com/sin6626/GraviGo/actions/workflows/ci.yml)
 
+## 产品演示
+
+2 分 27.8 秒完整演示，建议开启声音。
+
+https://github.com/user-attachments/assets/e364fffc-5630-4c69-b030-fdef29220fae
+
+[视频制作与配乐说明](android/design/promo/remotion-v2/README.md)。
+
 ## 可以做什么
 
 - 浏览电脑上的工作区与会话，查看流式回复，发送消息和附件。
