@@ -10,6 +10,14 @@ GraviGo is an independent Android remote client for Antigravity. Connect through
 
 GraviGo grew out of a practical need: the existing Antigravity Remote experience did not fit how we wanted to work from a phone. Inspired by and based on [Jiuge (GHSaiMo)'s antigravity-mobile](https://github.com/GHSaiMo/antigravity-mobile), it develops the Android remote experience and desktop gateway further. This is an independent community project.
 
+## Product film
+
+Full walkthrough · 2 min 27.8 sec. Turn on sound.
+
+https://github.com/user-attachments/assets/6df80b11-0367-4075-95c5-6bfb31a43a83
+
+[Video production and music credits](android/design/promo/remotion-v2/README.md).
+
 ## What you can do
 
 - Browse desktop workspaces and conversations, follow streaming replies, and send messages with attachments.
