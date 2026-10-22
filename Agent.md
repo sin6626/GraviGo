@@ -1049,3 +1049,9 @@ android/app/src/main/java/com/antigravity/mobile/
 - 英文版16段真实原生组件与合成演示数据录制均通过，独立素材public/film-en；英文完整片保持147.8秒/60fps/无遮挡，正在导出和验收。只改演示测试、文案与制作脚本，不改App业务。
 - GitHub插件无附件上传和About写接口，已向用户说明备用CLI；README内联需网页user-attachments。用户已明确允许使用当前浏览器会话上传GitHub视频附件；仅此用途，不投稿issue/comment。Cua按standard existing-profile授权运行，不绕过拒绝。
 - 远端当前main=47c3844；本轮尚未上传影片、更新README/About或提交。真机及公网范围沿用现有验收限制。
+
+### 2026-10-22 双语影片发布验收
+- 中文README已通过网页上传并提交原v2附件；英文片147.8秒/1080x1920/60fps，16项原生英语演示通过，独立素材与可重建源码已推送3256057。英文最终标题间距已修，完整解码/零黑帧/音轨/正常速度全片播放通过，SHA256=3fa5f631403af913dabad88cdacecc32584b48bea60ee046bed13a4041b9e44a，44,462,609字节；中文v1/v2哈希不变。
+- 英文README网页附件提交9537d25，中文76329dc，分支codex/bilingual-product-films。附件地址分别e364fffc-5630-4c69-b030-fdef29220fae与6df80b11-0367-4075-95c5-6bfb31a43a83；中文公网下载哈希已与原片一致，英文正在核验。About已追加用户原话并读回确认。
+- GitHub插件create_blob返回403 Resource not accessible by integration，已按用户备用规则切换本地Git推送；网页附件不写入Git。main有android/两平台Go必需检查，按分支PR流程等待CI再合并，不绕过。当前最终PR/CI/主分支页面验收尚未完成。
+- 新英片完整导出后仅重新渲染代码审阅4164..4883共720帧，按原8868帧顺序合成CRF17并保留原AAC；最终交付均以verify-v2-en-final.log和versions/v2-en/manifest.json为准。临时工序与大媒体仍仅留忽略目录。

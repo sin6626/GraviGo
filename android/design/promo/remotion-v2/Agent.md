@@ -20,3 +20,5 @@
 - render_delivery.ps1使用指定浏览器逐个渲染，显式BT.709有限范围避免默认全范围输出差异。verify_delivery.py对实际MP4作完整解码、颜色/帧数/音频/黑帧和浏览器播放检查，并生成delivery/compare.html、海报、CREDITS.txt与manifest.json；目录在根.verification/gravigo-promo-remotion-v2/。新增脚本不触碰App、模拟器或网关。
 
 - 英文版新增GraviGo-FullFilm-EN，language=en/showDetailLenses=false；16段English native素材独立于中文。prepare/render/verify使用--language en或-Language en，输出versions/v2-en。中文版已选定master SHA256=1976b1b15e70495050aacdcb26b34997fa0f79baef2c21a0ce9365415d991a5e，不能覆盖。当前英文导出中，GitHub双语README和About待正式发布。
+
+- 英文最终验收通过：versions/v2-en/GraviGo-v2-en-1080x1920-60fps.mp4，147.8秒/8868帧，44,462,609字节，SHA256=3fa5f631403af913dabad88cdacecc32584b48bea60ee046bed13a4041b9e44a。代码审阅英语标题缩为Comment by line.避免换行压手机；最终实际转场抽帧、零黑帧、全音轨与1倍速播放到结尾均通过。英文中文字幕和原生素材彼此隔离，中文两版原片哈希未变。两份README附件已提交发布分支，等待CI合入。
