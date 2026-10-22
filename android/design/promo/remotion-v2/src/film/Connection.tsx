@@ -5,6 +5,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import { hold } from "../design";
+import { useFilmCopy } from "./copy";
 import {
   Caption,
   cobalt,
@@ -18,6 +19,7 @@ import {
 const ConnectionInner = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const { english, t } = useFilmCopy();
   return (
     <FilmStage>
       <FilmBrand chapter="01 / CONNECT" />
@@ -76,7 +78,7 @@ const ConnectionInner = () => {
           color: "#72809a",
         }}
       >
-        电脑端
+        {t("电脑端")}
       </div>
       <NativePhone
         src="pairing"
@@ -99,7 +101,7 @@ const ConnectionInner = () => {
           left: 85,
           top: 930,
           width: 350,
-          fontSize: 43,
+          fontSize: english ? 35 : 43,
           lineHeight: 1.7,
           fontWeight: 550,
           translate: interpolate(
@@ -111,11 +113,11 @@ const ConnectionInner = () => {
           opacity: interpolate(frame, [2 * fps, 3 * fps], [0, 1], hold),
         }}
       >
-        启动网关
+        {t("启动网关")}
         <br />
-        扫码或填码
+        {t("扫码或填码")}
         <br />
-        <span style={{ color: cobalt }}>继续当前任务</span>
+        <span style={{ color: cobalt }}>{t("继续当前任务")}</span>
       </div>
       <div
         style={{
@@ -132,7 +134,7 @@ const ConnectionInner = () => {
       >
         Windows / macOS
         <br />
-        提供一行安装入口
+        {t("提供一行安装入口")}
       </div>
       <Caption>
         当前连接范围为局域网。

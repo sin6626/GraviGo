@@ -30,6 +30,7 @@ class ProductLocaleCaptureTest {
     @Test fun captureLanguage() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val run = InstrumentationRegistry.getArguments().getString("promoRun")
+        val english = InstrumentationRegistry.getArguments().getString("promoLanguage") == "en"
         assumeTrue(run != null && run.matches(Regex("[a-zA-Z0-9_-]+")))
         val prefix = "locale_film_${UUID.randomUUID()}_"
         val context = object : ContextWrapper(instrumentation.targetContext) {
@@ -74,15 +75,16 @@ class ProductLocaleCaptureTest {
         }
         ChatUxTest.FakeGateway().use { gateway ->
             gateway.management = true
+            gateway.demoEnglish = english
             gateway.accountName = "GraviGo Demo"; gateway.accountEmail = "demo@example.invalid"
             gateway.primaryModelLabel = "Gemini"
-            gateway.primaryConversationTitle = "登录体验升级"
-            gateway.messageText = "完善登录反馈，并补齐交互测试。"
+            gateway.primaryConversationTitle = if (english) "Login experience" else "登录体验升级"
+            gateway.messageText = if (english) "Improve login feedback and add interaction tests." else "完善登录反馈，并补齐交互测试。"
             PreferencesManager(app).apply { gatewayBaseUrl = gateway.url; deviceToken = "isolated-locale-demo"; lastConversationId = "A" }
             ActivityScenario.launch(ComponentActivity::class.java).use { scenario ->
                 try {
                     scenario.onActivity { activity ->
-                        AppLanguage.change(activity, "zh-CN")
+                        AppLanguage.change(activity, if (english) "en" else "zh-CN")
                         val vm = ChatViewModel(app).also { store.put("locale", it) }
                         activity.setContent { Box(Modifier.fillMaxSize().background(Color.White)) { ChatDemoScreen(vm, {}) } }
                     }
@@ -96,12 +98,12 @@ class ProductLocaleCaptureTest {
                     File(output, "bounds.json").writeText(JSONObject().put("x", crop.left).put("y", crop.top).put("width", crop.width()).put("height", crop.height()).toString())
                     File(output, "ready").writeText("ready")
                     waitFor { File(output, "go").exists() }
-                    click("打开菜单"); click("账号与设置")
+                    click(if (english) "Open menu" else "打开菜单"); click(if (english) "Account & settings" else "账号与设置")
                     check(find(instrumentation.uiAutomation.rootInActiveWindow, "GraviGo Demo") != null)
-                    click("English")
-                    waitFor { find(instrumentation.uiAutomation.rootInActiveWindow, "Account & settings") != null }
-                    click("简体中文")
-                    waitFor { find(instrumentation.uiAutomation.rootInActiveWindow, "账号与设置") != null }
+                    click(if (english) "简体中文" else "English")
+                    waitFor { find(instrumentation.uiAutomation.rootInActiveWindow, if (english) "账号与设置" else "Account & settings") != null }
+                    click(if (english) "English" else "简体中文")
+                    waitFor { find(instrumentation.uiAutomation.rootInActiveWindow, if (english) "Account & settings" else "账号与设置") != null }
                     snapshot("after")
                     File(output, "done").writeText("real-clock Chinese/English switching and isolated account passed")
                     waitFor { File(output, "ack").exists() }

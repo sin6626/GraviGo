@@ -8,10 +8,12 @@ import {
 } from "remotion";
 import { hold } from "../design";
 import { cobalt, ease, FilmBrand, FilmStage } from "./visuals";
+import { useFilmCopy } from "./copy";
 
 const ClosingInner = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const { english, t } = useFilmCopy();
   return (
     <FilmStage dark>
       <FilmBrand dark chapter="KEEP THE WORK MOVING" />
@@ -57,11 +59,11 @@ const ClosingInner = () => {
           right: 80,
           top: 1060,
           textAlign: "center",
-          fontSize: 66,
+          fontSize: english ? 56 : 66,
           lineHeight: 1.6,
         }}
       >
-        把Antigravity，带在身边
+        {t("把Antigravity，带在身边")}
       </div>
       <div
         style={{
@@ -91,9 +93,9 @@ const ClosingInner = () => {
           color: "#b0c1db",
         }}
       >
-        独立社区项目 · Android 原生界面
+        {t("独立社区项目 · Android 原生界面")}
         <br />
-        Windows / macOS 网关 · AGPL v3 开源
+        {t("Windows / macOS 网关 · AGPL v3 开源")}
       </div>
       <div
         style={{
@@ -108,11 +110,11 @@ const ClosingInner = () => {
           opacity: interpolate(frame, [2 * fps, 3 * fps], [0, 1], hold),
         }}
       >
-        基于九哥 GHSaiMo 的 antigravity-mobile
+        {t("基于九哥 GHSaiMo 的 antigravity-mobile")}
         <br />
-        演示采用隔离示例数据 · 局域网连接
+        {t("演示采用隔离示例数据 · 局域网连接")}
         <br />
-        电脑与网关需保持运行
+        {t("电脑与网关需保持运行")}
       </div>
     </FilmStage>
   );

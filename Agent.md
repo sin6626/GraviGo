@@ -1043,3 +1043,9 @@ android/app/src/main/java/com/antigravity/mobile/
 - 公开安装工作流39373563076在原生macos-15与macos-15-intel上从raw公开入口下载最新版，执行实际发布网关version=1.0.0，并重复安装确认不覆盖，全部成功。安装网络请求有连接/总耗时上限；同一公开验证可手动复跑，也接入后续Mac发布。
 - 本地Go1.26.9源码确认仅识别.git目录，嵌套linked worktree会误嵌父仓库提交；打包器成功拒绝该产物。改用项目内.verification/mac-gateway-release-clone独立检出原tag后两架构交叉编译、打包与Windows默认ZIP回归均通过。原临时linked worktree已检查边界和干净状态后移除，未绕过源码校验。
 - 当前58901网关仍为PID20832，不停服、不改配对。Mac真实Antigravity桌面连接流程尚未验收，无Apple Developer ID/公证，文档按此明确限制；真机、公网与旧视频清理待授权范围沿用先前记录。
+
+### 2026-10-22 双语产品片与 README 发布进行中
+- 用户选定无遮挡中文v2，要求中文README展示中文视频、英文README展示新英文视频，并给GitHub About追加原话：烂尾的项目（因为我大概率不会用）。已授权发布；不得覆盖已归档v1/v2。
+- 英文版16段真实原生组件与合成演示数据录制均通过，独立素材public/film-en；英文完整片保持147.8秒/60fps/无遮挡，正在导出和验收。只改演示测试、文案与制作脚本，不改App业务。
+- GitHub插件无附件上传和About写接口，已向用户说明备用CLI；README内联需网页user-attachments。用户已明确允许使用当前浏览器会话上传GitHub视频附件；仅此用途，不投稿issue/comment。Cua按standard existing-profile授权运行，不绕过拒绝。
+- 远端当前main=47c3844；本轮尚未上传影片、更新README/About或提交。真机及公网范围沿用现有验收限制。

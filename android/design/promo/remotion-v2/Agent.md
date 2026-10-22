@@ -18,3 +18,5 @@
 - 宣传范围沿用1.0.0局域网基线：电脑与网关保持运行，GraviGo是独立社区的Antigravity安卓远程客户端。用户标语精确为“把Antigravity，带在身边”。
 - prepare_music.py下载Mixkit配乐并生成18秒/48kHz/立体声片段，含响度处理与淡入淡出。A为Close Up/Michael Ramir C.，B为Vastness/Andrew Ev，C为Tech House vibes/Alejandro Magaña。音乐遵循Mixkit单独许可，不是AGPL或原创；原始音乐仅留忽略缓存，不单独分发。
 - render_delivery.ps1使用指定浏览器逐个渲染，显式BT.709有限范围避免默认全范围输出差异。verify_delivery.py对实际MP4作完整解码、颜色/帧数/音频/黑帧和浏览器播放检查，并生成delivery/compare.html、海报、CREDITS.txt与manifest.json；目录在根.verification/gravigo-promo-remotion-v2/。新增脚本不触碰App、模拟器或网关。
+
+- 英文版新增GraviGo-FullFilm-EN，language=en/showDetailLenses=false；16段English native素材独立于中文。prepare/render/verify使用--language en或-Language en，输出versions/v2-en。中文版已选定master SHA256=1976b1b15e70495050aacdcb26b34997fa0f79baef2c21a0ce9365415d991a5e，不能覆盖。当前英文导出中，GitHub双语README和About待正式发布。

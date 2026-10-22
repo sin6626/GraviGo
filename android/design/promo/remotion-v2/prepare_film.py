@@ -14,10 +14,14 @@ FEATURES = ['pairing', 'workspace', 'stream', 'context', 'attachments', 'plan', 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--ffprobe', required=True)
+    parser.add_argument('--language', choices=['zh', 'en'], default='zh')
     args = parser.parse_args()
-    destination = PROJECT / 'public/film'
+    destination = PROJECT / ('public/film-en' if args.language == 'en' else 'public/film')
     destination.mkdir(exist_ok=True)
-    native = ROOT / '.verification/gravigo-film-v3/native'
+    work = ROOT / '.verification/gravigo-film-v3'
+    if args.language == 'en':
+        work = work / 'english'
+    native = work / 'native'
     manifest = []
     for feature in FEATURES:
         log = (native / feature / 'instrumentation.log').read_text(encoding='utf-8')
@@ -33,7 +37,7 @@ def main():
     music = ROOT / '.verification/gravigo-promo-remotion-v2/music'
     shutil.copy2(music / 'mixkit-1167.mp3', destination / 'music-close-up.mp3')
     shutil.copy2(music / 'mixkit-130.mp3', destination / 'music-tech-house.mp3')
-    (ROOT / '.verification/gravigo-film-v3/footage.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
+    (work / 'footage.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
     print('16 native feature recordings checked and copied; two licensed music tracks prepared.')
 
 

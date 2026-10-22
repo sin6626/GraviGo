@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { createContext, useContext } from "react";
+import { Children, createContext, useContext } from "react";
 import { Video } from "@remotion/media";
 import {
   AbsoluteFill,
@@ -13,6 +13,7 @@ import {
 } from "remotion";
 import type { TransitionPresentationComponentProps } from "@remotion/transitions";
 import { font, hold } from "../design";
+import { useFilmCopy } from "./copy";
 
 export const cream = "#f5f3ee";
 export const DetailLensesContext = createContext(true);
@@ -142,6 +143,7 @@ export const FilmTitle = ({
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const { english, t } = useFilmCopy();
   return (
     <Interactive.Div
       name="章节主张"
@@ -167,19 +169,19 @@ export const FilmTitle = ({
           marginBottom: 23,
         }}
       >
-        {label}
+        {t(label)}
       </div>
       <div
         style={{
-          fontSize: 91,
+          fontSize: english ? 80 : 91,
           fontWeight: 650,
           lineHeight: 1.22,
           letterSpacing: -4,
         }}
       >
-        {title}
+        {t(title)}
         <br />
-        <span style={{ color: dark ? "#9bb8ff" : cobalt }}>{accent}</span>
+        <span style={{ color: dark ? "#9bb8ff" : cobalt }}>{t(accent)}</span>
       </div>
     </Interactive.Div>
   );
@@ -197,6 +199,7 @@ export const NativePhone = ({
   width?: number;
 }) => {
   const { fps } = useVideoConfig();
+  const { english } = useFilmCopy();
   return (
     <Interactive.Div
       name="原生Android录屏"
@@ -224,7 +227,7 @@ export const NativePhone = ({
       >
         <Video
           muted
-          src={staticFile(`film/${src}.mp4`)}
+          src={staticFile(`${english ? "film-en" : "film"}/${src}.mp4`)}
           trimBefore={trim * fps}
           premountFor={fps}
           objectFit="cover"
@@ -241,21 +244,28 @@ export const Caption = ({
 }: {
   children: ReactNode;
   dark?: boolean;
-}) => (
-  <div
-    style={{
-      position: "absolute",
-      left: 82,
-      right: 82,
-      top: 1700,
-      fontSize: 44,
-      lineHeight: 1.35,
-      color: dark ? "#bdcbe0" : "#5e6b7f",
-    }}
-  >
-    {children}
-  </div>
-);
+}) => {
+  const { english, t } = useFilmCopy();
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: 82,
+        right: 82,
+        top: 1700,
+        fontSize: 44,
+        lineHeight: 1.35,
+        color: dark ? "#bdcbe0" : "#5e6b7f",
+      }}
+    >
+      {english
+        ? Children.map(children, (child) =>
+            typeof child === "string" ? t(child) : child,
+          )
+        : children}
+    </div>
+  );
+};
 
 export const DetailLens = ({
   src,

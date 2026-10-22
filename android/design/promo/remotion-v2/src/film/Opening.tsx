@@ -8,10 +8,12 @@ import {
 } from "remotion";
 import { hold } from "../design";
 import { cobalt, ease, FilmBrand, FilmStage, NativePhone } from "./visuals";
+import { useFilmCopy } from "./copy";
 
 const OpeningInner = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const { english, t } = useFilmCopy();
   return (
     <FilmStage>
       <FilmBrand chapter="THE WORK GOES ON" />
@@ -21,7 +23,7 @@ const OpeningInner = () => {
           top: 290,
           left: 80,
           right: 80,
-          fontSize: 118,
+          fontSize: english ? 84 : 118,
           letterSpacing: -5,
           fontWeight: 650,
           lineHeight: 1.28,
@@ -33,9 +35,9 @@ const OpeningInner = () => {
           ),
         }}
       >
-        电脑继续跑。
+        {t("电脑继续跑。")}
         <br />
-        <span style={{ color: cobalt }}>你接着走。</span>
+        <span style={{ color: cobalt }}>{t("你接着走。")}</span>
       </div>
       <div
         style={{
@@ -47,7 +49,7 @@ const OpeningInner = () => {
           opacity: interpolate(frame, [0.8 * fps, 1.6 * fps], [0, 1], hold),
         }}
       >
-        Antigravity 的进度，手机上接着看。
+        {t("Antigravity 的进度，手机上接着看。")}
       </div>
       <div
         style={{
