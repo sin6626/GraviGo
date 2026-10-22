@@ -1,5 +1,27 @@
 # GraviGo — Remotion product shorts
 
+## Complete product film
+
+The active delivery is now **`GraviGo-FullFilm`**, a **147.8-second, 1080×1920, 60fps** film. The owner requested a complete feature walkthrough on October 22 after rejecting the 18-second scope. Its 15 connected chapters live in `src/film/` and `FullFilm-Scenes` in Studio. The earlier shorts remain available as history.
+
+The film follows connection, workspaces, streaming chat, workspace references and commands, image/file attachments, voice input, plan comments, code review, native reading, background tasks, queued messages, interactive decisions, revert previews, models and quotas, desktop state, account details, and Chinese/English settings. Sixteen native recordings use isolated demonstration data. They do not disclose the owner's account or pairing credentials.
+
+Prepare the native test APK and run `../capture_features.py` with absolute ADB and FFmpeg paths. The opt-in instrumentation tests drive native animations frame by frame. Language switching uses `ProductLocaleCaptureTest` with Android's real frame clock, avoiding a conflict between system locale changes and Compose's test scheduler. Only the debug test-host Activity receives the manifest overlay; release behavior is unchanged. Recordings are cropped to the content viewport and normalized to 14-second, 60fps sources before editing.
+
+```powershell
+python prepare_film.py --ffprobe <absolute-ffprobe-path>
+npm run lint
+python verify_film_studio.py
+./render_film.ps1 -BrowserExecutable <absolute-Chrome-Headless-Shell-path>
+python verify_film.py --ffmpeg <absolute-ffmpeg-path> --ffprobe <absolute-ffprobe-path>
+```
+
+`prepare_film.py` checks successful native action tests and source-frame metadata before copying all footage into ignored `public/film/`. The film uses **Close Up** and **Tech House vibes** under their separate Mixkit music license, with a crossfade between sections. There is no narration.
+
+The complete local MP4, poster, chapter navigation page `watch.html`, credits, and checksums are written to `.verification/gravigo-film-v3/delivery/` at the repository root. `verify_film.py` checks the actual file, decodes all 8,868 frames, samples every chapter and transition, and plays the complete video from beginning to end in Chromium. Native event-driven capture and authored 60fps motion graphics are different; source normalization does not create new native interaction detail. This workflow does not publish to any platform.
+
+## Earlier short concepts
+
 Three independent 1080×1920, 30fps, 18-second visual studies for Douyin and Xiaohongshu:
 
 | Composition | Direction |

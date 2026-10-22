@@ -2,6 +2,8 @@
 
 The first-round previews below were rejected by the owner. The active work is the [Remotion V2 project](remotion-v2/README.md) and its [new director's plan](ART-DIRECTION-V2.zh-CN.md). Keep this directory's earlier scripts as production history, not as the approved creative direction.
 
+On October 22 the owner requested a complete two-minute-plus feature film. The active composition is now **GraviGo-FullFilm**, 147.8 seconds at 1080×1920/60fps. Its [full-film plan](FILM-V3.zh-CN.md), native `capture_features.py` workflow, and [production instructions](remotion-v2/README.md) supersede the short-preview scope. The complete delivery belongs in `.verification/gravigo-film-v3/delivery/`.
+
 The historical first-round delivery contains three Chinese, 15-second concepts for Douyin and Xiaohongshu. All use 1080×1920 video at 30fps, H.264/AAC, the approved GraviGo icon, original synthesized music, and native Android UI rendered with isolated demonstration data. The replacement Remotion delivery contains three **18-second music-backed MP4s** in `.verification/gravigo-promo-remotion-v2/delivery/`; use its `compare.html` to review the current work.
 
 | Concept | Treatment |

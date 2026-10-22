@@ -11,6 +11,22 @@ import { OrbitProof } from "./scenes/OrbitProof";
 import { EditorialOpen } from "./scenes/EditorialOpen";
 import { EditorialProof } from "./scenes/EditorialProof";
 import { ReleaseEnd } from "./scenes/ReleaseEnd";
+import { FullFilm } from "./film/FullFilm";
+import { Opening } from "./film/Opening";
+import { Connection } from "./film/Connection";
+import { Workspaces } from "./film/Workspaces";
+import { LiveChat } from "./film/LiveChat";
+import { Context } from "./film/Context";
+import { Attachments } from "./film/Attachments";
+import { PlanReview } from "./film/PlanReview";
+import { CodeReview } from "./film/CodeReview";
+import { Reading } from "./film/Reading";
+import { Tasks } from "./film/Tasks";
+import { Decisions } from "./film/Decisions";
+import { Models } from "./film/Models";
+import { Desktop } from "./film/Desktop";
+import { Settings } from "./film/Settings";
+import { Closing } from "./film/Closing";
 
 const PalmRelay = () => {
   const { fps } = useVideoConfig();
@@ -138,6 +154,136 @@ const StopWaiting = () => {
 
 export const RemotionRoot = () => (
   <>
+    <Composition
+      id="GraviGo-FullFilm"
+      component={FullFilm}
+      width={1080}
+      height={1920}
+      fps={60}
+      durationInFrames={8868}
+    />
+    <Folder name="FullFilm-Scenes">
+      <Composition
+        id="Film-Opening"
+        component={Opening}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={540}
+      />
+      <Composition
+        id="Film-Connection"
+        component={Connection}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={600}
+      />
+      <Composition
+        id="Film-Workspaces"
+        component={Workspaces}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={600}
+      />
+      <Composition
+        id="Film-LiveChat"
+        component={LiveChat}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={720}
+      />
+      <Composition
+        id="Film-Context"
+        component={Context}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={600}
+      />
+      <Composition
+        id="Film-Attachments"
+        component={Attachments}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={720}
+      />
+      <Composition
+        id="Film-PlanReview"
+        component={PlanReview}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={720}
+      />
+      <Composition
+        id="Film-CodeReview"
+        component={CodeReview}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={720}
+      />
+      <Composition
+        id="Film-Reading"
+        component={Reading}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={720}
+      />
+      <Composition
+        id="Film-Tasks"
+        component={Tasks}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={600}
+      />
+      <Composition
+        id="Film-Decisions"
+        component={Decisions}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={600}
+      />
+      <Composition
+        id="Film-Models"
+        component={Models}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={660}
+      />
+      <Composition
+        id="Film-Desktop"
+        component={Desktop}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={540}
+      />
+      <Composition
+        id="Film-Settings"
+        component={Settings}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={600}
+      />
+      <Composition
+        id="Film-Closing"
+        component={Closing}
+        width={1080}
+        height={1920}
+        fps={60}
+        durationInFrames={600}
+      />
+    </Folder>
     <Composition
       id="A-PalmRelay"
       component={PalmRelay}

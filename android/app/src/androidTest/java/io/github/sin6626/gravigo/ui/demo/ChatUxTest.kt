@@ -405,6 +405,7 @@ class ChatUxTest {
     @Test fun modelQuotaShowsSharedLimitsResetTimeAndRefreshRecovery() {
         val app = isolatedApplication()
         FakeGateway().use { gateway ->
+            gateway.quotaResetTime = java.time.Instant.now().plusSeconds(3600).toString()
             PreferencesManager(app).apply { clear(); gatewayBaseUrl = gateway.url; deviceToken = "quota-token" }
             val vm = ChatViewModel(app)
             val store = ViewModelStore().apply { put("model-quota", vm) }
@@ -3281,6 +3282,13 @@ class ChatUxTest {
         @Volatile var failurePath: String? = null
         @Volatile var failureCode = 500
         @Volatile var accountName = "测试账号"
+        @Volatile var accountEmail = "test@example.com"
+        @Volatile var secondaryModelLabel = "Claude fixture"
+        @Volatile var thirdModelLabel = "Text fixture"
+        @Volatile var quotaResetTime: String? = null
+        @Volatile var taskStartedTime: String? = null
+        @Volatile var projectName = "动效项目"
+        @Volatile var diffJson: String? = null
         @Volatile var primaryModelLabel: String? = null
         @Volatile var primaryConversationTitle: String? = null
         @Volatile var liveStream = false
@@ -3346,11 +3354,11 @@ class ChatUxTest {
             if ("task-browser" !in stoppedTaskIds) tasks += JSONObject()
                 .put("id", "task-browser").put("stepIndex", 8).put("toolName", "run_command")
                 .put("toolSummary", "运行浏览器检查").put("commandLine", "npm run test:e2e")
-                .put("startedAt", "2026-10-13T08:00:00Z")
+                .put("startedAt", taskStartedTime ?: "2026-10-13T08:00:00Z")
             if ("task-preview" !in stoppedTaskIds) tasks += JSONObject()
                 .put("id", "task-preview").put("stepIndex", 9).put("toolName", "run_command")
                 .put("toolSummary", "生成预览资源").put("commandLine", "./gradlew renderPreview")
-                .put("startedAt", "2026-10-13T08:01:00Z")
+                .put("startedAt", taskStartedTime ?: "2026-10-13T08:01:00Z")
             return org.json.JSONArray(tasks).toString()
         }
         private fun image(width: Int, height: Int) = java.io.ByteArrayOutputStream().let { output ->
@@ -3451,21 +3459,21 @@ class ChatUxTest {
                             val id = Regex("[?&]cascadeId=([^&]+)").find(path)?.groupValues?.get(1)
                                 ?: if (path.contains("cascadeId=A")) "A" else "B"
                             val body = when {
-                                path.contains("GetUserStatus") -> """{"userStatus":{"name":"$accountName","email":"test@example.com","profilePictureUrl":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==","planStatus":{"planInfo":{"teamsTier":"PRO","planName":"Pro"}},"cascadeModelConfigData":{"clientModelConfigs":[
+                                path.contains("GetUserStatus") -> """{"userStatus":{"name":"$accountName","email":"$accountEmail","profilePictureUrl":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==","planStatus":{"planInfo":{"teamsTier":"PRO","planName":"Pro"}},"cascadeModelConfigData":{"clientModelConfigs":[
                                     {"modelId":"gemini-3.8-flash-high","label":"${primaryModelLabel ?: ("Gemini fixture" + if (thinkingVariants) " (High)" else "")}","modelOrAlias":{"model":"MODEL_PLACEHOLDER_M318"},"supportsImages":true,"supportedMimeTypes":{"text/plain":true,"application/pdf":true},"allowedTiers":["PRO"]},
                                     ${if (thinkingVariants) """{"modelId":"gemini-3.8-flash-medium","label":"Gemini fixture (Medium)","modelOrAlias":{"model":"MODEL_MEDIUM"},"supportsImages":true,"supportedMimeTypes":{"text/plain":true},"allowedTiers":["PRO"]},
                                     {"modelId":"gemini-3.8-flash-low","label":"Gemini fixture (Low)","modelOrAlias":{"model":"MODEL_LOW"},"supportsImages":true,"supportedMimeTypes":{"text/plain":true},"allowedTiers":["PRO"]},""" else ""}
-                                    {"modelId":"claude-fixture","label":"Claude fixture","modelOrAlias":{"model":"MODEL_PLACEHOLDER_M26"},"supportsImages":true,"supportedMimeTypes":{"text/plain":true},"allowedTiers":["PRO"]},
-                                    {"modelId":"text-fixture","label":"Text fixture","modelOrAlias":{"model":"MODEL_TEXT"},"supportedMimeTypes":{"text/plain":true}},
+                                    {"modelId":"claude-fixture","label":"$secondaryModelLabel","modelOrAlias":{"model":"MODEL_PLACEHOLDER_M26"},"supportsImages":true,"supportedMimeTypes":{"text/plain":true},"allowedTiers":["PRO"]},
+                                    {"modelId":"text-fixture","label":"$thirdModelLabel","modelOrAlias":{"model":"MODEL_TEXT"},"supportedMimeTypes":{"text/plain":true}},
                                     {"modelId":"restricted","label":"Restricted fixture","modelOrAlias":{"model":"MODEL_HIDDEN"},"allowedTiers":["ENTERPRISE"]}
                                 ]}}}"""
                                 path.contains("RetrieveUserQuotaSummary") -> """{"response":{"groups":[
                                     {"displayName":"Gemini Models","description":"Shared Gemini limits","buckets":[
-                                        {"bucketId":"gemini-weekly","displayName":"Weekly Limit Remaining","window":"weekly","remainingFraction":0.73,"resetTime":"2026-10-14T02:23:51Z"},
-                                        {"bucketId":"gemini-5h","displayName":"Five Hour Limit Remaining","window":"5h","remainingFraction":1.0,"resetTime":"2026-10-13T14:47:29Z"}
+                                        {"bucketId":"gemini-weekly","displayName":"Weekly Limit Remaining","window":"weekly","remainingFraction":0.73,"resetTime":"${quotaResetTime ?: "2026-10-14T02:23:51Z"}"},
+                                        {"bucketId":"gemini-5h","displayName":"Five Hour Limit Remaining","window":"5h","remainingFraction":1.0,"resetTime":"${quotaResetTime ?: "2026-10-13T14:47:29Z"}"}
                                     ]},
                                     {"displayName":"Claude and GPT models","buckets":[
-                                        {"bucketId":"3p-weekly","displayName":"Weekly Limit Remaining","window":"weekly","remainingFraction":0.08,"resetTime":"2026-10-13T13:31:08Z"}
+                                        {"bucketId":"3p-weekly","displayName":"Weekly Limit Remaining","window":"weekly","remainingFraction":0.08,"resetTime":"${quotaResetTime ?: "2026-10-13T13:31:08Z"}"}
                                     ]}
                                 ],"description":"Shared limits"}}"""
                                 path == "/gateway/cascade/new" -> """{"cascadeId":"${if (JSONObject(requestBody).optString("projectId") == "p") "C" else "D"}","status":"ok"}"""
@@ -3478,12 +3486,12 @@ class ChatUxTest {
                                     {"name":"cua-driver","status":"MCP_SERVER_STATUS_READY","enabled":true,"toolCount":57,"enabledToolCount":57,"toolErrorCount":0},
                                     {"name":"browser-tools","status":"MCP_SERVER_STATUS_ERROR","enabled":true,"toolCount":4,"enabledToolCount":3,"toolErrorCount":1,"error":"连接进程已退出","requiresAuthentication":true}
                                 ]}"""
-                                path.startsWith("/gateway/projects") -> if (projectFixture) """[{"id":"p","name":"动效项目","uri":"file:///test/project"}]""" else "[]"
+                                path.startsWith("/gateway/projects") -> if (projectFixture) """[{"id":"p","name":"$projectName","uri":"file:///test/project"}]""" else "[]"
                                 path.startsWith("/gateway/subagents") -> if (subagentFixture && path.contains("parentId=A")) """{"subagents":[
                                     {"id":"sub-running","parentConversationId":"A","rootConversationId":"A","title":"检查登录动效","status":"RUNNING","stepCount":6,"nestingDepth":1},
                                     {"id":"sub-waiting","parentConversationId":"A","rootConversationId":"A","title":"等待用户选择","status":"WAITING","stepCount":4,"nestingDepth":1,"needsInput":true}
                                 ]}""" else """{"subagents":[]}"""
-                                path.startsWith("/gateway/cascade/diffs") -> if (diffFixture) """{"cascadeId":"A","files":[
+                                path.startsWith("/gateway/cascade/diffs") -> diffJson ?: if (diffFixture) """{"cascadeId":"A","files":[
                                     {"fileUri":"file:///test/Agent.md","fileName":"Agent.md","actionType":"MODIFY","originalContent":"alpha\nold line\nomega","modifiedContent":"alpha\nnew line\nomega","firstTouchedStepIndex":2,"lastTouchedStepIndex":4}
                                 ]}""" else """{"cascadeId":"$id","files":[]}"""
                                 management && path.contains("/revert/preview") -> """{"cascadeId":"A","stepIndex":0,"targetStepIndex":-1,"hasCodeChanges":${previewFiles > 0},"files":[${(0 until previewFiles).joinToString { """{"fileName":"${if (it == 0) "Agent.md" else "file-$it.kt"}","actionType":"MODIFY","additions":1,"deletions":2}""" }}]}"""

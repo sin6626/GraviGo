@@ -1,5 +1,26 @@
 # GraviGo 项目开发与维护文档
 
+### 2026-10-22 两分多钟完整产品片已交付
+- 本轮完成GraviGo-FullFilm：147.8秒/1080×1920/60fps/8868帧，最终MP4为45,882,946字节，SHA-256=45ea34de0da0b6075a5eebbe87c01d436d2b0ffb11e2e121556ce1c8e932802e。文件、海报、watch.html章节页、来源许可、chapters.json与manifest.json均在.verification/gravigo-film-v3/delivery/。旧18秒短片只作历史，不再作为本次交付。
+- 15章串起连接、工作区、发送与流式回复、文件引用/命令、图片/文件附件、语音、方案评论、代码行审阅、代码/Markdown/表格/公式/图表、后台任务/队列、交互选择/回退、模型额度、电脑权限/MCP、账号与双语。16个原生录制均通过隔离数据与动作断言；录制结束恢复正常App和原语言，未操作真实私有会话或配对。
+- 实际首版逐章检查发现手机后半段运动压标题及Gateway标签遮挡，已修正轨迹/尺度/标签并完整重渲染。最终30张章节画面、三个内部功能段和转场邻帧抽查通过；第二次verify_film.py对最终文件完整解码、147.8秒/8868帧/60fps/BT.709/yuv420p/AAC检查通过，全黑帧0、音频峰值-2.6dB、无中段静音，浏览器从0以1倍速播放至结束无错误。验收报告绑定最终哈希，不沿用首版47.5MB文件记录。
+- ESLint/TypeScript、Python编译检查、Studio15独立章节与主合成寻帧/播放通过；最新仪器APK构建成功，默认后台任务回归通过，额度测试修正过期固定日期后聚焦复验通过。debug测试宿主manifest覆盖不进入Release，未修改App业务实现。
+- 音乐为Mixkit的Close Up和Tech House vibes，有独立使用说明，不是原创音乐或AGPL素材；原始音乐不单独交付。当前为配乐字幕版，无旁白，没有上传外部平台或推送本轮源码。Studio4317保持运行供编辑；录制/编码/验收浏览器与Python退出后再做完成提醒。
+
+### 2026-10-22 完整MG功能片进行中
+- 用户明确否定18秒交付，提供D:/QQFile/mmexport1792589854226.mp4作为参考，实际140.63秒/338×552/无音轨。当前任务是约2分25秒完整功能竖片，1080×1920/60fps，需真实原生操作和流畅MG镜头，不再止于计划或短片。
+- 已读取Remotion技能并在改组成前验证Studio4317实际canvas可见。导演方案android/design/promo/FILM-V3.zh-CN.md；沿用现有Remotion工程，新增完整片组成，不覆盖旧三支文件。
+- 新增opt-in ProductFeatureCaptureTest与capture_features.py，15项原生功能使用按UUID隔离的配置/缓存和FakeGateway，独立录屏/截图/状态断言。仅给既有测试网关增加默认兼容的展示字段与diff JSON选项；未改App业务。仪器APK编译通过，正在补录。
+- 新素材/录制日志/临时目录放.verification/gravigo-film-v3/。不触碰真实配对与网关，不批量删除；语言演示结束恢复原语言，录制结束恢复GraviGo正式启动页。任务仍未完成，不发送完成提醒。
+- 完整组成GraviGo-FullFilm已建立：147.8秒/1080×1920/60fps/8868帧，15个独立章节注册在FullFilm-Scenes，位于现有remotion-v2/src/film/；含附件→语音、代码→富文本、交互→回退内部的重叠转场，无硬切。源码lint/tsc通过，尚未渲染完整MP4，不能称完成。
+- 第一轮原生新录屏抽帧暴露Compose测试时钟自动跳动画，VFR仅3～50帧，放大镜头也取到空白。已改为录制期间逐帧推进测试时钟，源素材事件帧增加，并归一化14秒/60fps/840帧；普通功能录制已通过，context/reading/rich在等待时驱动时钟后通过。字体、细节放大从实际原生after截图取图，不重画UI。
+- locale切换与Compose测试调度冲突，因此新ProductLocaleCaptureTest不使用ComposeTestRule，使用ActivityScenario＋真实系统帧时钟及UiAutomation，仍为隔离FakeGateway/UUID缓存与示例账号。debug/AndroidManifest.xml仅为现有库测试宿主ComponentActivity补locale|layoutDirection和adjustResize，与正式MainActivity处理方式一致；不进入Release。
+- 当前最后的settings和rich补录在执行会话61200进行中：真实可访问节点定位后注入精确点击；rich公式用受支持katex围栏、图表改为TD避免横向截断。capture_features.py仅settings选择新类，其余走原生逐帧测试。记录输出在native/<feature>/，实际14秒MP4在native/<feature>.mp4；prepare_film.py验证16项再复制进忽略public/film。
+- 后续顺序：确认最后两项通过→prepare_film→按实际截图修正镜头取景和安全区→Studio检查15章→render_film.ps1完整导出→verify_film.py完整解码/零黑帧/30张章节图/邻接转场图/浏览器从0完整播放147.8秒→人工看图并修问题→文档Git本地提交→完成提醒后交付。未授权本轮外部发布。
+- 16项最新原生素材已全部通过，prepare_film.py核验了每个14秒/60fps/840帧文件。locale真实系统帧钟专用类已录到中文→英文→中文并恢复原语言；rich用katex围栏正确渲染公式、TD图表完整显示。流式示例补齐server stepIndex以确认发送，最终outgoing为空且isRunning=false，避免样片一直显示等待。
+- Studio15个独立章节及完整时间线寻帧/播放通过；人工看图后修正了放大区域、左右裁切、字幕字号和底部安全区。render_film.ps1当前在执行会话18426导出，日志.verification/gravigo-film-v3/render.log，最后观察6518/8868，尚未作最终成片验收。
+- 调整过的FakeGateway保留默认语义，仅允许演示覆盖姓名/模型标签/项目/diff/时间。额度默认回归首次因固定2026-10-13/14日期已过期而失败，现该测试显式设未来恢复时间；聚焦重跑OK(1 test)，后台任务默认回归也已通过。最新仪器APK编译成功，已恢复正常GraviGo前台。
+
 ### 2026-10-21 三份 Remotion 配乐短片导出完成
 - 用户“去制作”后完成A《掌心接力》、B《失重轨道》、C《别守着电脑》的18秒1080×1920/30fps成片，三个独立音轨节点保留Studio可编辑性。没有旁白，不把18秒短片称为60～75秒长版；本轮没有对外发布。
 - 配乐采用Mixkit的Close Up/Michael Ramir C.、Vastness/Andrew Ev、Tech House vibes/Alejandro Magaña，独立许可与来源随CREDITS.txt交付。prepare_music.py生成经响度处理及淡入淡出的18秒立体声片段，原始音乐只留Git忽略缓存，不单独分发或声称原创。
