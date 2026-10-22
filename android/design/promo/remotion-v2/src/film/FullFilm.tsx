@@ -17,13 +17,17 @@ import { Models } from "./Models";
 import { Desktop } from "./Desktop";
 import { Settings } from "./Settings";
 import { Closing } from "./Closing";
-import { orbitReveal } from "./visuals";
+import { DetailLensesContext, orbitReveal } from "./visuals";
 import { hold } from "../design";
 
-export const FullFilm = () => {
+export const FullFilm = ({
+  showDetailLenses = true,
+}: {
+  showDetailLenses?: boolean;
+}) => {
   const { fps } = useVideoConfig();
   return (
-    <>
+    <DetailLensesContext.Provider value={showDetailLenses}>
       <Audio
         name="配乐上篇：Close Up"
         src={staticFile("film/music-close-up.mp3")}
@@ -259,6 +263,6 @@ export const FullFilm = () => {
           <Closing />
         </TransitionSeries.Sequence>
       </TransitionSeries>
-    </>
+    </DetailLensesContext.Provider>
   );
 };

@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import { createContext, useContext } from "react";
 import { Video } from "@remotion/media";
 import {
   AbsoluteFill,
@@ -14,6 +15,7 @@ import type { TransitionPresentationComponentProps } from "@remotion/transitions
 import { font, hold } from "../design";
 
 export const cream = "#f5f3ee";
+export const DetailLensesContext = createContext(true);
 export const navy = "#101e36";
 export const cobalt = "#345df4";
 export const ease = Easing.bezier(0.22, 1, 0.36, 1);
@@ -366,6 +368,7 @@ export const FeatureShot = ({
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const showDetailLenses = useContext(DetailLensesContext);
   return (
     <FilmStage dark={dark}>
       <FilmBrand dark={dark} chapter={`${number} / REMOTE WORKFLOW`} />
@@ -403,7 +406,7 @@ export const FeatureShot = ({
           ),
         }}
       />
-      {lens ? (
+      {showDetailLenses && lens ? (
         <DetailLens
           src={src}
           y={lens.y}

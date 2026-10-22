@@ -1,5 +1,8 @@
 # GraviGo Remotion V2
 
+- 用户所要“去掉遮挡物”的v2已完整导出至versions/v2，实际各章与51.2秒画面确认DetailLens均不遮挡；147.8秒完整解码、黑帧/音轨和正常速度整片播放通过。v1归档哈希不变，两版解码音轨逐样本一致。v1、v2均应保留，后续不得覆盖已归档版本。
+- 2026-10-22用户要求保留当前完整片为v1，只去掉浮动放大截图遮挡做v2。v1交付目录已逐文件复制并SHA核验到.verification/gravigo-film-v3/versions/v1，VERSION.json记录源提交bdd787b与原片哈希；原delivery目录也保留。
+- 新GraviGo-FullFilm-V2组成仅通过DetailLensesContext=false隐藏DetailLens，旧GraviGo-FullFilm保持true；不改时长、布局、镜头、字幕、音轨、原生素材或App。render_film.ps1和verify_film.py只输出versions/v2，独立日志/验收图，不能覆盖v1。51.2秒同帧比较确认标题、上半手机与字幕逐像素一致，差异只在卡片及其阴影区域。
 - 完整片最终导出与第二次实际文件验收已完成：45,882,946字节，SHA-256=45ea34de0da0b6075a5eebbe87c01d436d2b0ffb11e2e121556ce1c8e932802e。实际逐章图修掉手机压标题与Gateway遮挡后重渲染，最终完整解码/零黑帧/音轨连续/从0正常速度播至结束通过，元数据与哈希见delivery/manifest.json。不能拿首次47.5MB导出代替最终45.9MB文件。
 - 2026-10-22用户明确要求完整两分多钟，18秒不满足。主交付改为GraviGo-FullFilm：147.8秒/1080×1920/60fps/8868帧，15个独立文件和FullFilm-Scenes注册，不能再只交短片。导演方案../FILM-V3.zh-CN.md，参考视频仅作分析，不拷贝其媒体。
 - 新16项原生功能素材在根.verification/gravigo-film-v3/native，含配对、项目、流式发送、引用/命令、附件、方案、diff、代码/富文本、模型、语言、任务、语音、电脑状态、回退和交互选择。每项均有仪器动作断言和隔离FakeGateway/UUID配置/缓存。普通动作在录制期间手动推进Compose测试时钟，状态等待也驱动时钟；locale专用类不使用ComposeTestRule，走真实系统帧钟和可访问节点精确点击。原生VFR统一为14秒/60fps/840帧，不冒充实际交互原本全为60fps。

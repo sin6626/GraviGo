@@ -1,5 +1,16 @@
 # GraviGo 项目开发与维护文档
 
+### 2026-10-22 宣发片v1归档、无遮挡v2完成
+- 用户只要求保留v1并去除放大操作截图。v1完整交付已独立归档versions/v1并绑定源提交bdd787b，原delivery也完整保留；渲染后再次核对原片SHA-256未变，不覆盖或清理v1。
+- v2仅隐藏DetailLens浮动截图层，其余镜头/字幕/配乐/转场/时序完全沿用。输出.verification/gravigo-film-v3/versions/v2/GraviGo-v2-1080x1920-60fps.mp4，仍147.8秒/1080×1920/60fps/8868帧；附watch.html、poster、chapters、CREDITS与manifest。
+- 实际v2各章抽帧及截图对应51.2秒画面已检查，无自制放大截图遮挡手机。v1/v2对应PNG的标题/上半手机/字幕逐像素一致；两版解码音轨逐样本SHA-256一致。v2完整解码/零黑帧/音轨连续检查和从0正常速度整片播放至结束均通过。lint/tsc、Python编译与diff检查通过。
+- 新Studio组成GraviGo-FullFilm-V2以false关闭卡片；旧GraviGo-FullFilm默认true保留v1。只改视频和输出路径，不动App/原生片源/真实网关/配对，不外部发布；临时验收浏览器、服务与Python结束，保留Studio4317供查看。
+
+### 2026-10-22 宣发片保留v1并导出无遮挡v2进行中
+- 用户截图指出浮动操作放大卡片遮挡中央手机，明确只改这一点。当前完整交付的6个文件已复制到.verification/gravigo-film-v3/versions/v1并逐文件校验；VERSION.json绑定bdd787b和原SHA-256=45ea34de0da0b6075a5eebbe87c01d436d2b0ffb11e2e121556ce1c8e932802e。原delivery也未动。
+- 新GraviGo-FullFilm-V2仅用上下文开关隐藏DetailLens；旧组成默认true仍可重现v1。时长147.8秒、8868帧、1080×1920/60fps、所有镜头/字幕/配乐/原生片源均保持。Studio改前实际加载；lint/tsc通过，51.2秒v1/v2同帧检查标题/手机上部/字幕逐像素一致，仅卡片区域不同。
+- 渲染会话9572正在导出versions/v2/GraviGo-v2-1080x1920-60fps.mp4，日志render-v2.log；verify_film.py已改为只写v2独立验收目录。后续检查实际MP4无卡片、完整播放、音轨与v1对照、归档校验、Git中文提交，再发完成提醒。不重录、不改App、不发布外部。
+
 ### 2026-10-22 两分多钟完整产品片已交付
 - 本轮完成GraviGo-FullFilm：147.8秒/1080×1920/60fps/8868帧，最终MP4为45,882,946字节，SHA-256=45ea34de0da0b6075a5eebbe87c01d436d2b0ffb11e2e121556ce1c8e932802e。文件、海报、watch.html章节页、来源许可、chapters.json与manifest.json均在.verification/gravigo-film-v3/delivery/。旧18秒短片只作历史，不再作为本次交付。
 - 15章串起连接、工作区、发送与流式回复、文件引用/命令、图片/文件附件、语音、方案评论、代码行审阅、代码/Markdown/表格/公式/图表、后台任务/队列、交互选择/回退、模型额度、电脑权限/MCP、账号与双语。16个原生录制均通过隔离数据与动作断言；录制结束恢复正常App和原语言，未操作真实私有会话或配对。

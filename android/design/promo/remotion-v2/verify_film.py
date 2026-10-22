@@ -30,12 +30,12 @@ def main():
     parser.add_argument('--ffprobe', required=True)
     args = parser.parse_args()
     work = ROOT / '.verification/gravigo-film-v3'
-    delivery = work / 'delivery'
-    frames = work / 'review-frames'
+    delivery = work / 'versions/v2'
+    frames = work / 'review-frames-v2'
     frames.mkdir(exist_ok=True)
     for key in ['TEMP', 'TMP', 'TMPDIR']:
         os.environ[key] = str(work / 'tmp')
-    filename = 'GraviGo-Product-Film-1080x1920-60fps.mp4'
+    filename = 'GraviGo-v2-1080x1920-60fps.mp4'
     movie = delivery / filename
     metadata = json.loads(subprocess.check_output([args.ffprobe, '-v', 'error', '-show_format', '-show_streams', '-of', 'json', str(movie)]))
     video = next(s for s in metadata['streams'] if s['codec_type'] == 'video')
@@ -46,7 +46,7 @@ def main():
     assert abs(float(metadata['format']['duration']) - 147.8) < .08
     scan = subprocess.run([args.ffmpeg, '-hide_banner', '-i', str(movie), '-vf', 'blackdetect=d=0.015:pix_th=0.02:pic_th=0.99',
                            '-af', 'silencedetect=noise=-50dB:d=0.5,volumedetect', '-f', 'null', '-'], capture_output=True, text=True, check=True)
-    (work / 'full-decode.log').write_text(scan.stderr, encoding='utf-8')
+    (work / 'full-decode-v2.log').write_text(scan.stderr, encoding='utf-8')
     assert 'black_start:' not in scan.stderr, 'Unexpected black flash'
     peak = float(re.search(r'max_volume: ([\-\d.]+) dB', scan.stderr)[1])
     assert -20 < peak < -.1, peak
@@ -71,7 +71,8 @@ def main():
     frame_at(147.7, 'last-frame.jpg')
     subprocess.run([args.ffmpeg, '-hide_banner', '-loglevel', 'error', '-y', '-ss', '6', '-i', str(movie), '-frames:v', '1', '-q:v', '2', str(delivery / 'poster.jpg')], check=True)
     (delivery / 'chapters.json').write_text(json.dumps(chapters, ensure_ascii=False, indent=2), encoding='utf-8')
-    credits = '''GraviGo product film · 2026-10-22
+    credits = '''GraviGo product film v2 · 2026-10-22
+v2 removes only the floating detail cards; the original v1 is archived separately.
 147.8 seconds / 1080 × 1920 / 60 fps / music, no narration
 
 Music: Close Up — Michael Ramir C. (Mixkit track 1167)
@@ -97,7 +98,7 @@ The owner's supplied reference was used for timing and motion analysis only; its
 '''
     (delivery / 'CREDITS.txt').write_text(credits, encoding='utf-8-sig')
     links = ''.join(f'<button data-time="{chapter["start"]}">{chapter["title"]}</button>' for chapter in chapters)
-    html = f'''<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GraviGo 完整产品片</title><style>*{{box-sizing:border-box}}body{{margin:0;background:#101e36;color:#f5f3ee;font:16px system-ui;padding:36px}}main{{display:flex;gap:40px;max-width:1200px;margin:auto}}video{{width:min(52vw,500px);height:88vh;object-fit:contain;background:#07101f;border-radius:18px}}aside{{max-width:500px}}h1{{font-size:32px}}p{{line-height:1.8;color:#bacbe4}}button{{display:block;background:transparent;color:#c8d7ef;border:1px solid #405577;border-radius:8px;padding:10px 15px;margin:8px 0;cursor:pointer}}a{{color:#a7c4ff}}@media(max-width:750px){{main{{display:block}}video{{width:100%;height:75vh}}}}</style><main><video src="{filename}" poster="poster.jpg" controls playsinline preload="metadata"></video><aside><h1>GraviGo · 把Antigravity，带在身边</h1><p>2分27.8秒 · 1080×1920 · 60fps<br>请打开声音。下方按钮可跳到对应功能。</p>{links}<p><a download href="{filename}">下载完整 MP4</a> · <a href="CREDITS.txt">来源与使用说明</a></p></aside></main><script>const v=document.querySelector('video');document.querySelectorAll('button').forEach(b=>b.onclick=()=>{{v.currentTime=+b.dataset.time;v.play()}})</script></html>'''
+    html = f'''<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GraviGo v2 完整产品片</title><style>*{{box-sizing:border-box}}body{{margin:0;background:#101e36;color:#f5f3ee;font:16px system-ui;padding:36px}}main{{display:flex;gap:40px;max-width:1200px;margin:auto}}video{{width:min(52vw,500px);height:88vh;object-fit:contain;background:#07101f;border-radius:18px}}aside{{max-width:500px}}h1{{font-size:32px}}p{{line-height:1.8;color:#bacbe4}}button{{display:block;background:transparent;color:#c8d7ef;border:1px solid #405577;border-radius:8px;padding:10px 15px;margin:8px 0;cursor:pointer}}a{{color:#a7c4ff}}@media(max-width:750px){{main{{display:block}}video{{width:100%;height:75vh}}}}</style><main><video src="{filename}" poster="poster.jpg" controls playsinline preload="metadata"></video><aside><h1>GraviGo v2 · 把Antigravity，带在身边</h1><p>2分27.8秒 · 1080×1920 · 60fps<br>请打开声音。下方按钮可跳到对应功能。</p>{links}<p><a download href="{filename}">下载完整 MP4</a> · <a href="CREDITS.txt">来源与使用说明</a></p></aside></main><script>const v=document.querySelector('video');document.querySelectorAll('button').forEach(b=>b.onclick=()=>{{v.currentTime=+b.dataset.time;v.play()}})</script></html>'''
     (delivery / 'watch.html').write_text(html, encoding='utf-8')
     from playwright.sync_api import sync_playwright
     server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(delivery)))
@@ -119,12 +120,12 @@ The owner's supplied reference was used for timing and motion analysis only; its
                 page.wait_for_function('document.querySelector("video").ended', timeout=40000)
                 state = page.evaluate('({ended:document.querySelector("video").ended,error:document.querySelector("video").error,duration:document.querySelector("video").duration})')
                 assert state['ended'] and not state['error'] and not errors, (state, errors)
-                page.screenshot(path=str(work / 'watch-browser.png'), full_page=True)
+                page.screenshot(path=str(work / 'watch-browser-v2.png'), full_page=True)
             finally:
                 browser.close()
     finally:
         server.shutdown(); thread.join(timeout=5); server.server_close()
-    manifest = {'file': filename, 'duration': 147.8, 'frames': 8868, 'fps': 60, 'width': 1080, 'height': 1920,
+    manifest = {'version': 'v2', 'detailCards': False, 'file': filename, 'duration': 147.8, 'frames': 8868, 'fps': 60, 'width': 1080, 'height': 1920,
                 'sha256': hashlib.sha256(movie.read_bytes()).hexdigest(), 'bytes': movie.stat().st_size,
                 'video': 'H.264/yuv420p/BT.709/limited', 'audio': 'AAC/stereo/48kHz', 'audioPeakDb': peak,
                 'fullDecode': 'passed', 'blackFrames': 0, 'audioContinuity': 'passed', 'continuousBrowserPlayback': 'passed', 'chapters': chapters}
